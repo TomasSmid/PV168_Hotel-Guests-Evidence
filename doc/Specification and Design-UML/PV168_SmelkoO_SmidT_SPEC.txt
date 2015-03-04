@@ -1,0 +1,15 @@
+/***********************************************************************************************************************************
+*														Evidence hostů v hotelu
+************************************************************************************************************************************/
+
+Uvažujme jednoduchý systém pro evidenci hostů v hotelu integrující funkcionalitu, která bude umožňovat následující:
+	- rezervování pokojů
+	- zapsání (ubytování) hostů v konkrétních pokojích
+	- sledování stavů jednotlivých pokojů a počtu hostů, tj. mít přehled nad tím:
+		- které pokoje jsou volné a které obsazené
+		- kým jsou pokoje obsazené a na jak dlouho
+		- ke kterým pokojům jsou nahlášeny rezervace a kým
+		- kolik je v hotelu ubytovaných hostů
+	- dohledání vhodného (požadovaného) pokoje pro konkrétního hosta
+	- zjištění ceny pobytu (rezervace) konkrétního hosta (který provedl rezervaci pokoje)
+	- zjištění top 5 hostů, kteří jsou aktuálně ubytovaní v hotelu a mají největší útraty za hotelové služby(bez ceny ubytování)
