@@ -1,1 +1,0 @@
-In this directory will be located the application source code itself.
