@@ -15,7 +15,7 @@ import java.util.List;
  * 
  * @author Tomas Smid
  */
-public interface IGuestManager {
+public interface GuestManager {
     
     public void createGuest(Guest guest);
     

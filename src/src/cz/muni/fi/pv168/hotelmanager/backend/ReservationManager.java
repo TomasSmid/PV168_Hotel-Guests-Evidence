@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author Ondrej Smelko, Tomas Smid
  */
-public interface IReservationManager {
+public interface ReservationManager {
     
     public void createReservation(Reservation reservation);
     

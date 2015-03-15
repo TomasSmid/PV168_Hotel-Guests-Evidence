@@ -13,12 +13,17 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 
 /**
- *
+ * This test class ensures testing of units of class GuestManagerImpl.
+ * 
  * @author Tomas Smid
  */
 public class GuestManagerImplTest {
+    
+    @Rule public ExpectedException exception = ExpectedException.none();
     
     private GuestManagerImpl manager;
     
@@ -27,14 +32,24 @@ public class GuestManagerImplTest {
         manager = new GuestManagerImpl();
     }
     
+    
+    //tests focused on storing guest in DB with valid guest's attributes
     @Test
-    public void createGuest(){
-        Date born = newBornDate(64_800_000_000l);
-        Guest expGuest = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
-        manager.createGuest(expGuest);
+    public void createGuestAndCheckIdGenerated(){
+        Guest guest = new GuestBuilder().build();
         
+        manager.createGuest(guest);
+        
+        Long guestId = guest.getId();
+        assertNotNull("Guest's id should have a particular value, not be null", guestId);
+    }    
+    
+    @Test
+    public void createGuestWithValidAttributesAndNoSpecialChars(){
+        Guest expGuest = new GuestBuilder().build();
+        
+        manager.createGuest(expGuest);
         Long guestId = expGuest.getId();
-        assertNotNull(guestId);
         
         Guest actGuest = manager.getGuestById(guestId);
         assertEquals(expGuest, actGuest);
@@ -43,158 +58,229 @@ public class GuestManagerImplTest {
     }
     
     @Test
-    public void createGuestWithInvalidAttributes(){
-        Date born = newBornDate(64_800_000_000l);
+    public void createGuestWithNameContainingHyphen(){
+        Guest guest = new GuestBuilder().name("John Dwight-Cannady").build();
         
-        //no guest specified
-        Guest wrongGuest = null;        
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
         
-        //incorrect id set
-        wrongGuest = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
-        wrongGuest.setId(1L);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with an empty name
-        wrongGuest = newGuest("", "(+420) 754 865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest without a name
-        wrongGuest = newGuest(null, "(+420) 754 865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest's name wrong format - name contains numbers
-        wrongGuest = newGuest("Pepa4 5Korek5", "(+420) 754 865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest's name wrong format - name contains underscore
-        wrongGuest = newGuest("Pepa_Korek", "(+420) 754 865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest's name wrong format - name contains dot
-        wrongGuest = newGuest("Pepa.Korek", "(+420) 754 865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest's name wrong format - name contains at sign
-        wrongGuest = newGuest("Pepa@Korek", "(+420) 754 865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest's name wrong format - name contains colon
-        wrongGuest = newGuest("Pepa:Korek", "(+420) 754 865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //incorrect phone number format - phone number contains letters
-        wrongGuest = newGuest("Pepa Korek", "(+420) 754 and 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //incorrect phone number format - only one '-'
-        wrongGuest = newGuest("Pepa Korek", "(+420) 754-865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //incorrect phone number format - empty string
-        wrongGuest = newGuest("Pepa Korek", "", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with an empty idCardNumber
-        wrongGuest = newGuest("Pepa Korek", "(+420) 754 865 000", "", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest without an idCardNumber
-        wrongGuest = newGuest("Pepa Korek", "(+420) 754 865 000", null, born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with no specified date-of-birth
-        born = null;
-        wrongGuest = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
-        try{
-            manager.createGuest(wrongGuest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
+        Guest actGuest = manager.getGuestById(guestId);
+        assertNotNull(actGuest);
     }
     
     @Test
-    public void createGuestWithAnotherValidAttributes(){
-        Date born = newBornDate(64_800_000_000l);
+    public void createGuestWithPhoneNotContainingCountryCode(){
+        Guest guest = new GuestBuilder().phone("777 888 999").build();
         
-        //name with hyphen
-        Guest expGuest = newGuest("John Dwight-Cannady", "754 865 000", "154879833", born);
-        manager.createGuest(expGuest);
-        Guest actGuest = manager.getGuestById(expGuest.getId());
-        assertNotNull(actGuest);
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
         
-        //phone number without country calling code
-        expGuest = newGuest("Pepa Korek", "754 865 000", "154879833", born);
-        manager.createGuest(expGuest);
-        actGuest = manager.getGuestById(expGuest.getId());
-        assertNotNull(actGuest);
-        
-        //phone number format containing '-'
-        expGuest = newGuest("Pepa Korek", "(+420)-754-865-000", "154879833", born);
-        manager.createGuest(expGuest);
-        actGuest = manager.getGuestById(expGuest.getId());
-        assertNotNull(actGuest);
-        
-        //phone number format containing '-' without county calling code
-        expGuest = newGuest("Pepa Korek", "754-865-000", "154879833", born);
-        manager.createGuest(expGuest);
-        actGuest = manager.getGuestById(expGuest.getId());
-        assertNotNull(actGuest);
-        
-        //no phone number specified
-        expGuest = newGuest("Pepa Korek", null, "154879833", born);
-        manager.createGuest(actGuest);
-        actGuest = manager.getGuestById(expGuest.getId());
+        Guest actGuest = manager.getGuestById(guestId);
         assertNotNull(actGuest);
     }
     
+    @Test
+    public void createGuestWithPhoneContainingRightNumOfHyphens(){
+        Guest guest = new GuestBuilder().phone("(+420)-777-888-999").build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        Guest actGuest = manager.getGuestById(guestId);
+        assertNotNull(actGuest);
+    }
+    
+    @Test
+    public void createGuestWithPhoneContainingRightNumOfHyphensAndNoCountryCode(){
+        Guest guest = new GuestBuilder().phone("777-888-999").build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        Guest actGuest = manager.getGuestById(guestId);
+        assertNotNull(actGuest);
+    }
+    
+    @Test
+    public void createGuestWithoutPhone(){
+        Guest guest = new GuestBuilder().phone(null).build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        Guest actGuest = manager.getGuestById(guestId);
+        assertNotNull(actGuest);
+    }
+    
+    
+    //tests focused on storing guest in DB with invalid guest's attributes
+    @Test
+    public void createGuestWithNullGuest(){
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(null);
+    }
+    
+    @Test
+    public void createGuestWithPresetId(){
+        Guest guest = new GuestBuilder().build();
+        guest.setId(1L);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithEmptyName(){
+        Guest guest = new GuestBuilder().name("").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNullName(){
+        Guest guest = new GuestBuilder().name(null).build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNameContainingNumbers(){
+        Guest guest = new GuestBuilder().name("Pepa4 5Korek5").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNameContainingUnderscore(){
+        Guest guest = new GuestBuilder().name("Pepa_Korek").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNameContainingDot(){
+        Guest guest = new GuestBuilder().name("Pepa.Korek").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNameContainingAtSign(){
+        Guest guest = new GuestBuilder().name("Pepa@Korek").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNameContainingColon(){
+        Guest guest = new GuestBuilder().name("Pepa:Korek").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNameContainingMoreThanOneSpaceBetweenNames(){
+        Guest guest = new GuestBuilder().name("Pepa  Korek").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithPhoneContainingLetters(){
+        Guest guest = new GuestBuilder().phone("(+420) 777 and 999").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithPhoneContainingBadNumOfHyphen(){
+        Guest guest = new GuestBuilder().phone("(+420) 777-888 999").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithPhoneContainingColons(){
+        Guest guest = new GuestBuilder().phone("(+420):777:888:999").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithPhoneContainingUnderscores(){
+        Guest guest = new GuestBuilder().phone("(+420)_777_888_999").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithPhoneContainingDots(){
+        Guest guest = new GuestBuilder().phone("(+420).777.888.999").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithEmptyPhoneString(){
+        Guest guest = new GuestBuilder().phone("").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithIdCardNumContainingLetter(){
+        Guest guest = new GuestBuilder().idCardNum("123c56789").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithEmptyIdCardNum(){
+        Guest guest = new GuestBuilder().idCardNum("").build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNullIdCardNum(){
+        Guest guest = new GuestBuilder().idCardNum(null).build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    @Test
+    public void createGuestWithNullDateOfBirth(){
+        Guest guest = new GuestBuilder().born(null).build();
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.createGuest(guest);
+    }
+    
+    
+    //tests focused on retrieving guest(s) from DB
     @Test
     public void getGuestById(){
         assertNull(manager.getGuestById(1L));
         
-        Date born = newBornDate(64_800_000_000l);
-        Guest expGuest = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
+        Guest expGuest = new GuestBuilder().build();
+        
         manager.createGuest(expGuest);
         Long guestId = expGuest.getId();
         
@@ -207,20 +293,19 @@ public class GuestManagerImplTest {
     public void findGuestByName(){
         assertTrue(manager.findAllGuests().isEmpty());
         
-        Date born = newBornDate(64_800_000_000l);
-        Guest expGuest1 = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
+        Guest expGuest1 = new GuestBuilder().build();
+        Guest expGuest2 = new GuestBuilder().phone(null).idCardNum("112233445").build();
+        
         manager.createGuest(expGuest1);
-        born = newBornDate(0l);
-        Guest expGuest2 = newGuest("Pepa Korek", null, "258879123", born);
         manager.createGuest(expGuest2);
         
-        assertEquals(expGuest1,expGuest2);
+        assertEquals("Guests should have same names",expGuest1.getName(),expGuest2.getName());
         String guestName = expGuest1.getName();
         
         List<Guest> expGuests = Arrays.asList(expGuest1,expGuest2);
         List<Guest> actGuests = manager.findGuestByName(guestName);
         
-        assertEquals(expGuests,actGuests);
+        assertEquals("Retrieved guests should be two and same as expected ones",expGuests,actGuests);
         assertAllAttributesEquals(expGuests,actGuests);
     }
     
@@ -228,12 +313,11 @@ public class GuestManagerImplTest {
     public void findAllGuests(){
         assertTrue(manager.findAllGuests().isEmpty());
         
-        Date born = newBornDate(64_800_000_000l);
-        Guest expGuest1 = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
-        born = newBornDate(0l);
-        Guest expGuest2 = newGuest("Dion Xen Chan", null, "144780025", born);
-        born = newBornDate(-14_000l);
-        Guest expGuest3 = newGuest("Leonard Kantor", "666 878 321", "654001548", born);
+        Guest expGuest1 = new GuestBuilder().build();
+        Guest expGuest2 = new GuestBuilder().name("Dion Xen Chan").phone(null)
+                                            .idCardNum("144780025").born(new Date(0l)).build();
+        Guest expGuest3 = new GuestBuilder().name("John Dwight-Cannady").phone("666 878 321")
+                                            .idCardNum("654001548").born(new Date(-14_000l)).build();
         
         manager.createGuest(expGuest1);
         manager.createGuest(expGuest2);
@@ -245,209 +329,437 @@ public class GuestManagerImplTest {
         Collections.sort(expGuests);
         Collections.sort(actGuests);
         
-        assertEquals(expGuests,actGuests);
+        assertEquals("Retrieved guests should be 3 and same as expected ones",expGuests,actGuests);
         assertAllAttributesEquals(expGuests,actGuests);
     }
     
+    
+    //tests focused on updating guest with new valid attributes
     @Test
-    public void updateGuest(){
-        Date born = newBornDate(64_800_000_000l);
-        Guest guest1 = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
-        born = newBornDate(0l);
-        Guest guest2 = newGuest("Leonard Kantor", "666-878-321", "654001548", born);        
+    public void updateGuestWithNameWithoutHyphen(){
+        Guest guest1 = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
+                                         .idCardNum("654001548").born(new Date(0l)).build();
+        Guest guest3 = new GuestBuilder().name("Karel Turek").build();
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
         Long guestId = guest1.getId();
-        born = newBornDate(64_800_000_000l);
         
-        //update guest's name test1
-        guest1 = manager.getGuestById(guestId);
-        guest1.setName("John Dwight-Cannady");
-        manager.updateGuest(guest1);        
-        assertAllAttributesEquals(newGuest("John Dwight-Cannady","(+420) 754 865 000", "154879833",born),
-                         manager.getGuestById(guestId));
-        
-        //update guest's name test2
-        guest1 = manager.getGuestById(guestId);
-        guest1.setName("Karel Turek");
-        manager.updateGuest(guest1);        
-        assertAllAttributesEquals(newGuest("Karel Turek","(+420) 754 865 000", "154879833",born),
-                         manager.getGuestById(guestId));
-        
-        //update guest's phone number test1
-        guest1 = manager.getGuestById(guestId);
-        guest1.setPhone("989 487 544");
+        guest1.setName(guest3.getName());
         manager.updateGuest(guest1);
-        assertAllAttributesEquals(newGuest("Karel Turek","989 487 544","154879833",born),
-                         manager.getGuestById(guestId));
         
-        //update guest's phone number test2
-        guest1 = manager.getGuestById(guestId);
-        guest1.setPhone(null);
-        manager.updateGuest(guest1);
-        assertAllAttributesEquals(newGuest("Karel Turek",null,"154879833",born),
-                         manager.getGuestById(guestId));
-        
-        //update guest's identification card number test
-        guest1 = manager.getGuestById(guestId);
-        guest1.setIdCardNum("555000555");
-        manager.updateGuest(guest1);
-        assertAllAttributesEquals(newGuest("Karel Turek",null,"555000555",born),
-                         manager.getGuestById(guestId));
-        
-        //update guest's date-of-birth test        
-        guest1 = manager.getGuestById(guestId);
-        guest1.setBorn(newBornDate(-14_000l));
-        born = newBornDate(-14_000l);
-        manager.updateGuest(guest1);
-        assertAllAttributesEquals(newGuest("Karel Turek",null,"555000555",born),
-                         manager.getGuestById(guestId));
-        
-        //test whether or not guest2 has been modified
+        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
         assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
     @Test
-    public void updateGuestWithInvalidAttributes(){
-        Date born = newBornDate(64_800_000_000l);
-        Guest guest = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
-        Long guestId = guest.getId();
-        manager.createGuest(guest);
+    public void updateGuestWithNameWithHyphen(){
+        Guest guest1 = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
+                                         .idCardNum("654001548").born(new Date(0l)).build();
+        Guest guest3 = new GuestBuilder().name("John Dwight-Cannady").build();
         
-        //no guest (object) to update
-        try{
-            manager.updateGuest(null);
-            fail();
-        }catch(IllegalArgumentException ex){ }
+        manager.createGuest(guest1);
+        manager.createGuest(guest2);
+        Long guestId = guest1.getId();
         
-        //guest with no id to update
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setId(null);
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
+        guest1.setName(guest3.getName());
+        manager.updateGuest(guest1);
         
-        //guest with wrong (modified) id
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setId(guestId - 1);
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with no specified name
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setName(null);
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong name format - empty name
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setName("");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong name format - illegal characters -> test1 - numbers
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setName("Pepa4 5Korek5");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong name format - illegal characters -> test2 - underscore
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setName("Pepa_Korek");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong name format - illegal characters -> test3 - dot
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setName("Pepa.Korek");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong name format - illegal characters -> test4 - at sign
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setName("Pepa@Korek");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong name format - illegal characters -> test5 - colon
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setName("Pepa:Korek");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong phone format - empty
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setPhone("");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong phone format - wrong usage of hyphen
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setPhone("(+420) 754-865 000");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong phone format - illegal characters - letters
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setPhone("(+420) 754 and 000");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with wrong idCardNum format - empty
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setIdCardNum("");
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with no specified idCardNum
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setIdCardNum(null);
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
-        
-        //guest with no specified date-of-birth
-        try{
-            guest = manager.getGuestById(guestId);
-            guest.setBorn(null);
-            manager.updateGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex){ }
+        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
     @Test
+    public void updateGuestWithPhone(){
+        Guest guest1 = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
+                                         .idCardNum("654001548").born(new Date(0l)).build();
+        Guest guest3 = new GuestBuilder().phone("111 222 333").build();
+        
+        manager.createGuest(guest1);
+        manager.createGuest(guest2);
+        Long guestId = guest1.getId();
+        
+        guest1.setName(guest3.getName());
+        manager.updateGuest(guest1);
+        
+        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
+    }
+    
+    @Test
+    public void updateGuestWithPhoneWithHyphens(){
+        Guest guest1 = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
+                                         .idCardNum("654001548").born(new Date(0l)).build();
+        Guest guest3 = new GuestBuilder().phone("(+458)-111-222-333").build();
+        
+        manager.createGuest(guest1);
+        manager.createGuest(guest2);
+        Long guestId = guest1.getId();
+        
+        guest1.setName(guest3.getName());
+        manager.updateGuest(guest1);
+        
+        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
+    }
+    
+    @Test
+    public void updateGuestWithNullPhone(){
+        Guest guest1 = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
+                                         .idCardNum("654001548").born(new Date(0l)).build();
+        Guest guest3 = new GuestBuilder().phone(null).build();
+        
+        manager.createGuest(guest1);
+        manager.createGuest(guest2);
+        Long guestId = guest1.getId();
+        
+        guest1.setName(guest3.getName());
+        manager.updateGuest(guest1);
+        
+        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
+    }
+    
+    @Test
+    public void updateGuestWithIdCardNum(){
+        Guest guest1 = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
+                                         .idCardNum("654001548").born(new Date(0l)).build();
+        Guest guest3 = new GuestBuilder().idCardNum("555444123").build();
+        
+        manager.createGuest(guest1);
+        manager.createGuest(guest2);
+        Long guestId = guest1.getId();
+        
+        guest1.setName(guest3.getName());
+        manager.updateGuest(guest1);
+        
+        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
+    }
+    
+    @Test
+    public void updateGuestWithDateOfBirth(){
+        Guest guest1 = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
+                                         .idCardNum("654001548").born(new Date(0l)).build();
+        Guest guest3 = new GuestBuilder().born(new Date(-14_000l)).build();
+        
+        manager.createGuest(guest1);
+        manager.createGuest(guest2);
+        Long guestId = guest1.getId();
+        
+        guest1.setName(guest3.getName());
+        manager.updateGuest(guest1);
+        
+        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
+    }
+    
+    
+    //tests focused on updating guest with new invalid attributes
+    @Test
+    public void updateGuestWithNullGuest(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(null);
+    }
+    
+    @Test
+    public void updateGuestWithNullId(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setId(null);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithModifiedId(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setId(guestId - 1);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNullName(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setName(null);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithEmptyNameString(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setName("");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNameContainingNumbers(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setName("Pepa4 5Korek5");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNameContainingUnderscore(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setName("Pepa_Korek");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNameContainingDot(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setName("Pepa.Korek");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNameContainingAtSign(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setName("Pepa@Korek");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNameContainingColon(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setName("Pepa:Korek");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNameContainingMoreThanOneSpaceBetweenNames(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setName("Pepa  Korek");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithEmptyPhone(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setPhone("");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithPhoneContainingWrongNumOfHyphen(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setPhone("(+420) 777-888 999");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithPhoneContainingLetters(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setPhone("(+420) 777 and 999");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithPhoneContainingUnderscores(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setPhone("(+420)_777_888_999");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithPhoneContainingDots(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setPhone("(+420).777.888.999");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithPhoneContainingColons(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setPhone("(+420):777:888:999");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithEmptyIdCardNum(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setIdCardNum("");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNullIdCardNum(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setIdCardNum(null);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithIdCardNumContainingLetter(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setIdCardNum("123c56789");
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    @Test
+    public void updateGuestWithNullDateOfBirth(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setBorn(null);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.updateGuest(guest);
+    }
+    
+    
+    //test focused on deleting valid guest from DB
+    @Test
     public void deleteGuest(){
-        Date born = newBornDate(64_800_000_000l);
-        Guest guest1 = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
-        born = newBornDate(0l);
-        Guest guest2 = newGuest("Leonard Kantor", "666-878-321", "654001548", born);
+        Guest guest1 = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
+                                         .idCardNum("654001548").born(new Date(0l)).build();
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
@@ -461,45 +773,44 @@ public class GuestManagerImplTest {
         assertNotNull(manager.getGuestById(guest2.getId()));
     }
     
+    
+    //tests focused on deleting invalid guest from DB
     @Test
-    public void deleteGuestWithInvalidAttributes(){
-        Date born = newBornDate(64_800_000_000l);
-        Guest guest = newGuest("Pepa Korek", "(+420) 754 865 000", "154879833", born);
-        Long guestId = guest.getId();
+    public void deleteGuestWithNullGuest(){
+        Guest guest = new GuestBuilder().build();
+        
         manager.createGuest(guest);
         
-        try{
-            manager.deleteGuest(null);
-            fail();
-        }catch(IllegalArgumentException ex) { }
-        
-        try{
-            guest.setId(null);
-            manager.deleteGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex) { }
-        
-        try{
-            guest.setId(1L);
-            manager.deleteGuest(guest);
-            fail();
-        }catch(IllegalArgumentException ex) { }
+        exception.expect(IllegalArgumentException.class);
+        manager.deleteGuest(null);
     }
     
-    
-    
-    private static Guest newGuest(String name, String phone, String idCardNum, Date born){
-        Guest guest = new Guest();
-        guest.setName(name);
-        guest.setPhone(phone);
-        guest.setIdCardNum(idCardNum);
-        guest.setBorn(born);
+    @Test
+    public void deleteGuestWithNullId(){
+        Guest guest = new GuestBuilder().build();
         
-        return guest;
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setId(null);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.deleteGuest(guest);
     }
     
-    private static Date newBornDate(long timeMillis){
-        return new Date(timeMillis);
+    @Test
+    public void deleteGuestWithModifiedId(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        Long guestId = guest.getId();
+        
+        guest = manager.getGuestById(guestId);
+        guest.setId(1L);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.deleteGuest(guest);
     }
     
     private void assertAllAttributesEquals(List<Guest> expGuests, List<Guest> actGuests){
@@ -516,5 +827,46 @@ public class GuestManagerImplTest {
         assertEquals(expGuest.getIdCardNum(), actGuest.getIdCardNum());
         assertEquals(expGuest.getPhone(), actGuest.getPhone());
         assertEquals(expGuest.getBorn().getTime(), actGuest.getBorn().getTime());
+    }
+}
+
+class GuestBuilder{    
+    private String name = "Pepa Korek";
+    private String phone = "(+420) 777 888 999";
+    private String idCardNum = "123456789";    
+    private Date born = new Date(64_800_000_000l);
+    
+    public GuestBuilder(){
+        
+    }
+    
+    public GuestBuilder name(String value){
+        this.name = value;
+        return this;
+    }
+    
+    public GuestBuilder phone(String value){
+        this.phone = value;
+        return this;
+    }
+    
+    public GuestBuilder idCardNum(String value){
+        this.idCardNum = value;
+        return this;
+    }
+    
+    public GuestBuilder born(Date value){
+        this.born = new Date(value.getTime());
+        return this;
+    }
+    
+    public Guest build(){
+        Guest guest = new Guest();
+        guest.setName(this.name);
+        guest.setPhone(this.phone);
+        guest.setIdCardNum(this.idCardNum);
+        guest.setBorn(this.born);
+        
+        return guest;
     }
 }

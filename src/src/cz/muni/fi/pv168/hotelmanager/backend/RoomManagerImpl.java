@@ -11,7 +11,7 @@ import java.util.List;
  * 
  * @author 
  */
-public class RoomManagerImpl implements IRoomManager {
+public class RoomManagerImpl implements RoomManager {
 
     @Override
     public void createRoom(Room room) throws ServiceFailureException {

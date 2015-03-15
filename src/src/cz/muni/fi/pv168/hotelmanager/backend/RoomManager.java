@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Ondra
  */
-public interface IRoomManager {
+public interface RoomManager {
 
     void createRoom(Room room) throws ServiceFailureException;
     

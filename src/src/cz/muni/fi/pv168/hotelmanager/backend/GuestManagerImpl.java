@@ -9,11 +9,11 @@ package cz.muni.fi.pv168.hotelmanager.backend;
 import java.util.List;
 
 /**
- * This class implements IGuestManager.
+ * This class implements GuestManager.
  * 
  * @author Tomas Smid
  */
-public class GuestManagerImpl implements IGuestManager{
+public class GuestManagerImpl implements GuestManager{
 
     @Override
     public void createGuest(Guest guest) {

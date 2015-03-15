@@ -95,6 +95,6 @@ public class Guest implements Comparable<Guest>{
 
     @Override
     public int compareTo(Guest guest) {
-        return Long.valueOf(this.id).compareTo(Long.valueOf(guest.id));
+        return this.id.compareTo(guest.id);
     }
 }

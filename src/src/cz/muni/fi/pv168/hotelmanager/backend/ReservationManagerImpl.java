@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author Tom
  */
-public class ReservationManagerImpl implements IReservationManager{
+public class ReservationManagerImpl implements ReservationManager{
 
     @Override
     public void createReservation(Reservation reservation) {
