@@ -36,6 +36,441 @@ public class ReservationManagerImplTest {
         manager = new ReservationManagerImpl();
     }
 
+@Test
+    public void createReservation() {
+        Reservation res = new ResBuilder().build();
+
+        manager.createReservation(res);
+
+        Long resId = res.getId();
+        assertNotNull(resId);
+        Reservation result = manager.getReservationById(resId);
+        assertEquals(res, result);
+        assertNotSame(res, result);
+        assertDeepReservationEquals(res, result);
+    }
+
+    @Test
+    public void getReservation() {
+
+        assertNull(manager.getReservationById(1l));
+
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        Reservation result = manager.getReservationById(resId);
+        assertEquals(res, result);
+        assertDeepReservationEquals(res, result);
+    }
+
+    @Test
+    public void getAllReservations() {
+
+        assertTrue(manager.findAllReservations().isEmpty());
+
+        Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
+        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Reservation r1 = new ResBuilder().build();
+        Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
+                                         .expectedEndTime(new Date(63_000_001_800_000l))
+                                         .realEndTime(new Date(63_000_001_800_000l))
+                                         .guest(guest2)
+                                         .room(room2)
+                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+        manager.createReservation(r1);
+        manager.createReservation(r2);
+
+        List<Reservation> expected = Arrays.asList(r1, r2);
+        List<Reservation> actual = manager.findAllReservations();
+
+        Collections.sort(actual, reservationIdComparator);
+        Collections.sort(expected, reservationIdComparator);
+
+        assertEquals(expected, actual);
+        assertDeepReservationEquals(expected, actual);
+    }
+
+    @Test
+    public void createReservationWithNullAttribute() {
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(null);
+
+    }
+
+    @Test
+    public void addReservationWithInvalidId() {
+        Reservation res = new ResBuilder().build();
+        res.setId(1l);
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+
+    }
+
+    @Test
+    public void addReservationWithNullRoom() {
+
+        Reservation res = new ResBuilder().build();
+        res.setRoom(null);
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+
+    }
+
+    @Test
+    public void addReservationWithNullStartTime() {
+        Reservation res = new ResBuilder().build();
+        res.setStartTime(null);
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+
+    }
+
+    @Test
+    public void addReservationWithNullExpectedEndTime() {
+        Reservation res = new ResBuilder().build();
+        res.setExpectedEndTime(null);
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+
+    }
+    
+    @Test
+    public void addReservationWithStartTimeBiggerThanExpectedEndTime() {
+        Reservation res = new ResBuilder().build();
+        // biger than new Date(65_664_000_000_000l)
+        res.setStartTime(new Date(66_664_000_000_000l));
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+    }
+
+    @Test
+    public void addReservationWithNullGuest() {
+        Reservation res = new ResBuilder().build();
+        res.setGuest(null);
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+
+    }
+
+    @Test
+    public void addReservationWithNullServicesSpendings() {
+        Reservation res = new ResBuilder().build();
+        res.setServicesSpendings(null);
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+
+    }
+    
+    @Test
+    public void addReservationWithNegativeServicesSpendings() {
+        Reservation res = new ResBuilder().build();
+        res.setServicesSpendings(new BigDecimal(-1.00));
+
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+
+    }
+
+    @Test
+    public void updateReservation() {
+        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", new Date(14_000l));
+        Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
+        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Reservation r1 = new ResBuilder().build();
+        Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
+                                         .expectedEndTime(new Date(63_000_001_800_000l))
+                                         .realEndTime(new Date(63_000_001_800_000l))
+                                         .guest(guest2)
+                                         .room(room2)
+                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+        BigDecimal bd = new BigDecimal(0.00);
+        manager.createReservation(r1);
+        manager.createReservation(r2);
+
+        Long resId1 = r1.getId();
+
+        r1 = manager.getReservationById(resId1);
+        Room room3 = newRoom(165400004L, 4, new BigDecimal(2500.00), 3, RoomType.FAMILY, "300");
+        r1.setRoom(room3);
+        manager.updateReservation(r1);
+        assertDeepRoomEquals(room3, r1.getRoom());
+        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
+        assertEquals(null, r1.getRealEndTime().getTime());
+        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
+        assertDeepGuestEquals(guest, r1.getGuest());
+        assertEquals(bd, r1.getServicesSpendings());
+
+        r1 = manager.getReservationById(resId1);
+        Date d1 = new Date(64_300_000_000l);
+        r1.setStartTime(d1);
+        manager.updateReservation(r1);
+        assertDeepRoomEquals(room3, r1.getRoom());
+        assertEquals(d1.getTime(), r1.getStartTime().getTime());
+        assertEquals(null, r1.getRealEndTime().getTime());
+        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
+        assertDeepGuestEquals(guest, r1.getGuest());
+        assertEquals(bd, r1.getServicesSpendings());
+
+        r1 = manager.getReservationById(resId1);
+        Date d2 = new Date(65_400_000_000l);
+        r1.setRealEndTime(d2);
+        manager.updateReservation(r1);
+        assertDeepRoomEquals(room3, r1.getRoom());
+        assertEquals(d1.getTime(), r1.getStartTime().getTime());
+        assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
+        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
+        assertDeepGuestEquals(guest, r1.getGuest());
+        assertEquals(bd, r1.getServicesSpendings());
+
+        r1 = manager.getReservationById(resId1);
+        Date d3 = new Date(66_800_000_000l);
+        r1.setExpectedEndTime(d3);
+        manager.updateReservation(r1);
+        assertDeepRoomEquals(room3, r1.getRoom());
+        assertEquals(d1.getTime(), r1.getStartTime().getTime());
+        assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
+        assertEquals(d3.getTime(), r1.getExpectedEndTime().getTime());
+        assertDeepGuestEquals(guest, r1.getGuest());
+        assertEquals(bd, r1.getServicesSpendings());
+
+        r1 = manager.getReservationById(resId1);
+        Guest guest3 = newGuest("Franco Bernardi", null, "1020304059", new Date(-60_054_147l));
+        r1.setGuest(guest3);
+        manager.updateReservation(r1);
+        assertDeepRoomEquals(room3, r1.getRoom());
+        assertEquals(d1.getTime(), r1.getStartTime().getTime());
+        assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
+        assertEquals(d3.getTime(), r1.getExpectedEndTime().getTime());
+        assertDeepGuestEquals(guest3, r1.getGuest());
+        assertEquals(bd, r1.getServicesSpendings());
+
+        r1 = manager.getReservationById(resId1);
+        BigDecimal bd2 = new BigDecimal(100.00);
+        r1.setServicesSpendings(bd2);
+        manager.updateReservation(r1);
+        assertDeepRoomEquals(room3, r1.getRoom());
+        assertEquals(d1.getTime(), r1.getStartTime().getTime());
+        assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
+        assertEquals(d3.getTime(), r1.getExpectedEndTime().getTime());
+        assertDeepGuestEquals(guest3, r1.getGuest());
+        assertEquals(bd2, r1.getServicesSpendings());
+
+        // Check if updates didn't affected other records
+        assertDeepReservationEquals(r2, manager.getReservationById(r2.getId()));
+    }
+
+    @Test
+    public void updateReservationWithNullAttribute() {
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(null);
+
+    }
+
+    @Test
+    public void updateReservationWithWrongId() {
+
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setId(null);
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+
+    @Test
+    public void updateReservationWithDecrementedId() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setId(resId - 1);
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+
+    @Test
+    public void updateReservationWithIncrementedId() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setId(resId + 1);
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+
+    @Test
+    public void updateReservationWithNullRoom() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setRoom(null);
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+
+    @Test
+    public void updateReservationWithNullStartTime() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setStartTime(null);
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+
+
+    @Test
+    public void updateReservationWithNullExpectedEndTime() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setExpectedEndTime(null);
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+    
+    @Test
+    public void updateReservationWithStartTimeBiggerThanExpectedEndTime() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+        
+        res = manager.getReservationById(resId);
+        // biger than new Date(65_664_000_000_000l)
+        res.setStartTime(new Date(66_664_000_000_000l));
+        exception.expect(IllegalArgumentException.class);
+        manager.createReservation(res);
+    }
+
+    @Test
+    public void updateReservationWithNullGuest() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setGuest(null);
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+
+    @Test
+    public void updateReservationWithNullServiceSpendings() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setServicesSpendings(null);
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+    
+    @Test
+    public void updateReservationWithNegativeServiceSpendings() {
+        Reservation res = new ResBuilder().build();
+        manager.createReservation(res);
+        Long resId = res.getId();
+
+        res = manager.getReservationById(resId);
+        res.setServicesSpendings(new BigDecimal(-1.00));
+        exception.expect(IllegalArgumentException.class);
+        manager.updateReservation(res);
+
+    }
+
+    @Test
+    public void deleteReservation() {
+
+        Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
+        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Reservation r1 = new ResBuilder().build();
+        Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
+                                         .expectedEndTime(new Date(63_000_001_800_000l))
+                                         .realEndTime(new Date(63_000_001_800_000l))
+                                         .guest(guest2)
+                                         .room(room2)
+                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+        manager.createReservation(r1);
+        manager.createReservation(r2);
+
+        assertNotNull(manager.getReservationById(r1.getId()));
+        assertNotNull(manager.getReservationById(r2.getId()));
+
+        manager.deleteReservation(r1);
+
+        assertNull(manager.getReservationById(r1.getId()));
+        assertNotNull(manager.getReservationById(r2.getId()));
+
+    }
+
+    @Test
+    public void deleteReservationWithNullAttribute() {
+        exception.expect(IllegalArgumentException.class);
+        manager.deleteReservation(null);
+
+    }
+
+    @Test
+    public void deleteReservationWithNullId() {
+        Reservation res = new ResBuilder().build();
+
+        res.setId(null);
+        exception.expect(IllegalArgumentException.class);
+        manager.deleteReservation(res);
+
+    }
+
+    @Test
+    public void deleteReservationWithWrongId() {
+        Reservation res = new ResBuilder().build();
+
+        res.setId(1l);
+        exception.expect(IllegalArgumentException.class);
+        manager.deleteReservation(res);
+
+    }
+
+    @Test
+    public void findReservationForGuestWithNullAttribute() {
+
+        assertTrue(manager.findReservationsForGuest(null).isEmpty());
+    }
+
+    @Test
+    public void findReservationForRoomWithNullAttribute() {
+
+        assertTrue(manager.findReservationsForRoom(null).isEmpty());
+    }    
+    
     @Test
     public void isRoomAvailableWithValidAvailableRoom(){
         Guest guest2 = newGuest("John Dragos",null,"151515151",new Date(0l));
@@ -356,6 +791,24 @@ public class ReservationManagerImplTest {
         return room;
     }
     
+    private void assertDeepReservationEquals(Reservation expected, Reservation actual) {
+        assertEquals(expected.getId(), actual.getId());
+        assertDeepRoomEquals(expected.getRoom(), actual.getRoom());
+        assertDeepGuestEquals(expected.getGuest(), actual.getGuest());
+        assertEquals(expected.getServicesSpendings(), actual.getServicesSpendings());
+        assertEquals(expected.getStartTime().getTime(), actual.getStartTime().getTime());
+        assertEquals(expected.getExpectedEndTime().getTime(), actual.getExpectedEndTime().getTime());
+        assertEquals(expected.getRealEndTime().getTime(), actual.getRealEndTime().getTime());
+    }
+
+    private void assertDeepReservationEquals(List<Reservation> expReservations, List<Reservation> actReservations){
+        for (int i = 0; i < expReservations.size(); ++i) {
+            Reservation expReservation = expReservations.get(i);
+            Reservation actReservation = actReservations.get(i);
+            assertDeepReservationEquals(expReservation, actReservation);
+        }
+    }
+    
     private void assertDeepRoomEquals(List<Room> expRooms, List<Room> actRooms){
         for(int i = 0; i < expRooms.size(); ++i){
             Room expRoom = expRooms.get(i);
@@ -395,6 +848,14 @@ public class ReservationManagerImplTest {
 
         @Override
         public int compare(Room o1, Room o2) {
+            return Long.valueOf(o1.getId()).compareTo(Long.valueOf(o2.getId()));
+        }
+    };
+    
+    private static Comparator<Reservation> reservationIdComparator = new Comparator<Reservation>() {
+
+        @Override
+        public int compare(Reservation o1, Reservation o2) {
             return Long.valueOf(o1.getId()).compareTo(Long.valueOf(o2.getId()));
         }
     };
