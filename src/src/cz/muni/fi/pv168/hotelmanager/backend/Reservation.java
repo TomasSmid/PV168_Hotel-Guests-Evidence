@@ -43,7 +43,10 @@ public class Reservation {
     }
 
     public void setStartTime(Date startTime) {
-        this.startTime = new Date(startTime.getTime());
+        if(startTime == null)
+            this.startTime = null;
+        else
+            this.startTime = new Date(startTime.getTime());
     }
 
     public Date getRealEndTime() {
@@ -51,7 +54,10 @@ public class Reservation {
     }
 
     public void setRealEndTime(Date realEndTime) {
-        this.realEndTime = new Date(realEndTime.getTime());
+        if(realEndTime == null)
+            this.realEndTime = null;
+        else
+            this.realEndTime = new Date(realEndTime.getTime());
     }
 
     public Date getExpectedEndTime() {
@@ -59,7 +65,10 @@ public class Reservation {
     }
 
     public void setExpectedEndTime(Date expectedEndTime) {
-        this.expectedEndTime = new Date(expectedEndTime.getTime());
+        if(expectedEndTime == null)
+            this.expectedEndTime = null;
+        else
+            this.expectedEndTime = new Date(expectedEndTime.getTime());
     }
 
     //upravit ala setter

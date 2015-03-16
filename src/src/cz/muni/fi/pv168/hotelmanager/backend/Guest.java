@@ -59,7 +59,10 @@ public class Guest implements Comparable<Guest>{
     }
 
     public void setBorn(Date born) {
-        this.born = new Date(born.getTime());
+        if(born == null)
+            this.born = null;
+        else
+            this.born = new Date(born.getTime());
     }
     
     /**

@@ -856,7 +856,10 @@ class GuestBuilder{
     }
     
     public GuestBuilder born(Date value){
-        this.born = new Date(value.getTime());
+        if(value == null)
+            this.born = null;
+        else
+            this.born = new Date(value.getTime());
         return this;
     }
     
