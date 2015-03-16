@@ -398,90 +398,92 @@ public class ReservationManagerImplTest {
             return Long.valueOf(o1.getId()).compareTo(Long.valueOf(o2.getId()));
         }
     };
+    
+    class ResBuilder{
+        private Room room = newRoom();
+        private Date startTime = new Date(64_800_000_000_000l);
+        private Date realEndTime = null;
+        private Date expectedEndTime = new Date(65_664_000_000_000l);
+        private Guest guest = newGuest();
+        private BigDecimal servicesSpendings = new BigDecimal(0.00);
+
+        public ResBuilder(){
+
+        }
+
+        public ResBuilder room(Room value){
+            this.room = value;
+            return this;
+        }
+
+        public ResBuilder startTime(Date value){
+            if(value == null)
+                this.startTime = null;
+            else
+                this.startTime = new Date(value.getTime());
+            return this;
+        }
+
+        public ResBuilder realEndTime(Date value){
+            if(value == null)
+                this.realEndTime = null;
+            else
+                this.realEndTime = new Date(value.getTime());
+            return this;
+        }
+
+        public ResBuilder expectedEndTime(Date value){
+            if(value == null)
+                this.expectedEndTime = null;
+            else
+                this.expectedEndTime = new Date(value.getTime());
+            return this;
+        }
+
+        public ResBuilder guest(Guest value){
+            this.guest = value;
+            return this;
+        }
+
+        public ResBuilder servicesSpendings(BigDecimal value){
+            this.servicesSpendings = value;
+            return this;
+        }
+
+        public Reservation build(){
+            Reservation res = new Reservation();
+            res.setRoom(this.room);
+            res.setStartTime(this.startTime);
+            res.setRealEndTime(this.realEndTime);
+            res.setExpectedEndTime(this.expectedEndTime);
+            res.setGuest(this.guest);
+            res.setServicesSpendings(this.servicesSpendings);
+
+            return res;
+        }
+
+        private Room newRoom(){
+            Room r = new Room();
+            r.setId(3656351487L);
+            r.setCapacity(2);
+            r.setPrice(new BigDecimal(1500.00));
+            r.setFloor(5);
+            r.setType(RoomType.STANDARD);
+            r.setNumber("501");
+
+            return r;
+        }
+
+        private Guest newGuest(){
+            Guest g = new Guest();
+            g.setName("Pepa Korek");
+            g.setPhone("(+420) 777 888 999");
+            g.setIdCardNum("123456789");
+            g.setBorn(new Date(14_000l));
+
+            return g;
+        }
+    }
 }
 
-class ResBuilder{
-    private Room room = newRoom();
-    private Date startTime = new Date(64_800_000_000_000l);
-    private Date realEndTime = null;
-    private Date expectedEndTime = new Date(65_664_000_000_000l);
-    private Guest guest = newGuest();
-    private BigDecimal servicesSpendings = new BigDecimal(0.00);
-    
-    public ResBuilder(){
-        
-    }
-    
-    public ResBuilder room(Room value){
-        this.room = value;
-        return this;
-    }
-    
-    public ResBuilder startTime(Date value){
-        if(value == null)
-            this.startTime = null;
-        else
-            this.startTime = new Date(value.getTime());
-        return this;
-    }
-    
-    public ResBuilder realEndTime(Date value){
-        if(value == null)
-            this.realEndTime = null;
-        else
-            this.realEndTime = new Date(value.getTime());
-        return this;
-    }
-    
-    public ResBuilder expectedEndTime(Date value){
-        if(value == null)
-            this.expectedEndTime = null;
-        else
-            this.expectedEndTime = new Date(value.getTime());
-        return this;
-    }
-    
-    public ResBuilder guest(Guest value){
-        this.guest = value;
-        return this;
-    }
-    
-    public ResBuilder servicesSpendings(BigDecimal value){
-        this.servicesSpendings = value;
-        return this;
-    }
-    
-    public Reservation build(){
-        Reservation res = new Reservation();
-        res.setRoom(this.room);
-        res.setStartTime(this.startTime);
-        res.setRealEndTime(this.realEndTime);
-        res.setExpectedEndTime(this.expectedEndTime);
-        res.setGuest(this.guest);
-        res.setServicesSpendings(this.servicesSpendings);
-        
-        return res;
-    }
-    
-    private Room newRoom(){
-        Room r = new Room();
-        r.setId(3656351487L);
-        r.setCapacity(2);
-        r.setPrice(new BigDecimal(1500.00));
-        r.setFloor(5);
-        r.setType(RoomType.STANDARD);
-        r.setNumber("501");
-        
-        return r;
-    }
-    
-    private Guest newGuest(){
-        Guest g = new Guest();
-        g.setName("Pepa Korek");
-        g.setPhone("(+420) 777 888 999");
-        g.setIdCardNum("123456789");
-        g.setBorn(new Date(14_000l));
-        
-        return g;
-    }
-}
+

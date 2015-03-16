@@ -828,48 +828,50 @@ public class GuestManagerImplTest {
         assertEquals(expGuest.getPhone(), actGuest.getPhone());
         assertEquals(expGuest.getBorn().getTime(), actGuest.getBorn().getTime());
     }
+    
+    class GuestBuilder{    
+        private String name = "Pepa Korek";
+        private String phone = "(+420) 777 888 999";
+        private String idCardNum = "123456789";    
+        private Date born = new Date(64_800_000_000l);
+
+        public GuestBuilder(){
+
+        }
+
+        public GuestBuilder name(String value){
+            this.name = value;
+            return this;
+        }
+
+        public GuestBuilder phone(String value){
+            this.phone = value;
+            return this;
+        }
+
+        public GuestBuilder idCardNum(String value){
+            this.idCardNum = value;
+            return this;
+        }
+
+        public GuestBuilder born(Date value){
+            if(value == null)
+                this.born = null;
+            else
+                this.born = new Date(value.getTime());
+            return this;
+        }
+
+        public Guest build(){
+            Guest guest = new Guest();
+            guest.setName(this.name);
+            guest.setPhone(this.phone);
+            guest.setIdCardNum(this.idCardNum);
+            guest.setBorn(this.born);
+
+            return guest;
+        }
+    }
 }
 
-class GuestBuilder{    
-    private String name = "Pepa Korek";
-    private String phone = "(+420) 777 888 999";
-    private String idCardNum = "123456789";    
-    private Date born = new Date(64_800_000_000l);
-    
-    public GuestBuilder(){
-        
-    }
-    
-    public GuestBuilder name(String value){
-        this.name = value;
-        return this;
-    }
-    
-    public GuestBuilder phone(String value){
-        this.phone = value;
-        return this;
-    }
-    
-    public GuestBuilder idCardNum(String value){
-        this.idCardNum = value;
-        return this;
-    }
-    
-    public GuestBuilder born(Date value){
-        if(value == null)
-            this.born = null;
-        else
-            this.born = new Date(value.getTime());
-        return this;
-    }
-    
-    public Guest build(){
-        Guest guest = new Guest();
-        guest.setName(this.name);
-        guest.setPhone(this.phone);
-        guest.setIdCardNum(this.idCardNum);
-        guest.setBorn(this.born);
-        
-        return guest;
-    }
-}
+
