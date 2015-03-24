@@ -27,6 +27,10 @@ public class Guest implements Comparable<Guest>{
     }
 
     public void setId(Long id) {
+        if(this.id != null){
+            throw new IllegalArgumentException("Illegal change of guest id. Id was not changed.");
+        }
+        
         this.id = id;
     }
 
@@ -55,6 +59,8 @@ public class Guest implements Comparable<Guest>{
     }
 
     public Date getBorn() {
+        if(born == null)
+            return null;
         return new Date(born.getTime());
     }
 

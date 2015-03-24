@@ -6,15 +6,20 @@
 
 package cz.muni.fi.pv168.hotelmanager.backend;
 
+import cz.muni.fi.pv168.common.DBUtils;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import javax.sql.DataSource;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+import org.junit.After;
 
 /**
  * This test class ensures testing of units of class GuestManagerImpl.
@@ -23,13 +28,29 @@ import org.junit.rules.ExpectedException;
  */
 public class GuestManagerImplTest {
     
-    @Rule public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+    
+    private static DataSource prepareDataSource(){
+        BasicDataSource bds = new BasicDataSource();
+        bds.setUrl("jdbc:derby:memory:SSHotelGuestEvidenceDB;create=true");
+        return bds;
+    }
     
     private GuestManagerImpl manager;
+    private DataSource dataSource;
     
     @Before
-    public void setUp() {
+    public void setUp() throws SQLException {
+        dataSource = prepareDataSource();
+        DBUtils.executeSqlScript(dataSource,GuestManager.class.getResourceAsStream("createTables.sql"));
         manager = new GuestManagerImpl();
+        manager.setDataSource(dataSource);
+    }
+    
+    @After
+    public void tearDown() throws SQLException{
+        DBUtils.executeSqlScript(dataSource,GuestManager.class.getResourceAsStream("dropTables.sql"));
     }
     
     
@@ -42,7 +63,17 @@ public class GuestManagerImplTest {
         
         Long guestId = guest.getId();
         assertNotNull("Guest's id should have a particular value, not be null", guestId);
-    }    
+    }
+    
+    @Test
+    public void guestIDCannotBeIllegallyChanged(){
+        Guest guest = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        
+        exception.expect(IllegalArgumentException.class);
+        guest.setId(1L);
+    }
     
     @Test
     public void createGuestWithValidAttributesAndNoSpecialChars(){
@@ -54,7 +85,7 @@ public class GuestManagerImplTest {
         Guest actGuest = manager.getGuestById(guestId);
         assertEquals(expGuest, actGuest);
         assertNotSame(expGuest, actGuest);
-        assertAllAttributesEquals(expGuest, actGuest);        
+        assertAllAttributesEquals(expGuest, actGuest);       
     }
     
     @Test
@@ -344,12 +375,13 @@ public class GuestManagerImplTest {
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
-        Long guestId = guest1.getId();
+        Long guest1Id = guest1.getId();
         
         guest1.setName(guest3.getName());
+        guest3.setId(guest1Id);
         manager.updateGuest(guest1);
         
-        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest3,manager.getGuestById(guest1Id));
         assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
@@ -362,12 +394,13 @@ public class GuestManagerImplTest {
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
-        Long guestId = guest1.getId();
+        Long guest1Id = guest1.getId();
         
         guest1.setName(guest3.getName());
+        guest3.setId(guest1Id);
         manager.updateGuest(guest1);
         
-        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest3,manager.getGuestById(guest1Id));
         assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
@@ -380,12 +413,13 @@ public class GuestManagerImplTest {
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
-        Long guestId = guest1.getId();
+        Long guest1Id = guest1.getId();
         
-        guest1.setName(guest3.getName());
+        guest1.setPhone(guest3.getPhone());
+        guest3.setId(guest1Id);
         manager.updateGuest(guest1);
         
-        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest3,manager.getGuestById(guest1Id));
         assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
@@ -398,12 +432,13 @@ public class GuestManagerImplTest {
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
-        Long guestId = guest1.getId();
+        Long guest1Id = guest1.getId();
         
-        guest1.setName(guest3.getName());
+        guest1.setPhone(guest3.getPhone());
+        guest3.setId(guest1Id);
         manager.updateGuest(guest1);
         
-        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest3,manager.getGuestById(guest1Id));
         assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
@@ -416,12 +451,13 @@ public class GuestManagerImplTest {
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
-        Long guestId = guest1.getId();
+        Long guest1Id = guest1.getId();
         
-        guest1.setName(guest3.getName());
+        guest1.setPhone(guest3.getPhone());
+        guest3.setId(guest1Id);
         manager.updateGuest(guest1);
         
-        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest3,manager.getGuestById(guest1Id));
         assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
@@ -434,12 +470,13 @@ public class GuestManagerImplTest {
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
-        Long guestId = guest1.getId();
+        Long guest1Id = guest1.getId();
         
-        guest1.setName(guest3.getName());
+        guest1.setIdCardNum(guest3.getIdCardNum());
+        guest3.setId(guest1Id);
         manager.updateGuest(guest1);
         
-        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest3,manager.getGuestById(guest1Id));
         assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
@@ -452,12 +489,13 @@ public class GuestManagerImplTest {
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
-        Long guestId = guest1.getId();
+        Long guest1Id = guest1.getId();
         
-        guest1.setName(guest3.getName());
+        guest1.setBorn(guest3.getBorn());
+        guest3.setId(guest1Id);
         manager.updateGuest(guest1);
         
-        assertAllAttributesEquals(guest3,manager.getGuestById(guestId));
+        assertAllAttributesEquals(guest3,manager.getGuestById(guest1Id));
         assertAllAttributesEquals(guest2,manager.getGuestById(guest2.getId()));
     }
     
@@ -475,30 +513,18 @@ public class GuestManagerImplTest {
     
     @Test
     public void updateGuestWithNullId(){
-        Guest guest = new GuestBuilder().build();
+        Guest guest = new GuestBuilder().build();        
         
         manager.createGuest(guest);
         Long guestId = guest.getId();
         
         guest = manager.getGuestById(guestId);
-        guest.setId(null);
+        Guest guest2 = new GuestBuilder().name(guest.getName()).phone(guest.getPhone())
+                .idCardNum(guest.getIdCardNum()).born(guest.getBorn()).build();
+        guest2.setId(null);
         
         exception.expect(IllegalArgumentException.class);
-        manager.updateGuest(guest);
-    }
-    
-    @Test
-    public void updateGuestWithModifiedId(){
-        Guest guest = new GuestBuilder().build();
-        
-        manager.createGuest(guest);
-        Long guestId = guest.getId();
-        
-        guest = manager.getGuestById(guestId);
-        guest.setId(guestId - 1);
-        
-        exception.expect(IllegalArgumentException.class);
-        manager.updateGuest(guest);
+        manager.updateGuest(guest2);
     }
     
     @Test
@@ -787,30 +813,18 @@ public class GuestManagerImplTest {
     
     @Test
     public void deleteGuestWithNullId(){
-        Guest guest = new GuestBuilder().build();
+        Guest guest = new GuestBuilder().build();        
         
         manager.createGuest(guest);
         Long guestId = guest.getId();
         
         guest = manager.getGuestById(guestId);
-        guest.setId(null);
+        Guest guest2 = new GuestBuilder().name(guest.getName()).phone(guest.getPhone())
+                .idCardNum(guest.getIdCardNum()).born(guest.getBorn()).build();
+        guest2.setId(null);
         
         exception.expect(IllegalArgumentException.class);
-        manager.deleteGuest(guest);
-    }
-    
-    @Test
-    public void deleteGuestWithModifiedId(){
-        Guest guest = new GuestBuilder().build();
-        
-        manager.createGuest(guest);
-        Long guestId = guest.getId();
-        
-        guest = manager.getGuestById(guestId);
-        guest.setId(1L);
-        
-        exception.expect(IllegalArgumentException.class);
-        manager.deleteGuest(guest);
+        manager.deleteGuest(guest2);
     }
     
     private void assertAllAttributesEquals(List<Guest> expGuests, List<Guest> actGuests){
@@ -826,7 +840,7 @@ public class GuestManagerImplTest {
         assertEquals(expGuest.getName(), actGuest.getName());
         assertEquals(expGuest.getIdCardNum(), actGuest.getIdCardNum());
         assertEquals(expGuest.getPhone(), actGuest.getPhone());
-        assertEquals(expGuest.getBorn().getTime(), actGuest.getBorn().getTime());
+        assertEquals(expGuest.getBorn(), actGuest.getBorn());        
     }
     
     class GuestBuilder{    
