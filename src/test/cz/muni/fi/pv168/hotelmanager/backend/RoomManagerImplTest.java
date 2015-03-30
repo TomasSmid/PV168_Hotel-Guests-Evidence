@@ -5,12 +5,19 @@
  */
 package cz.muni.fi.pv168.hotelmanager.backend;
 
+import cz.muni.fi.pv168.common.DBUtils;
 import static cz.muni.fi.pv168.hotelmanager.backend.RoomType.*;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+import org.apache.commons.dbcp.BasicDataSource;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -25,16 +32,32 @@ public class RoomManagerImplTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
-    private RoomManagerImpl manager;
-
-    @Before
-    public void setUp() {
-        manager = new RoomManagerImpl();
+    
+    private static DataSource prepareDataSource(){
+        BasicDataSource bds = new BasicDataSource();
+        bds.setUrl("jdbc:derby:memory:SSHotelGuestEvidenceDB;create=true");
+        return bds;
     }
-
+    
+    private RoomManagerImpl manager;
+    private DataSource dataSource;
+    
+    @Before
+    public void setUp() throws SQLException {
+        dataSource = prepareDataSource();
+        DBUtils.executeSqlScript(dataSource,RoomManager.class.getResourceAsStream("createTables.sql"));
+        manager = new RoomManagerImpl();
+        manager.setDataSource(dataSource);
+    }
+    
+    @After
+    public void tearDown() throws SQLException{
+        DBUtils.executeSqlScript(dataSource,RoomManager.class.getResourceAsStream("dropTables.sql"));
+    }
+ 
     @Test
     public void createRoom() {
+              
         Room room = new RoomBuilder().build();
 
         manager.createRoom(room);
@@ -233,7 +256,7 @@ public class RoomManagerImplTest {
     }
 
     @Test
-    public void updateRoom() {
+    public void updateRoomCapacity() {
         Room r1 = new RoomBuilder().build();
         Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
                                    .floor(3).number("301").type(FAMILY).build();
@@ -250,55 +273,102 @@ public class RoomManagerImplTest {
         assertEquals(5, r1.getFloor());
         assertEquals(STANDARD, r1.getType());
         assertEquals("501", r1.getNumber());
+        
+        // Check if updates didn't affected other records
+        assertDeepEquals(r2, manager.getRoomById(r2.getId()));
+    }
+    
+    @Test
+    public void updateRoomPrice() {
+        Room r1 = new RoomBuilder().build();
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+                                   .floor(3).number("301").type(FAMILY).build();
+        manager.createRoom(r1);
+        manager.createRoom(r2);
 
+        Long roomId1 = r1.getId();
+        
         r1 = manager.getRoomById(roomId1);
         BigDecimal bd3 = new BigDecimal(6000.00);
         r1.setPrice(bd3);
         manager.updateRoom(r1);
-        assertEquals(3, r1.getCapacity());
+        assertEquals(1, r1.getCapacity());
         assertEquals(bd3, r1.getPrice());
         assertEquals(5, r1.getFloor());
         assertEquals(STANDARD, r1.getType());
         assertEquals("501", r1.getNumber());
+        
+        // Check if updates didn't affected other records
+        assertDeepEquals(r2, manager.getRoomById(r2.getId()));
+    }
+    
+    @Test
+    public void updateRoomFloor() {
+        Room r1 = new RoomBuilder().build();
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+                                   .floor(3).number("301").type(FAMILY).build();
+        manager.createRoom(r1);
+        manager.createRoom(r2);
 
+        Long roomId1 = r1.getId();
+        
         r1 = manager.getRoomById(roomId1);
         r1.setFloor(1);
         manager.updateRoom(r1);
-        assertEquals(3, r1.getCapacity());
-        assertEquals(bd3, r1.getPrice());
+        assertEquals(1, r1.getCapacity());
+        assertEquals(new BigDecimal(1500.00), r1.getPrice());
         assertEquals(1, r1.getFloor());
         assertEquals(STANDARD, r1.getType());
         assertEquals("501", r1.getNumber());
+        
+        // Check if updates didn't affected other records
+        assertDeepEquals(r2, manager.getRoomById(r2.getId()));    
+    }
+    
+    @Test
+    public void updateRoomType() {
+        Room r1 = new RoomBuilder().build();
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+                                   .floor(3).number("301").type(FAMILY).build();
+        manager.createRoom(r1);
+        manager.createRoom(r2);
 
+        Long roomId1 = r1.getId();
+        
         r1 = manager.getRoomById(roomId1);
         r1.setType(SUITE);
         manager.updateRoom(r1);
-        assertEquals(3, r1.getCapacity());
-        assertEquals(bd3, r1.getPrice());
-        assertEquals(1, r1.getFloor());
+        assertEquals(1, r1.getCapacity());
+        assertEquals(new BigDecimal(1500.00), r1.getPrice());
+        assertEquals(5, r1.getFloor());
         assertEquals(SUITE, r1.getType());
         assertEquals("501", r1.getNumber());
+        
+        // Check if updates didn't affected other records
+        assertDeepEquals(r2, manager.getRoomById(r2.getId()));  
+    }
+    
+    @Test
+    public void updateRoomNumber() {
+        Room r1 = new RoomBuilder().build();
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+                                   .floor(3).number("301").type(FAMILY).build();
+        manager.createRoom(r1);
+        manager.createRoom(r2);
 
+        Long roomId1 = r1.getId();
+        
         r1 = manager.getRoomById(roomId1);
         r1.setNumber("101");
         manager.updateRoom(r1);
-        assertEquals(3, r1.getCapacity());
-        assertEquals(bd3, r1.getPrice());
-        assertEquals(1, r1.getFloor());
-        assertEquals(SUITE, r1.getType());
+        assertEquals(1, r1.getCapacity());
+        assertEquals(new BigDecimal(1500.00), r1.getPrice());
+        assertEquals(5, r1.getFloor());
+        assertEquals(STANDARD, r1.getType());
         assertEquals("101", r1.getNumber());
-
-        r1 = manager.getRoomById(roomId1);
-        r1.setNumber(null);
-        manager.updateRoom(r1);
-        assertEquals(3, r1.getCapacity());
-        assertEquals(bd3, r1.getPrice());
-        assertEquals(1, r1.getFloor());
-        assertEquals(SUITE, r1.getType());
-        assertNull(r1.getNumber());
-
+        
         // Check if updates didn't affected other records
-        assertDeepEquals(r2, manager.getRoomById(r2.getId()));
+        assertDeepEquals(r2, manager.getRoomById(r2.getId()));  
     }
 
     @Test
@@ -633,7 +703,7 @@ public class RoomManagerImplTest {
         Room room = new RoomBuilder().build();
 
         room.setId(1l);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(ServiceFailureException.class);
         manager.deleteRoom(room);
 
     }

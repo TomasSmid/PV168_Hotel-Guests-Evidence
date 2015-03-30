@@ -7,24 +7,112 @@
 package cz.muni.fi.pv168.hotelmanager.backend;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 
 /**
  *
  * @author Tom
  */
 public class ReservationManagerImpl implements ReservationManager{
-
+    
+    private DataSource dataSource;
+    
+    public void setDataSource(DataSource ds){
+        this.dataSource = ds;
+    }
+    
     @Override
     public void createReservation(Reservation reservation) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (reservation == null) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation is null");
+        }
+        
+        if (reservation.getId() != null) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation id is already set");
+        }
+        
+        if (reservation.getRoom() == null) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation room is null");
+        }
+               
+        if (reservation.getStartTime() == null) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation start time is null");
+        }
+        
+        if (reservation.getExpectedEndTime() == null) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation expected end time is null");
+        }
+        
+        if (reservation.getExpectedEndTime().before(reservation.getStartTime())) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation expected end time is before start time null");
+        }
+        
+        if (reservation.getGuest() == null) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation guest is null");
+        }
+        
+        if (reservation.getServicesSpendings() == null) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation services spendings is null");
+        }
+        
+        if (reservation.getServicesSpendings().compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalArgumentException("Creating reservation failure: reservation services spendings is not zero");
+        }
+        
+        try (Connection conn = dataSource.getConnection()) {
+            try (PreparedStatement st = conn.prepareStatement(
+                        "INSERT INTO RESERVATION (room_id, guest_id, start_time, real_end_time, expected_end_time) VALUES (?,?,?,?,?)",
+                    Statement.RETURN_GENERATED_KEYS)) {
+                st.setLong(1, reservation.getRoom().getId());
+                st.setLong(2, reservation.getGuest().getId());
+                st.setTimestamp(3, dateToTimestamp(reservation.getStartTime()));
+                st.setTimestamp(4, dateToTimestamp(reservation.getRealEndTime()));
+                st.setTimestamp(5, dateToTimestamp(reservation.getExpectedEndTime()));
+                int addedRows = st.executeUpdate();
+                if (addedRows != 1) {
+                    throw new ServiceFailureException("Internal Error: More rows inserted when trying to insert reservation " + reservation);
+                }
+                ResultSet keyRS = st.getGeneratedKeys();
+                reservation.setId(getKey(keyRS, reservation));
+            }
+        } catch (SQLException ex) {
+            //log.error("db connection problem", ex);
+            throw new ServiceFailureException("Creating reservation failure: Error when retrieving all reservations", ex);
+        }
     }
-
+    // UNDER CONSTRUCTION
     @Override
     public Reservation getReservationById(Long id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try (Connection conn = dataSource.getConnection()) {
+            try (PreparedStatement st = conn.prepareStatement(
+                    "SELECT id,room_id, guest_id, start_time, real_end_time, expected_end_time FROM RESERVATION WHERE id = ?")) {
+                st.setLong(1, id);
+                ResultSet rs = st.executeQuery();
+                if (rs.next()) {
+                    Reservation res = resultSetToReservation(rs);
+                    if (rs.next()) {
+                        throw new ServiceFailureException(
+                                "Internal error: More entities with the same id found "
+                                        + "(source id: " + id + ", found " + res + " and " + resultSetToReservation(rs));
+                    }
+                    return res;
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException ex) {
+            //log.error("db connection problem", ex);
+            throw new ServiceFailureException("Error when retrieving all reservations", ex);
+        }
     }
 
     @Override
@@ -72,4 +160,46 @@ public class ReservationManagerImpl implements ReservationManager{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    private Timestamp dateToTimestamp(Date date){
+        if (date == null) {
+            return null;
+        }
+        
+        return (date instanceof Timestamp ? (Timestamp) date : new Timestamp(date.getTime()));
+    }
+    
+    private Long getKey(ResultSet keyRS, Reservation reservation) throws ServiceFailureException, SQLException {
+        if (keyRS.next()) {
+            if (keyRS.getMetaData().getColumnCount() != 1) {
+                throw new ServiceFailureException("Internal Error: Generated key"
+                        + "retriving failed when trying to insert reservation " + reservation
+                        + " - wrong key fields count: " + keyRS.getMetaData().getColumnCount());
+            }
+            Long result = keyRS.getLong(1);
+            if (keyRS.next()) {
+                throw new ServiceFailureException("Internal Error: Generated key"
+                        + "retriving failed when trying to insert reservation " + reservation
+                        + " - more keys found");
+            }
+            return result;
+        } else {
+            throw new ServiceFailureException("Internal Error: Generated key"
+                    + "retriving failed when trying to insert reservation " + reservation
+                    + " - no key found");
+        }
+    }
+    /*
+    private Reservation resultSetToReservation(ResultSet rs) throws SQLException {
+        Reservation res = new Reservation();
+        res.setId(rs.getLong("id"));
+        Long roomId =  rs.getLong("room_id");
+        
+        res.setRoom(rs.getInt("capacity"));
+        res.setPrice(rs.getBigDecimal("price"));
+        res.setFloor(rs.getInt("floor"));
+        res.setNumber(rs.getString("number"));
+        res.setType(RoomType.valueOf(rs.getString("room_type").toUpperCase()) ); // problem s case?
+        return res;
+    }
+    */
 }

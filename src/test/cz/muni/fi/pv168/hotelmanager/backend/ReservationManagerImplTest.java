@@ -181,7 +181,7 @@ public class ReservationManagerImplTest {
     }
 
     @Test
-    public void updateReservation() {
+    public void updateReservationRoom() {
         Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", new Date(14_000l));
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
         Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
@@ -208,6 +208,29 @@ public class ReservationManagerImplTest {
         assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
         assertDeepGuestEquals(guest, r1.getGuest());
         assertEquals(bd, r1.getServicesSpendings());
+        
+        // Check if updates didn't affected other records
+        assertDeepReservationEquals(r2, manager.getReservationById(r2.getId()));
+    }
+    
+    @Test
+    public void updateReservationStartTime() {
+        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", new Date(14_000l));
+        Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
+        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(3656351487L, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Reservation r1 = new ResBuilder().build();
+        Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
+                                         .expectedEndTime(new Date(63_000_001_800_000l))
+                                         .realEndTime(new Date(63_000_001_800_000l))
+                                         .guest(guest2)
+                                         .room(room2)
+                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+        BigDecimal bd = new BigDecimal(0.00);
+        manager.createReservation(r1);
+        manager.createReservation(r2);
+
+        Long resId1 = r1.getId();
 
         r1 = manager.getReservationById(resId1);
         Date d1 = new Date(64_300_000_000l);
@@ -219,49 +242,141 @@ public class ReservationManagerImplTest {
         assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
         assertDeepGuestEquals(guest, r1.getGuest());
         assertEquals(bd, r1.getServicesSpendings());
+        
+        // Check if updates didn't affected other records
+        assertDeepReservationEquals(r2, manager.getReservationById(r2.getId()));
+    }
+    
+    @Test
+    public void updateReservationRealEndTime() {
+        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", new Date(14_000l));
+        Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
+        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(3656351487L, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Reservation r1 = new ResBuilder().build();
+        Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
+                                         .expectedEndTime(new Date(63_000_001_800_000l))
+                                         .realEndTime(new Date(63_000_001_800_000l))
+                                         .guest(guest2)
+                                         .room(room2)
+                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+        BigDecimal bd = new BigDecimal(0.00);
+        manager.createReservation(r1);
+        manager.createReservation(r2);
 
+        Long resId1 = r1.getId();
+        
         r1 = manager.getReservationById(resId1);
         Date d2 = new Date(65_400_000_000l);
         r1.setRealEndTime(d2);
         manager.updateReservation(r1);
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(d1.getTime(), r1.getStartTime().getTime());
+        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
         assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
         assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
         assertDeepGuestEquals(guest, r1.getGuest());
         assertEquals(bd, r1.getServicesSpendings());
+        
+        // Check if updates didn't affected other records
+        assertDeepReservationEquals(r2, manager.getReservationById(r2.getId()));
+    }
+    
+    @Test
+    public void updateReservationExpectedEndTime() {
+        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", new Date(14_000l));
+        Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
+        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(3656351487L, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Reservation r1 = new ResBuilder().build();
+        Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
+                                         .expectedEndTime(new Date(63_000_001_800_000l))
+                                         .realEndTime(new Date(63_000_001_800_000l))
+                                         .guest(guest2)
+                                         .room(room2)
+                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+        BigDecimal bd = new BigDecimal(0.00);
+        manager.createReservation(r1);
+        manager.createReservation(r2);
 
+        Long resId1 = r1.getId();
+        
         r1 = manager.getReservationById(resId1);
         Date d3 = new Date(66_800_000_000l);
         r1.setExpectedEndTime(d3);
         manager.updateReservation(r1);
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(d1.getTime(), r1.getStartTime().getTime());
-        assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
+        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
+        assertEquals(null, r1.getRealEndTime().getTime());
         assertEquals(d3.getTime(), r1.getExpectedEndTime().getTime());
         assertDeepGuestEquals(guest, r1.getGuest());
         assertEquals(bd, r1.getServicesSpendings());
+        
+        // Check if updates didn't affected other records
+        assertDeepReservationEquals(r2, manager.getReservationById(r2.getId()));
+    }
+    
+    @Test
+    public void updateReservationGuest() {
+        Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
+        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(3656351487L, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Reservation r1 = new ResBuilder().build();
+        Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
+                                         .expectedEndTime(new Date(63_000_001_800_000l))
+                                         .realEndTime(new Date(63_000_001_800_000l))
+                                         .guest(guest2)
+                                         .room(room2)
+                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+        BigDecimal bd = new BigDecimal(0.00);
+        manager.createReservation(r1);
+        manager.createReservation(r2);
 
+        Long resId1 = r1.getId();
+        
         r1 = manager.getReservationById(resId1);
         Guest guest3 = newGuest("Franco Bernardi", null, "1020304059", new Date(-60_054_147l));
         r1.setGuest(guest3);
         manager.updateReservation(r1);
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(d1.getTime(), r1.getStartTime().getTime());
-        assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
-        assertEquals(d3.getTime(), r1.getExpectedEndTime().getTime());
+        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
+        assertEquals(null, r1.getRealEndTime().getTime());
+        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
         assertDeepGuestEquals(guest3, r1.getGuest());
         assertEquals(bd, r1.getServicesSpendings());
+        
+        // Check if updates didn't affected other records
+        assertDeepReservationEquals(r2, manager.getReservationById(r2.getId()));
+    }    
+
+    @Test
+    public void updateReservationServicesSpendings() {
+        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", new Date(14_000l));
+        Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
+        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(3656351487L, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Reservation r1 = new ResBuilder().build();
+        Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
+                                         .expectedEndTime(new Date(63_000_001_800_000l))
+                                         .realEndTime(new Date(63_000_001_800_000l))
+                                         .guest(guest2)
+                                         .room(room2)
+                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+
+        manager.createReservation(r1);
+        manager.createReservation(r2);
+
+        Long resId1 = r1.getId();    
+        
 
         r1 = manager.getReservationById(resId1);
         BigDecimal bd2 = new BigDecimal(100.00);
         r1.setServicesSpendings(bd2);
         manager.updateReservation(r1);
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(d1.getTime(), r1.getStartTime().getTime());
-        assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
-        assertEquals(d3.getTime(), r1.getExpectedEndTime().getTime());
-        assertDeepGuestEquals(guest3, r1.getGuest());
+        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
+        assertEquals(null, r1.getRealEndTime().getTime());
+        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
+        assertDeepGuestEquals(guest, r1.getGuest());
         assertEquals(bd2, r1.getServicesSpendings());
 
         // Check if updates didn't affected other records

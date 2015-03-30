@@ -88,4 +88,14 @@ public class Room {
         hash = 97 * hash + (this.id != null ? this.id.hashCode() : 0);
         return hash;
     }
+    
+    @Override
+    public String toString() {
+        return "Room[" + "id:" + id + 
+                ", capacity:" + capacity + 
+                ", price:" + price +
+                ", floor:" + floor +
+                ", number:" + number +
+                ", type:" + type + ']';
+    }
 }
