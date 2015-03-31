@@ -593,21 +593,23 @@ public class ReservationManagerImplTest {
         Reservation res = new ResBuilder().build();
 
         res.setId(1l);
-        exception.expect(IllegalArgumentException.class);
+        exception.expect(ServiceFailureException.class);
         manager.deleteReservation(res);
 
     }
 
     @Test
     public void findReservationForGuestWithNullAttribute() {
-
-        assertTrue(manager.findReservationsForGuest(null).isEmpty());
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.findReservationsForGuest(null);
     }
 
     @Test
     public void findReservationForRoomWithNullAttribute() {
 
-        assertTrue(manager.findReservationsForRoom(null).isEmpty());
+        exception.expect(IllegalArgumentException.class);
+        manager.findReservationsForRoom(null);
     }    
     
     @Test
@@ -1082,6 +1084,7 @@ public class ReservationManagerImplTest {
 
         private Guest newGuest(){
             Guest g = new Guest();
+            g.setId(1L);
             g.setName("Pepa Korek");
             g.setPhone("(+420) 777 888 999");
             g.setIdCardNum("123456789");

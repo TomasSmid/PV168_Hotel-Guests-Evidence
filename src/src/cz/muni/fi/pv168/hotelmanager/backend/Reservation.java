@@ -50,7 +50,10 @@ public class Reservation {
     }
 
     public Date getRealEndTime() {
-        return new Date(realEndTime.getTime());
+        if(realEndTime != null){
+            return new Date(realEndTime.getTime());
+        }    
+        return realEndTime;
     }
 
     public void setRealEndTime(Date realEndTime) {

@@ -6,6 +6,7 @@
 
 package cz.muni.fi.pv168.hotelmanager.backend;
 
+import cz.muni.fi.pv168.common.DBUtils;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,9 +14,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
@@ -25,6 +29,7 @@ import javax.sql.DataSource;
  */
 public class ReservationManagerImpl implements ReservationManager{
     
+    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
     private final DataSource dataSource;
     
     public ReservationManagerImpl(DataSource dataSource){
@@ -33,69 +38,52 @@ public class ReservationManagerImpl implements ReservationManager{
     
     @Override
     public void createReservation(Reservation reservation) {
-        if (reservation == null) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation is null");
-        }
-        
-        if (reservation.getId() != null) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation id is already set");
-        }
-        
-        if (reservation.getRoom() == null) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation room is null");
-        }
-               
-        if (reservation.getStartTime() == null) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation start time is null");
-        }
-        
-        if (reservation.getExpectedEndTime() == null) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation expected end time is null");
-        }
-        
-        if (reservation.getExpectedEndTime().before(reservation.getStartTime())) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation expected end time is before start time null");
-        }
-        
-        if (reservation.getGuest() == null) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation guest is null");
-        }
-        
-        if (reservation.getServicesSpendings() == null) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation services spendings is null");
-        }
+        checkReservationIsValid(reservation, true,"Creating reservation ");
         
         if (reservation.getServicesSpendings().compareTo(BigDecimal.ZERO) != 0) {
             throw new IllegalArgumentException("Creating reservation failure: reservation services spendings is not zero");
         }
         
+        checkDataSource();
+        
         try (Connection conn = dataSource.getConnection()) {
+            
+            conn.setAutoCommit(false); 
             try (PreparedStatement st = conn.prepareStatement(
-                        "INSERT INTO RESERVATION (room_id, guest_id, start_time, real_end_time, expected_end_time) VALUES (?,?,?,?,?)",
+                        "INSERT INTO RESERVATION (room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings) VALUES (?,?,?,?,?,?)",
                     Statement.RETURN_GENERATED_KEYS)) {
                 st.setLong(1, reservation.getRoom().getId());
                 st.setLong(2, reservation.getGuest().getId());
-                st.setTimestamp(3, dateToTimestamp(reservation.getStartTime()));
+                st.setTimestamp(3, dateToTimestamp(reservation.getStartTime()));  
                 st.setTimestamp(4, dateToTimestamp(reservation.getRealEndTime()));
                 st.setTimestamp(5, dateToTimestamp(reservation.getExpectedEndTime()));
+                st.setBigDecimal(6, reservation.getServicesSpendings());
                 int addedRows = st.executeUpdate();
                 if (addedRows != 1) {
                     throw new ServiceFailureException("Internal Error: More rows inserted when trying to insert reservation " + reservation);
                 }
                 ResultSet keyRS = st.getGeneratedKeys();
                 reservation.setId(getKey(keyRS, reservation));
+                
+                conn.commit();
+            }catch(SQLException ex){
+                logger.log(Level.SEVERE, "Creating reservation failure: connection error when inserting reservation " + reservation, ex);
+                throw new ServiceFailureException("Creating reservation failure: Error when retrieving all reservations", ex);
+            }finally{
+                DBUtils.doRollbackQuietly(conn);
+                DBUtils.switchAutocommitBackToTrue(conn);
             }
         } catch (SQLException ex) {
-            //log.error("db connection problem", ex);
+            logger.log(Level.SEVERE, "Creating reservation failure: connection error when inserting reservation " + reservation, ex);
             throw new ServiceFailureException("Creating reservation failure: Error when retrieving all reservations", ex);
         }
     }
-    // UNDER CONSTRUCTION
+
     @Override
     public Reservation getReservationById(Long id) {
         try (Connection conn = dataSource.getConnection()) {
             try (PreparedStatement st = conn.prepareStatement(
-                    "SELECT id,room_id, guest_id, start_time, real_end_time, expected_end_time FROM RESERVATION WHERE id = ?")) {
+                    "SELECT id,room_id, guest_id, start_time, real_end_time, expected_end_time, serv_spendings FROM RESERVATION WHERE id = ?")) {
                 st.setLong(1, id);
                 ResultSet rs = st.executeQuery();
                 if (rs.next()) {
@@ -111,34 +99,158 @@ public class ReservationManagerImpl implements ReservationManager{
                 }
             }
         } catch (SQLException ex) {
-            //log.error("db connection problem", ex);
+            logger.log(Level.SEVERE, "Retrieving reservation failure: Error when retrieving reservation with id " + id, ex);
             throw new ServiceFailureException("Error when retrieving all reservations", ex);
         }
     }
 
     @Override
     public List<Reservation> findAllReservations() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkDataSource();
+        
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT id,room_id, guest_id, start_time, real_end_time, expected_end_time, serv_spendings FROM RESERVATION")){
+            
+            ResultSet rs = ps.executeQuery();
+            
+            List<Reservation> retReservations = new ArrayList<>();
+            while(rs.next()){                
+                retReservations.add(resultSetToReservation(rs));
+            }
+            
+            return retReservations;
+            
+        }catch(SQLException ex){
+            String errMsg = "Error occured when retrieving all reservations from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
     }
 
     @Override
     public void updateReservation(Reservation reservation) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkReservationIsValid(reservation, false,"Updating reservation ");
+        
+        checkDataSource();
+        
+        try (Connection conn = dataSource.getConnection()) {
+            
+            conn.setAutoCommit(false); 
+            try(PreparedStatement st = conn.prepareStatement(
+                    "UPDATE RESERVATION SET room_id=?,guest_id=?,start_time=?,real_end_time=?,expected_end_time=?,serv_spendings=? WHERE id=?")) {
+                st.setLong(1, reservation.getRoom().getId());
+                st.setLong(2, reservation.getGuest().getId());
+                st.setTimestamp(3, dateToTimestamp(reservation.getStartTime()));
+                st.setTimestamp(4, dateToTimestamp(reservation.getRealEndTime()));
+                st.setTimestamp(5, dateToTimestamp(reservation.getExpectedEndTime()));
+                st.setBigDecimal(6, reservation.getServicesSpendings());
+                st.setLong(6,reservation.getId());
+                if(st.executeUpdate()!=1) {
+                    throw new IllegalArgumentException("cannot update reservation "+reservation);
+                }                
+            conn.commit();
+            
+            }catch(SQLException ex){
+                logger.log(Level.SEVERE, "Updating reservation failure: connection error when updating reservation" + reservation, ex);
+                throw new ServiceFailureException("Update reservation failure: Error when retrieving all reservations", ex);
+            }finally{
+                DBUtils.doRollbackQuietly(conn);
+                DBUtils.switchAutocommitBackToTrue(conn);
+            }
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "Updating reservation failure: connection error when updating reservation" + reservation, ex);
+            throw new ServiceFailureException("Update reservation failure: Error when retrieving all reservations", ex);
+        }
     }
 
     @Override
     public void deleteReservation(Reservation reservation) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (reservation == null) {
+            throw new IllegalArgumentException("Deleting reservation failure: reservation is null");
+        }
+        
+        if (reservation.getId() == null) {
+            throw new IllegalArgumentException("Deleting reservation failure: reservation id is null");
+        }
+        
+        checkDataSource();
+        
+        try (Connection conn = dataSource.getConnection()) {
+            
+            conn.setAutoCommit(false); 
+            try(PreparedStatement st = conn.prepareStatement("DELETE FROM RESERVATION WHERE id=?")) {
+                st.setLong(1,reservation.getId());
+                if(st.executeUpdate()!=1) {
+                    throw new ServiceFailureException("did not delete reservation with id ="+reservation.getId());
+                }
+            conn.commit();
+            
+            }catch(SQLException ex){
+                logger.log(Level.SEVERE, "Deleting reservation failure: connection error when deleting reservation" + reservation, ex);
+                throw new ServiceFailureException("Deleting reservation failure: Error when retrieving all reservations", ex);
+            }finally{
+                DBUtils.doRollbackQuietly(conn);
+                DBUtils.switchAutocommitBackToTrue(conn);
+            }
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "Deleting reservation failure: connection error when deleting reservation" + reservation, ex);
+            throw new ServiceFailureException("Deleting reservation failure: Error when retrieving all reservations", ex);
+        }
     }
 
     @Override
     public List<Reservation> findReservationsForGuest(Guest guest) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkGuestIsValid(guest,"Find reservations for guest ");
+        
+        checkDataSource();
+        
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT id,room_id, guest_id, start_time, real_end_time, expected_end_time, serv_spendings FROM RESERVATION WHERE guest_id=?")){
+            ps.setLong(1,guest.getId());
+                    
+            ResultSet rs = ps.executeQuery();
+            
+            List<Reservation> retReservations = new ArrayList<>();
+            while(rs.next()){                
+                retReservations.add(resultSetToReservation(rs));
+            }
+            
+            return retReservations;
+            
+        }catch(SQLException ex){
+            String errMsg = "Error occured when retrieving all reservations from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
     }
 
     @Override
     public List<Reservation> findReservationsForRoom(Room room) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkRoomIsValid(room,"Find reservations for room ");
+        
+        checkDataSource();
+        
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT id,room_id, guest_id, start_time, real_end_time, expected_end_time, serv_spendings FROM RESERVATION WHERE room_id=?")){
+            ps.setLong(1,room.getId());
+                    
+            ResultSet rs = ps.executeQuery();
+            
+            List<Reservation> retReservations = new ArrayList<>();
+            while(rs.next()){                
+                retReservations.add(resultSetToReservation(rs));
+            }
+            
+            return retReservations;
+            
+        }catch(SQLException ex){
+            String errMsg = "Error occured when retrieving all reservations from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
     }
 
     @Override
@@ -209,6 +321,7 @@ public class ReservationManagerImpl implements ReservationManager{
         res.setStartTime(rs.getTimestamp("start_time"));
         res.setRealEndTime(rs.getTimestamp("real_end_time"));
         res.setExpectedEndTime(rs.getTimestamp("expected_end_time"));
+        res.setServicesSpendings(rs.getBigDecimal("serv_spendings"));
         
         return res;
     }
