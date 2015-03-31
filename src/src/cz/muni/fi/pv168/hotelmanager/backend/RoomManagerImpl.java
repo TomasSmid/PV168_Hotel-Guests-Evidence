@@ -4,7 +4,6 @@
  */
 package cz.muni.fi.pv168.hotelmanager.backend;
 
-import cz.muni.fi.pv168.common.DBUtils;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,8 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 
@@ -26,7 +23,6 @@ import javax.sql.DataSource;
  */
 public class RoomManagerImpl implements RoomManager {
 
-    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
     private DataSource dataSource;
     
     public RoomManagerImpl(DataSource dataSource){
@@ -73,8 +69,6 @@ public class RoomManagerImpl implements RoomManager {
         }
         
         try (Connection conn = dataSource.getConnection()) {
-            
-            conn.setAutoCommit(false); 
             try (PreparedStatement st = conn.prepareStatement(
                         "INSERT INTO ROOM (capacity,price,floor,number,room_type) VALUES (?,?,?,?,?)",
                     Statement.RETURN_GENERATED_KEYS)) {
@@ -89,18 +83,9 @@ public class RoomManagerImpl implements RoomManager {
                 }
                 ResultSet keyRS = st.getGeneratedKeys();
                 room.setId(getKey(keyRS, room));
-                
-                conn.commit();
-            }catch(SQLException ex){
-                logger.log(Level.SEVERE, "Creating room failure: connection error when inserting room" + room, ex);
-                throw new ServiceFailureException("Creating room failure: Error when retrieving all room", ex);
-            }finally{
-                DBUtils.doRollbackQuietly(conn);
-                DBUtils.switchAutocommitBackToTrue(conn);
             }
-            
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, "Creating room failure: connection error when inserting room" + room, ex);
+            //log.error("db connection problem", ex);
             throw new ServiceFailureException("Creating room failure: Error when retrieving all room", ex);
         }
     }
@@ -146,8 +131,8 @@ public class RoomManagerImpl implements RoomManager {
                 }
             }
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, "Retrieving room failure: Error when retrieving room with id " + id, ex);
-            throw new ServiceFailureException("Retrieving room failure: Error when retrieving room", ex);
+            //log.error("db connection problem", ex);
+            throw new ServiceFailureException("Error when retrieving all rooms", ex);
         }
     }
     
@@ -201,8 +186,6 @@ public class RoomManagerImpl implements RoomManager {
         }
         
         try (Connection conn = dataSource.getConnection()) {
-            
-            conn.setAutoCommit(false); 
             try(PreparedStatement st = conn.prepareStatement(
                     "UPDATE ROOM SET capacity=?,price=?,floor=?,number=?,room_type=? WHERE id=?")) {
                 st.setInt(1, room.getCapacity());
@@ -213,19 +196,11 @@ public class RoomManagerImpl implements RoomManager {
                 st.setLong(6,room.getId());
                 if(st.executeUpdate()!=1) {
                     throw new IllegalArgumentException("cannot update room "+room);
-                }                
-            conn.commit();
-            
-            }catch(SQLException ex){
-                logger.log(Level.SEVERE, "Updating room failure: connection error when updating room" + room, ex);
-                throw new ServiceFailureException("Update room failure: Error when retrieving all rooms", ex);
-            }finally{
-                DBUtils.doRollbackQuietly(conn);
-                DBUtils.switchAutocommitBackToTrue(conn);
+                }
             }
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, "Updating room failure: connection error when updating room" + room, ex);
-            throw new ServiceFailureException("Update room failure: Error when retrieving all rooms", ex);
+           // log.error("db connection problem", ex);
+            throw new ServiceFailureException("Update room: Error when retrieving all rooms", ex);
         }
     }
 
@@ -240,30 +215,21 @@ public class RoomManagerImpl implements RoomManager {
         }
         
         try (Connection conn = dataSource.getConnection()) {
-            
-            conn.setAutoCommit(false); 
             try(PreparedStatement st = conn.prepareStatement("DELETE FROM ROOM WHERE id=?")) {
                 st.setLong(1,room.getId());
                 if(st.executeUpdate()!=1) {
                     throw new ServiceFailureException("did not delete room with id ="+room.getId());
                 }
-            conn.commit();
-            
-            }catch(SQLException ex){
-                logger.log(Level.SEVERE, "Deleting room failure: connection error when deleting room" + room, ex);
-                throw new ServiceFailureException("Deleting room failure: Error when retrieving all room", ex);
-            }finally{
-                DBUtils.doRollbackQuietly(conn);
-                DBUtils.switchAutocommitBackToTrue(conn);
             }
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, "Deleting room failure: connection error when deleting room" + room, ex);
-            throw new ServiceFailureException("Deleting room failure: Error when retrieving all rooms", ex);
+            //log.error("db connection problem", ex);
+            throw new ServiceFailureException("Error when retrieving all rooms", ex);
         }
     }
 
     @Override
     public List<Room> findAllRooms() throws ServiceFailureException {
+       // log.debug("finding all graves");
         try (Connection conn = dataSource.getConnection()) {
             try (PreparedStatement st = conn.prepareStatement(
                     "SELECT id,capacity,price,floor,number,room_type FROM ROOM")) {
@@ -275,7 +241,7 @@ public class RoomManagerImpl implements RoomManager {
                 return result;
             }
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, "Error when retrieving all rooms", ex);
+           // log.error("db connection problem", ex);
             throw new ServiceFailureException("Error when retrieving all rooms", ex);
         }
     }

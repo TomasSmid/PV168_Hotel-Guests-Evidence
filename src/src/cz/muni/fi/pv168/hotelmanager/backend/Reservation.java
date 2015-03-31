@@ -49,11 +49,8 @@ public class Reservation {
             this.startTime = new Date(startTime.getTime());
     }
 
-    public Date getRealEndTime() {
-        if(realEndTime != null){
-            return new Date(realEndTime.getTime());
-        }    
-        return realEndTime;
+    public Date getRealEndTime() {        
+        return (realEndTime == null ? null : new Date(realEndTime.getTime()));
     }
 
     public void setRealEndTime(Date realEndTime) {

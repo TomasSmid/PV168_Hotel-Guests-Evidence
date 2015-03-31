@@ -16,6 +16,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -39,10 +40,6 @@ public class ReservationManagerImpl implements ReservationManager{
     @Override
     public void createReservation(Reservation reservation) {
         checkReservationIsValid(reservation, true,"Creating reservation ");
-        
-        if (reservation.getServicesSpendings().compareTo(BigDecimal.ZERO) != 0) {
-            throw new IllegalArgumentException("Creating reservation failure: reservation services spendings is not zero");
-        }
         
         checkDataSource();
         
@@ -149,7 +146,7 @@ public class ReservationManagerImpl implements ReservationManager{
                 if(st.executeUpdate()!=1) {
                     throw new IllegalArgumentException("cannot update reservation "+reservation);
                 }                
-            conn.commit();
+                conn.commit();
             
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Updating reservation failure: connection error when updating reservation" + reservation, ex);
@@ -255,30 +252,138 @@ public class ReservationManagerImpl implements ReservationManager{
 
     @Override
     public boolean isRoomAvailable(Room room) {
-        /*checkRoomIsValid(room,"Unquiring room for availability ");
+        checkRoomIsValid(room,"Unquiring room for availability ");
         checkDataSource();
         
         try(Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(
-                    "SELECT ")){
+                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings "
+                    + "FROM Reservation WHERE room_id = ? AND real_end_time IS NOT NULL "
+                            + "AND expected_date < CURRENT_DATE")){
+            ps.setLong(1, room.getId());
+            ResultSet rs = ps.executeQuery();
             
-        }*/
-        return false;
+            return (!rs.next());
+            
+        } catch (SQLException ex) {
+            String errMsg = "Error occured when inquiring for room " + room + " availability.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
     }
 
     @Override
     public BigDecimal getReservationPrice(Reservation reservation) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkReservationIsValid(reservation,false,"Retrieving reservation for its price ");
+        checkDataSource();
+        
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings "
+                    + "FROM Reservation WHERE id = ?")){
+            ps.setLong(1, reservation.getId());
+            ResultSet rs = ps.executeQuery();
+            
+            Reservation retRes = null;
+            if(rs.next()){
+                retRes = resultSetToReservation(rs);
+                if(rs.next()){
+                    throw new ServiceFailureException("Internal error: More entities with the same id found "
+                            + "(source id: " + reservation.getId() + ", found " + retRes + " and " + resultSetToReservation(rs));
+                }       
+            }
+            
+            if(retRes != null){
+                return computeReservationPrice(retRes);
+            }else{
+                return null;
+            }
+            
+        } catch (SQLException ex) {
+            String errMsg = "Error occured when retrieving reservation " + reservation + " from DB in order to compute its price.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
+        
     }
 
     @Override
     public List<Room> findAllUnoccupiedRooms(Date from, Date to) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(from.getTime() > to.getTime()){
+            throw new IllegalArgumentException("Retrieving all unoccupied rooms failure: From date after to date.");
+        }
+        
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings "
+                    + "FROM Reservation WHERE id NOT IN ((SELECT id FROM Reservation WHERE start_time > ? AND start_time < ? AND expected_end_time > ?) AND"
+                            +                           "(SELECT id FROM Reservation WHERE start_time < ? AND expected_end_time > ?) AND"
+                            +                           "(SELECT id FROM Reservation WHERE expected_end_time > ? AND expected_end_time < ?) AND"
+                            +                           "(SELECT id FROM Reservation WHERE start_time > ? AND expected_end_time < ?) AND"
+                            +                           "(SELECT id FROM Reservation WHERE start_time = ? AND expected_end_time = ?) AND"
+                            +                           "(SELECT id FROM Reservation WHERE start_time > ? AND start_time = ?) AND"
+                            +                           "(SELECT id FROM Reservation WHERE expected_end_time > ? AND expected_end_time = ?) AND"
+                            +                           "(SELECT id FROM Reservation WHERE start_time = ? AND start_time < ? AND expected_end_time > ?) AND"
+                            +                           "(SELECT id FROM Reservation WHERE expected_end_time = ? AND expected_end_time < ?)) AND real_end_time IS NOT NULL")){
+            ps.setTimestamp(1, dateToTimestamp(from));
+            ps.setTimestamp(2, dateToTimestamp(to));
+            ps.setTimestamp(3, dateToTimestamp(to));
+            ps.setTimestamp(4, dateToTimestamp(from));
+            ps.setTimestamp(5, dateToTimestamp(to));
+            ps.setTimestamp(6, dateToTimestamp(from));
+            ps.setTimestamp(7, dateToTimestamp(to));
+            ps.setTimestamp(8, dateToTimestamp(from));
+            ps.setTimestamp(9, dateToTimestamp(to));
+            ps.setTimestamp(10, dateToTimestamp(from));
+            ps.setTimestamp(11, dateToTimestamp(to));
+            ps.setTimestamp(12, dateToTimestamp(from));
+            ps.setTimestamp(13, dateToTimestamp(to));
+            ps.setTimestamp(14, dateToTimestamp(from));
+            ps.setTimestamp(15, dateToTimestamp(to));
+            ps.setTimestamp(16, dateToTimestamp(from));
+            ps.setTimestamp(17, dateToTimestamp(to));
+            ps.setTimestamp(18, dateToTimestamp(to));
+            ps.setTimestamp(19, dateToTimestamp(from));
+            ps.setTimestamp(20, dateToTimestamp(to));
+            
+            ResultSet rs = ps.executeQuery();
+            
+            List<Room> unocRooms = new ArrayList<>();            
+            while(rs.next()){
+                unocRooms.add(resultSetToReservation(rs).getRoom());
+            }
+            
+            return unocRooms;
+            
+        } catch (SQLException ex) {
+            String errMsg = "Error occured when retrieving more reservations from DB in order to find all unoccupied rooms.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
     }
 
     @Override
     public Map<BigDecimal, Guest> findTopFiveSpenders() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        checkDataSource();
+        
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings "
+                            + "FROM Reservation WHERE real_end_time IS NULL AND start_time < CURRENT_TIME")){
+            ResultSet rs = ps.executeQuery();
+            
+            List<Reservation> retRes = new ArrayList<>();
+            while(rs.next()){
+                retRes.add(resultSetToReservation(rs));
+            }
+            
+            return getMapOfTopSpenders(retRes);
+            
+        } catch (SQLException ex) {
+            String errMsg = "Error occured when retrieving more reservations from DB in order to find all unoccupied rooms.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
     }
     
     private Timestamp dateToTimestamp(Date date){
@@ -450,6 +555,35 @@ public class ReservationManagerImpl implements ReservationManager{
             throw new IllegalArgumentException(partOfErrMsg + "failure: Services spendings of reservation " + reservation
                         + " is null.");
         }
+    }
+    
+    private BigDecimal computeReservationPrice(Reservation reservation){
+        long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
+        long numberOfDays = (reservation.getExpectedEndTime().getTime() 
+                                - reservation.getStartTime().getTime())/DAY_IN_MILLIS;
+        return new BigDecimal(numberOfDays * reservation.getRoom().getPrice().longValue());
+    }
+    
+    private Map<BigDecimal, Guest> getMapOfTopSpenders(List<Reservation> retRes){
+        if(retRes.isEmpty()){
+            return null;
+        }
+        
+        Map<BigDecimal, Guest> aux = new HashMap<>();
+        for(Reservation res : retRes){
+            aux.put(res.getServicesSpendings(), res.getGuest());
+        }
+        int n = 5;
+        Map<BigDecimal, Guest> ret = new HashMap<>();
+        for(BigDecimal bd : ret.keySet()){
+            ret.put(bd, aux.get(bd));
+            --n;
+            if(n <= 0){
+                break;
+            }
+        }
+        
+        return ret;
     }
     
 }
