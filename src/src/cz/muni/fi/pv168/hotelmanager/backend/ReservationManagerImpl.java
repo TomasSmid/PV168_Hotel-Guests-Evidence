@@ -191,15 +191,16 @@ public class ReservationManagerImpl implements ReservationManager{
     
     private Reservation resultSetToReservation(ResultSet rs) throws SQLException {
         Reservation res = new Reservation();
-       
-        /*res.setId(rs.getLong("id"));
-        Long roomId =  rs.getLong("room_id");
+        GuestManager gm = new GuestManagerImpl();
+        RoomManager rm = new RoomManagerImpl();
         
-        res.setRoom(rs.getInt("capacity"));
-        res.setPrice(rs.getBigDecimal("price"));
-        res.setFloor(rs.getInt("floor"));
-        res.setNumber(rs.getString("number"));
-        res.setType(RoomType.valueOf(rs.getString("room_type").toUpperCase()) ); // problem s case?*/
+        res.setId(rs.getLong("id"));
+        res.setRoom(rm.getRoomById(rs.getLong("room_id")));
+        res.setGuest(gm.getGuestById(rs.getLong("guest_id")));
+        res.setStartTime(rs.getTimestamp("start_time"));
+        res.setRealEndTime(rs.getTimestamp("real_end_time"));
+        res.setExpectedEndTime(rs.getTimestamp("expected_end_time"));
+        
         return res;
     }
     
