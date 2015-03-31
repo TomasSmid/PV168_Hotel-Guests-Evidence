@@ -46,8 +46,7 @@ public class RoomManagerImplTest {
     public void setUp() throws SQLException {
         dataSource = prepareDataSource();
         DBUtils.executeSqlScript(dataSource,RoomManager.class.getResourceAsStream("createTables.sql"));
-        manager = new RoomManagerImpl();
-        manager.setDataSource(dataSource);
+        manager = new RoomManagerImpl(dataSource);
     }
     
     @After

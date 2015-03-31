@@ -6,7 +6,9 @@
 
 package cz.muni.fi.pv168.hotelmanager.backend;
 
+import cz.muni.fi.pv168.common.DBUtils;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -18,6 +20,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import javax.sql.DataSource;
+import org.apache.commons.dbcp.BasicDataSource;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -34,11 +39,25 @@ public class ReservationManagerImplTest {
     
     private static DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
     
-    private ReservationManagerImpl manager;
+    private static DataSource prepareDataSource(){
+        BasicDataSource bds = new BasicDataSource();
+        bds.setUrl("jdbc:derby:memory:SSHotelGuestEvidenceDB;create=true");
+        return bds;
+    }
+    
+    private ReservationManagerImpl manager;    
+    private DataSource dataSource;
     
     @Before
-    public void setUp() {
-        manager = new ReservationManagerImpl();
+    public void setUp() throws SQLException {
+        dataSource = prepareDataSource();
+        DBUtils.tryCreateTables(dataSource,ReservationManager.class.getResourceAsStream("createTables.sql"));
+        manager = new ReservationManagerImpl(dataSource);
+    }
+    
+    @After
+    public void tearDown() throws SQLException{
+        DBUtils.executeSqlScript(dataSource,ReservationManager.class.getResourceAsStream("dropTables.sql"));
     }
 
 @Test

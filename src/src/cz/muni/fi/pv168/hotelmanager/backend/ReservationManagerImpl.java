@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 /**
@@ -24,10 +25,10 @@ import javax.sql.DataSource;
  */
 public class ReservationManagerImpl implements ReservationManager{
     
-    private DataSource dataSource;
+    private final DataSource dataSource;
     
-    public void setDataSource(DataSource ds){
-        this.dataSource = ds;
+    public ReservationManagerImpl(DataSource dataSource){
+        this.dataSource = dataSource;
     }
     
     @Override
@@ -142,7 +143,15 @@ public class ReservationManagerImpl implements ReservationManager{
 
     @Override
     public boolean isRoomAvailable(Room room) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        /*checkRoomIsValid(room,"Unquiring room for availability ");
+        checkDataSource();
+        
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT ")){
+            
+        }*/
+        return false;
     }
 
     @Override
@@ -191,8 +200,8 @@ public class ReservationManagerImpl implements ReservationManager{
     
     private Reservation resultSetToReservation(ResultSet rs) throws SQLException {
         Reservation res = new Reservation();
-        GuestManager gm = new GuestManagerImpl();
-        RoomManager rm = new RoomManagerImpl();
+        GuestManager gm = new GuestManagerImpl(dataSource);
+        RoomManager rm = new RoomManagerImpl(dataSource);
         
         res.setId(rs.getLong("id"));
         res.setRoom(rm.getRoomById(rs.getLong("room_id")));
@@ -202,6 +211,132 @@ public class ReservationManagerImpl implements ReservationManager{
         res.setExpectedEndTime(rs.getTimestamp("expected_end_time"));
         
         return res;
+    }
+    
+    private void checkDataSource() {
+        if (dataSource == null) {
+            throw new IllegalStateException("DataSource is not set");
+        }
+    }
+    
+    private void checkRoomIsValid(Room room, String partOfErrMsg){
+        if(room == null){
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Room is null.");
+        }
+                
+        if (room.getId() == null) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: ID of room " + room + " is not set (is null).");
+        }        
+        
+        if (room.getCapacity() <= 0) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Room " + room + " has 0 or negative capacity.");
+        }
+        
+        if (room.getPrice() == null) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Price of room " + room + " is not set (is null).");
+        }
+        
+        if (room.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Price of room " + room + " is 0 or negative.");
+        }
+        
+        if (room.getFloor() <= 0) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Floor of room " + room + " is 0 or negative.");
+        }
+        
+        if (room.getNumber() == null) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Number of room " + room + " is not set (is null).");
+        }
+        
+        if (!room.getNumber().matches("[1-9][0-9][0-9]") ) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Wrong form of room number.");
+        }
+        
+        if (room.getType() == null) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Room type is not set (is null).");
+        }
+    }
+    
+    private void checkGuestIsValid(Guest guest, String partOfErrMsg){
+        if(guest == null){
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Guest is null.");
+        }
+        
+        if(guest.getId() == null){
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Guest " + guest + " has a null id.");
+        }
+        
+        if(guest.getName() == null){
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Name of guest " + guest + " is null.");
+        }
+        
+        if (!Pattern.matches("[A-Z][a-zA-Z]*([ |\\-][A-Z][a-zA-Z]*)*", guest.getName())){
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Name of guest " + guest + " has a wrong form.");
+        }
+        
+        if(guest.getPhone() != null){
+            if(guest.getName().isEmpty()){
+                throw new IllegalArgumentException(partOfErrMsg + "failure: Phone number of guest " + guest + " is empty.");
+            }        
+        
+            if(!((Pattern.matches("([\\(][\\+][0-9]{3}[\\)][ ])?[0-9]{3}[ ][0-9]{3}[ ][0-9]{3}", guest.getPhone()))
+                    || (Pattern.matches("([\\(][\\+][0-9]{3}[\\)][\\-])?[0-9]{3}[\\-][0-9]{3}[\\-][0-9]{3}", guest.getPhone())))){
+                throw new IllegalArgumentException(partOfErrMsg + "failure: "
+                        + "Phone number of guest " + guest + " has a wrong form.");
+            }
+        }
+        
+        if(guest.getIdCardNum() == null || guest.getIdCardNum().isEmpty()){
+            throw new IllegalArgumentException(partOfErrMsg + "failure: "
+                    + "Identification card number of guest " + guest + " is null or empty.");
+        }
+        
+        if(!Pattern.matches("[0-9]{9}", guest.getIdCardNum())){
+            throw new IllegalArgumentException(partOfErrMsg + "failure: "
+                    + " Identification card number of guest " + guest + " has a wrong form.");
+        }
+        
+        if(guest.getBorn() == null){
+            throw new IllegalArgumentException(partOfErrMsg + "failure: "
+                    + "Date of birth of guest " + guest + " is null.");
+        }
+    }
+    
+    private void checkReservationIsValid(Reservation reservation, boolean idShouldBeNull, String partOfErrMsg){
+        if (reservation == null) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Reservation is null.");
+        }
+        
+        if(idShouldBeNull){
+            if (reservation.getId() != null) {
+                throw new IllegalArgumentException(partOfErrMsg + "failure: ID of reservation" + reservation + " is preset.");
+            }
+        }else{
+            if (reservation.getId() == null) {
+                throw new IllegalArgumentException(partOfErrMsg + "failure: ID of reservation" + reservation + " is not set (is null).");
+            }
+        }
+        
+        checkRoomIsValid(reservation.getRoom(),partOfErrMsg);
+        checkGuestIsValid(reservation.getGuest(),partOfErrMsg);
+               
+        if (reservation.getStartTime() == null) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Start time of reservation " + reservation + " is null.");
+        }
+        
+        if (reservation.getExpectedEndTime() == null) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Expected end time of reservation " + reservation + " is null.");
+        }
+        
+        if (reservation.getExpectedEndTime().before(reservation.getStartTime())) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Expected time of reservation " + reservation 
+                    + " is before its start time.");
+        }
+        
+        if (reservation.getServicesSpendings() == null) {
+            throw new IllegalArgumentException(partOfErrMsg + "failure: Services spendings of reservation " + reservation
+                        + " is null.");
+        }
     }
     
 }

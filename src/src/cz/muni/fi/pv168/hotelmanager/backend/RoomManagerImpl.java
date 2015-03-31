@@ -25,8 +25,8 @@ public class RoomManagerImpl implements RoomManager {
 
     private DataSource dataSource;
     
-    public void setDataSource(DataSource ds){
-        this.dataSource = ds;
+    public RoomManagerImpl(DataSource dataSource){
+        this.dataSource = dataSource;
     }
     
     

@@ -30,9 +30,9 @@ public class GuestManagerImpl implements GuestManager{
 
     private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
     
-    private DataSource dataSource;
+    private final DataSource dataSource;
     
-    public void setDataSource(DataSource dataSource) {
+    public GuestManagerImpl(DataSource dataSource){
         this.dataSource = dataSource;
     }
     
@@ -308,7 +308,7 @@ public class GuestManagerImpl implements GuestManager{
         String phone = guest.getPhone();
         
         if(phone != null){
-            if(phone.equals("")){
+            if(phone.isEmpty()){
                 throw new IllegalArgumentException(partOfErrMsg + " DB failure: "
                         + "Phone number of guest " + guest.toString() + " is empty.");
             }        

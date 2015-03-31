@@ -49,8 +49,7 @@ public class GuestManagerImplTest {
     public void setUp() throws SQLException {
         dataSource = prepareDataSource();
         DBUtils.tryCreateTables(dataSource,GuestManager.class.getResourceAsStream("createTables.sql"));
-        manager = new GuestManagerImpl();
-        manager.setDataSource(dataSource);
+        manager = new GuestManagerImpl(dataSource);
     }
     
     @After
