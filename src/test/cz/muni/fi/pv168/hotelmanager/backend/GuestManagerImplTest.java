@@ -8,10 +8,13 @@ package cz.muni.fi.pv168.hotelmanager.backend;
 
 import cz.muni.fi.pv168.common.DBUtils;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.Before;
@@ -31,6 +34,8 @@ public class GuestManagerImplTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
     
+    private static DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
+    
     private static DataSource prepareDataSource(){
         BasicDataSource bds = new BasicDataSource();
         bds.setUrl("jdbc:derby:memory:SSHotelGuestEvidenceDB;create=true");
@@ -43,7 +48,7 @@ public class GuestManagerImplTest {
     @Before
     public void setUp() throws SQLException {
         dataSource = prepareDataSource();
-        DBUtils.executeSqlScript(dataSource,GuestManager.class.getResourceAsStream("createTables.sql"));
+        DBUtils.tryCreateTables(dataSource,GuestManager.class.getResourceAsStream("createTables.sql"));
         manager = new GuestManagerImpl();
         manager.setDataSource(dataSource);
     }
@@ -346,9 +351,9 @@ public class GuestManagerImplTest {
         
         Guest expGuest1 = new GuestBuilder().build();
         Guest expGuest2 = new GuestBuilder().name("Dion Xen Chan").phone(null)
-                                            .idCardNum("144780025").born(new Date(0l)).build();
+                                            .idCardNum("144780025").born(dateFromString("01/01/1970")).build();
         Guest expGuest3 = new GuestBuilder().name("John Dwight-Cannady").phone("666 878 321")
-                                            .idCardNum("654001548").born(new Date(-14_000l)).build();
+                                            .idCardNum("654001548").born(dateFromString("26/05/1958")).build();
         
         manager.createGuest(expGuest1);
         manager.createGuest(expGuest2);
@@ -370,7 +375,7 @@ public class GuestManagerImplTest {
     public void updateGuestWithNameWithoutHyphen(){
         Guest guest1 = new GuestBuilder().build();
         Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
-                                         .idCardNum("654001548").born(new Date(0l)).build();
+                                         .idCardNum("654001548").born(dateFromString("01/01/1970")).build();
         Guest guest3 = new GuestBuilder().name("Karel Turek").build();
         
         manager.createGuest(guest1);
@@ -389,7 +394,7 @@ public class GuestManagerImplTest {
     public void updateGuestWithNameWithHyphen(){
         Guest guest1 = new GuestBuilder().build();
         Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
-                                         .idCardNum("654001548").born(new Date(0l)).build();
+                                         .idCardNum("654001548").born(dateFromString("01/01/1970")).build();
         Guest guest3 = new GuestBuilder().name("John Dwight-Cannady").build();
         
         manager.createGuest(guest1);
@@ -408,7 +413,7 @@ public class GuestManagerImplTest {
     public void updateGuestWithPhone(){
         Guest guest1 = new GuestBuilder().build();
         Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
-                                         .idCardNum("654001548").born(new Date(0l)).build();
+                                         .idCardNum("654001548").born(dateFromString("01/01/1970")).build();
         Guest guest3 = new GuestBuilder().phone("111 222 333").build();
         
         manager.createGuest(guest1);
@@ -427,7 +432,7 @@ public class GuestManagerImplTest {
     public void updateGuestWithPhoneWithHyphens(){
         Guest guest1 = new GuestBuilder().build();
         Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
-                                         .idCardNum("654001548").born(new Date(0l)).build();
+                                         .idCardNum("654001548").born(dateFromString("01/01/1970")).build();
         Guest guest3 = new GuestBuilder().phone("(+458)-111-222-333").build();
         
         manager.createGuest(guest1);
@@ -446,7 +451,7 @@ public class GuestManagerImplTest {
     public void updateGuestWithNullPhone(){
         Guest guest1 = new GuestBuilder().build();
         Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
-                                         .idCardNum("654001548").born(new Date(0l)).build();
+                                         .idCardNum("654001548").born(dateFromString("01/01/1970")).build();
         Guest guest3 = new GuestBuilder().phone(null).build();
         
         manager.createGuest(guest1);
@@ -465,7 +470,7 @@ public class GuestManagerImplTest {
     public void updateGuestWithIdCardNum(){
         Guest guest1 = new GuestBuilder().build();
         Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
-                                         .idCardNum("654001548").born(new Date(0l)).build();
+                                         .idCardNum("654001548").born(dateFromString("01/01/1970")).build();
         Guest guest3 = new GuestBuilder().idCardNum("555444123").build();
         
         manager.createGuest(guest1);
@@ -484,8 +489,8 @@ public class GuestManagerImplTest {
     public void updateGuestWithDateOfBirth(){
         Guest guest1 = new GuestBuilder().build();
         Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
-                                         .idCardNum("654001548").born(new Date(0l)).build();
-        Guest guest3 = new GuestBuilder().born(new Date(-14_000l)).build();
+                                         .idCardNum("654001548").born(dateFromString("01/01/1970")).build();
+        Guest guest3 = new GuestBuilder().born(dateFromString("26/05/1958")).build();
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
@@ -785,7 +790,7 @@ public class GuestManagerImplTest {
     public void deleteGuest(){
         Guest guest1 = new GuestBuilder().build();
         Guest guest2 = new GuestBuilder().name("Leonard Kantor").phone("666-878-321")
-                                         .idCardNum("654001548").born(new Date(0l)).build();
+                                         .idCardNum("654001548").born(dateFromString("01/01/1970")).build();
         
         manager.createGuest(guest1);
         manager.createGuest(guest2);
@@ -843,11 +848,19 @@ public class GuestManagerImplTest {
         assertEquals(expGuest.getBorn(), actGuest.getBorn());        
     }
     
+    private Date dateFromString(String date){
+        try {
+            return dateFormat.parse(date);
+        } catch (ParseException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
     class GuestBuilder{    
         private String name = "Pepa Korek";
         private String phone = "(+420) 777 888 999";
         private String idCardNum = "123456789";    
-        private Date born = new Date(64_800_000_000l);
+        private Date born = dateFromString("03/10/1990");
 
         public GuestBuilder(){
 

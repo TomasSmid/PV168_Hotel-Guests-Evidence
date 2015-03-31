@@ -6,6 +6,7 @@
 
 package cz.muni.fi.pv168.hotelmanager.backend;
 
+import cz.muni.fi.pv168.common.DBUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -51,32 +52,45 @@ public class GuestManagerImpl implements GuestManager{
         
         checkDataSource();
         
-        try(Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(
-                                             "INSERT INTO Guest (name,phone,id_card_num,born) VALUES (?,?,?,?)",
-                                             Statement.RETURN_GENERATED_KEYS)){
-            ps.setString(1, guest.getName());
-            ps.setString(2, guest.getPhone());
-            ps.setString(3, guest.getIdCardNum());
-            ps.setTimestamp(4, dateToTimestamp(guest.getBorn()));
+        try(Connection connection = dataSource.getConnection()){
             
-            int count = ps.executeUpdate();
-            if(count != 1){
-                throw new ServiceFailureException("Internal error: "
-                        + "More rows inserted when trying to insert guest " + guest.toString());
+            connection.setAutoCommit(false);                    
+            try(PreparedStatement ps = connection.prepareStatement(
+                            "INSERT INTO Guest (name,phone,id_card_num,born) VALUES (?,?,?,?)",
+                            Statement.RETURN_GENERATED_KEYS)){
+                ps.setString(1, guest.getName());
+                ps.setString(2, guest.getPhone());
+                ps.setString(3, guest.getIdCardNum());
+                ps.setTimestamp(4, dateToTimestamp(guest.getBorn()));
+
+                int count = ps.executeUpdate();
+                if(count != 1){
+                    throw new ServiceFailureException("Internal error: "
+                            + "More rows inserted when trying to insert guest " + guest);
+                }
+
+                ResultSet keyRS = ps.getGeneratedKeys();
+                Long id = getIdFromKey(keyRS, guest);
+                guest.setId(id);
+
+                connection.commit();
+            
+            }catch(SQLException ex){
+                String errMsg = "Error occured when inserting guest " + guest + " into DB.";
+                logger.log(Level.SEVERE, errMsg, ex);
+                throw new ServiceFailureException(errMsg, ex);
+            }finally{
+                DBUtils.doRollbackQuietly(connection);
+                DBUtils.switchAutocommitBackToTrue(connection);
             }
             
-            ResultSet keyRS = ps.getGeneratedKeys();
-            Long id = getIdFromKey(keyRS, guest);
-            guest.setId(id);
-            
-        }catch(SQLException ex){
-            String errMsg = "Error occured when inserting guest " + guest.toString() + " into DB.";
+        } catch (SQLException ex) {
+            String errMsg = "Connection error occured when inserting guest " + guest + " into DB.";
             logger.log(Level.SEVERE, errMsg, ex);
             throw new ServiceFailureException(errMsg, ex);
         }
-        
     }
+    
 
     @Override
     public void updateGuest(Guest guest) {
@@ -94,24 +108,37 @@ public class GuestManagerImpl implements GuestManager{
         
         checkDataSource();
         
-        try(Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(
-                                             "UPDATE Guest SET name = ?, phone = ?, id_card_num = ?,"
-                                                     + "born = ? WHERE id = ?")){
-            ps.setString(1, guest.getName());
-            ps.setString(2, guest.getPhone());
-            ps.setString(3, guest.getIdCardNum());
-            ps.setTimestamp(4, dateToTimestamp(guest.getBorn()));
-            ps.setLong(5, guest.getId());
+        try(Connection connection = dataSource.getConnection()){
             
-            int count = ps.executeUpdate();
-            if(count != 1){
-                throw new ServiceFailureException("Internal error: "
-                        + "More rows updated when trying to update guest " + guest.toString());
+            connection.setAutoCommit(false);
+            try(PreparedStatement ps = connection.prepareStatement(
+                            "UPDATE Guest SET name = ?, phone = ?, id_card_num = ?,"
+                                + "born = ? WHERE id = ?")){
+                ps.setString(1, guest.getName());
+                ps.setString(2, guest.getPhone());
+                ps.setString(3, guest.getIdCardNum());
+                ps.setTimestamp(4, dateToTimestamp(guest.getBorn()));
+                ps.setLong(5, guest.getId());
+
+                int count = ps.executeUpdate();
+                if(count != 1){
+                    throw new ServiceFailureException("Internal error: "
+                            + "More rows updated when trying to update guest " + guest.toString());
+                }
+
+                connection.commit();
+
+            }catch(SQLException ex){
+                String errMsg = "Error occured when updating guest " + guest.toString() + " in DB.";
+                logger.log(Level.SEVERE, errMsg, ex);
+                throw new ServiceFailureException(errMsg, ex);
+            }finally{
+                DBUtils.doRollbackQuietly(connection);
+                DBUtils.switchAutocommitBackToTrue(connection);
             }
             
-        }catch(SQLException ex){
-            String errMsg = "Error occured when updating guest " + guest.toString() + " in DB.";
+        } catch (SQLException ex) {
+            String errMsg = "Connection error occured when updating guest " + guest.toString() + " in DB.";
             logger.log(Level.SEVERE, errMsg, ex);
             throw new ServiceFailureException(errMsg, ex);
         }
@@ -126,22 +153,34 @@ public class GuestManagerImpl implements GuestManager{
         
         checkGuestsIdIsNotNull(guest, "Deleting guest from");
         
-        try(Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(
-                                             "DELETE FROM Guest WHERE id = ?")){
-            ps.setLong(1, guest.getId());
+        try(Connection connection = dataSource.getConnection()){
             
-            int count = ps.executeUpdate();
-            if(count != 1){
-                throw new ServiceFailureException("Internal error: "
-                        + "More rows deleted when trying to delete guest " + guest.toString());
+            connection.setAutoCommit(false);
+            try(PreparedStatement ps = connection.prepareStatement("DELETE FROM Guest WHERE id = ?")){
+                ps.setLong(1, guest.getId());
+
+                int count = ps.executeUpdate();
+                if(count != 1){
+                    throw new ServiceFailureException("Internal error: "
+                            + "More rows deleted when trying to delete guest " + guest.toString());
+                }
+
+                connection.commit();
+            
+            }catch(SQLException ex){
+                String errMsg = "Error occured when deleting guest " + guest.toString() + " from DB.";
+                logger.log(Level.SEVERE, errMsg, ex);
+                throw new ServiceFailureException(errMsg, ex);
+            }finally{
+                DBUtils.doRollbackQuietly(connection);
+                DBUtils.switchAutocommitBackToTrue(connection);
             }
             
         }catch(SQLException ex){
-            String errMsg = "Error occured when deleting guest " + guest.toString() + " from DB.";
-            logger.log(Level.SEVERE, errMsg, ex);
-            throw new ServiceFailureException(errMsg, ex);
-        }
+                String errMsg = "Connection error occured when deleting guest " + guest.toString() + " from DB.";
+                logger.log(Level.SEVERE, errMsg, ex);
+                throw new ServiceFailureException(errMsg, ex);
+            }
     }
 
     @Override

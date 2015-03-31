@@ -188,18 +188,19 @@ public class ReservationManagerImpl implements ReservationManager{
                     + " - no key found");
         }
     }
-    /*
+    
     private Reservation resultSetToReservation(ResultSet rs) throws SQLException {
         Reservation res = new Reservation();
-        res.setId(rs.getLong("id"));
+       
+        /*res.setId(rs.getLong("id"));
         Long roomId =  rs.getLong("room_id");
         
         res.setRoom(rs.getInt("capacity"));
         res.setPrice(rs.getBigDecimal("price"));
         res.setFloor(rs.getInt("floor"));
         res.setNumber(rs.getString("number"));
-        res.setType(RoomType.valueOf(rs.getString("room_type").toUpperCase()) ); // problem s case?
+        res.setType(RoomType.valueOf(rs.getString("room_type").toUpperCase()) ); // problem s case?*/
         return res;
     }
-    */
+    
 }
