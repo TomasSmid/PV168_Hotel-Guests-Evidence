@@ -39,7 +39,7 @@ public class Reservation {
     }
 
     public Date getStartTime() {
-        return new Date(startTime.getTime());
+        return (startTime == null ? null : new Date(startTime.getTime()));
     }
 
     public void setStartTime(Date startTime) {
@@ -61,7 +61,7 @@ public class Reservation {
     }
 
     public Date getExpectedEndTime() {
-        return new Date(expectedEndTime.getTime());
+        return (expectedEndTime == null ? null : new Date(expectedEndTime.getTime()));
     }
 
     public void setExpectedEndTime(Date expectedEndTime) {
@@ -114,6 +114,7 @@ public class Reservation {
     @Override
     public String toString() {
         return "Reservation[" + "id:" + id + 
+                ", room:" + room +
                 ", start time:" + startTime + 
                 ", expected end time:" + expectedEndTime +
                 ", real end time:" + realEndTime +

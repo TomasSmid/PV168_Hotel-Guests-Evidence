@@ -238,6 +238,7 @@ public class ReservationManagerImplTest {
         storeRoom(room3);
         r1.setRoom(room3);
         manager.updateReservation(r1);
+        
         assertDeepRoomEquals(room3, r1.getRoom());
         assertEquals(dateFromString("01/01/2015").getTime(), r1.getStartTime().getTime());
         assertNull(r1.getRealEndTime());
@@ -274,14 +275,14 @@ public class ReservationManagerImplTest {
         Long resId1 = r1.getId();
 
         r1 = manager.getReservationById(resId1);
-        Date d1 = new Date(64_300_000_000l);
-        r1.setStartTime(d1);
+        r1.setStartTime(dateFromString("03/01/2015"));
         manager.updateReservation(r1);
+        
         room3.setId(r1.getRoom().getId());
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(d1.getTime(), r1.getStartTime().getTime());
+        assertEquals(dateFromString("03/01/2015").getTime(), r1.getStartTime().getTime());
         assertNull(r1.getRealEndTime());
-        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
+        assertEquals(dateFromString("10/01/2015").getTime(), r1.getExpectedEndTime().getTime());
         guest.setId(r1.getGuest().getId());
         assertDeepGuestEquals(guest, r1.getGuest());
         assertEquals(bd, r1.getServicesSpendings());
@@ -314,14 +315,14 @@ public class ReservationManagerImplTest {
         Long resId1 = r1.getId();
         
         r1 = manager.getReservationById(resId1);
-        Date d2 = new Date(65_400_000_000l);
-        r1.setRealEndTime(d2);
+        r1.setRealEndTime(dateFromString("08/01/2015"));
         manager.updateReservation(r1);
+        
         room3.setId(r1.getRoom().getId());
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
-        assertEquals(d2.getTime(), r1.getRealEndTime().getTime());
-        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
+        assertEquals(dateFromString("01/01/2015").getTime(), r1.getStartTime().getTime());
+        assertEquals(dateFromString("08/01/2015").getTime(), r1.getRealEndTime().getTime());
+        assertEquals(dateFromString("10/01/2015").getTime(), r1.getExpectedEndTime().getTime());
         guest.setId(r1.getGuest().getId());
         assertDeepGuestEquals(guest, r1.getGuest());
         assertEquals(bd, r1.getServicesSpendings());
@@ -332,31 +333,37 @@ public class ReservationManagerImplTest {
     
     @Test
     public void updateReservationExpectedEndTime() {
-        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", new Date(14_000l));
+        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", dateFromString("24/04/1989"));
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
-        Room room3 = newRoom(3656351487L, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(null, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+                                         .servicesSpendings(new BigDecimal(5420.00)).build();
         BigDecimal bd = new BigDecimal(0.00);
+        storeGuest(r1.getGuest());
+        storeGuest(guest2);
+        storeRoom(r1.getRoom());
+        storeRoom(room2);
         manager.createReservation(r1);
         manager.createReservation(r2);
 
         Long resId1 = r1.getId();
         
         r1 = manager.getReservationById(resId1);
-        Date d3 = new Date(66_800_000_000l);
-        r1.setExpectedEndTime(d3);
+        r1.setExpectedEndTime(dateFromString("15/01/2015"));
         manager.updateReservation(r1);
+        
+        room3.setId(r1.getRoom().getId());
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
-        assertEquals(null, r1.getRealEndTime().getTime());
-        assertEquals(d3.getTime(), r1.getExpectedEndTime().getTime());
+        assertEquals(dateFromString("01/01/2015").getTime(), r1.getStartTime().getTime());
+        assertNull(r1.getRealEndTime());
+        assertEquals(dateFromString("15/01/2015").getTime(), r1.getExpectedEndTime().getTime());
+        guest.setId(r1.getGuest().getId());
         assertDeepGuestEquals(guest, r1.getGuest());
         assertEquals(bd, r1.getServicesSpendings());
         
@@ -367,30 +374,37 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationGuest() {
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
-        Room room3 = newRoom(3656351487L, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(null, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+                                         .servicesSpendings(new BigDecimal(5420.00)).build();
         BigDecimal bd = new BigDecimal(0.00);
+        storeGuest(r1.getGuest());
+        storeGuest(guest2);
+        storeRoom(r1.getRoom());
+        storeRoom(room2);
         manager.createReservation(r1);
         manager.createReservation(r2);
 
         Long resId1 = r1.getId();
         
         r1 = manager.getReservationById(resId1);
-        Guest guest3 = newGuest("Franco Bernardi", null, "1020304059", new Date(-60_054_147l));
+        Guest guest3 = newGuest("Franco Bernardi", null, "102030405", dateFromString("20/09/1992"));
+        storeGuest(guest3);
         r1.setGuest(guest3);
         manager.updateReservation(r1);
+        
+        room3.setId(r1.getRoom().getId());
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
-        assertEquals(null, r1.getRealEndTime().getTime());
-        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
-        assertDeepGuestEquals(guest3, r1.getGuest());
+        assertEquals(dateFromString("01/01/2015").getTime(), r1.getStartTime().getTime());
+        assertNull(r1.getRealEndTime());
+        assertEquals(dateFromString("10/01/2015").getTime(), r1.getExpectedEndTime().getTime());
+        assertDeepGuestEquals(guest3, r1.getGuest());        
         assertEquals(bd, r1.getServicesSpendings());
         
         // Check if updates didn't affected other records
@@ -399,18 +413,21 @@ public class ReservationManagerImplTest {
 
     @Test
     public void updateReservationServicesSpendings() {
-        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", new Date(14_000l));
+        Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", dateFromString("24/04/1989"));
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
-        Room room3 = newRoom(3656351487L, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(null, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.50)).build();
-
+                                         .servicesSpendings(new BigDecimal(5420.00)).build();
+        storeGuest(r1.getGuest());
+        storeGuest(guest2);
+        storeRoom(r1.getRoom());
+        storeRoom(room2);
         manager.createReservation(r1);
         manager.createReservation(r2);
 
@@ -418,15 +435,17 @@ public class ReservationManagerImplTest {
         
 
         r1 = manager.getReservationById(resId1);
-        BigDecimal bd2 = new BigDecimal(100.00);
-        r1.setServicesSpendings(bd2);
+        r1.setServicesSpendings(new BigDecimal(100.00));
         manager.updateReservation(r1);
+        
+        room3.setId(r1.getRoom().getId());
         assertDeepRoomEquals(room3, r1.getRoom());
-        assertEquals(new Date(64_800_000_000_000l).getTime(), r1.getStartTime().getTime());
-        assertEquals(null, r1.getRealEndTime().getTime());
-        assertEquals(new Date(65_664_000_000_000l).getTime(), r1.getExpectedEndTime().getTime());
+        assertEquals(dateFromString("01/01/2015").getTime(), r1.getStartTime().getTime());
+        assertNull(r1.getRealEndTime());
+        assertEquals(dateFromString("10/01/2015").getTime(), r1.getExpectedEndTime().getTime());
+        guest.setId(r1.getGuest().getId());
         assertDeepGuestEquals(guest, r1.getGuest());
-        assertEquals(bd2, r1.getServicesSpendings());
+        assertEquals(new BigDecimal(100.00), r1.getServicesSpendings());
 
         // Check if updates didn't affected other records
         assertDeepReservationEquals(r2, manager.getReservationById(r2.getId()));
@@ -443,6 +462,8 @@ public class ReservationManagerImplTest {
     public void updateReservationWithWrongId() {
 
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -456,6 +477,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithDecrementedId() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -469,6 +492,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithIncrementedId() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -482,6 +507,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithNullRoom() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -495,6 +522,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithNullStartTime() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -509,6 +538,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithNullExpectedEndTime() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -522,6 +553,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithStartTimeBiggerThanExpectedEndTime() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
         
@@ -535,6 +568,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithNullGuest() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -548,6 +583,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithNullServiceSpendings() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -561,6 +598,8 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationWithNegativeServiceSpendings() {
         Reservation res = new ResBuilder().build();
+        storeRoom(res.getRoom());
+        storeGuest(res.getGuest());
         manager.createReservation(res);
         Long resId = res.getId();
 
@@ -573,16 +612,19 @@ public class ReservationManagerImplTest {
 
     @Test
     public void deleteReservation() {
-
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(474748512L, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.50)).build();
+                                         .servicesSpendings(new BigDecimal(5420.00)).build();
+        storeGuest(r1.getGuest());
+        storeGuest(guest2);
+        storeRoom(r1.getRoom());
+        storeRoom(room2);
         manager.createReservation(r1);
         manager.createReservation(r2);
 
@@ -616,23 +658,23 @@ public class ReservationManagerImplTest {
     @Test
     public void deleteReservationWithWrongId() {
         Reservation res = new ResBuilder().build();
-
         res.setId(1l);
-        exception.expect(IllegalArgumentException.class);
+        
+        exception.expect(ServiceFailureException.class);
         manager.deleteReservation(res);
 
     }
 
     @Test
     public void findReservationForGuestWithNullAttribute() {
-
-        assertTrue(manager.findReservationsForGuest(null).isEmpty());
+        exception.expect(IllegalArgumentException.class);
+        manager.findReservationsForGuest(null);
     }
 
     @Test
     public void findReservationForRoomWithNullAttribute() {
-
-        assertTrue(manager.findReservationsForRoom(null).isEmpty());
+        exception.expect(IllegalArgumentException.class);
+        manager.findReservationsForRoom(null); 
     }    
     
     @Test

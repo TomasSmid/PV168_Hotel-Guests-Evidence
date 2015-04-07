@@ -129,6 +129,11 @@ public class ReservationManagerImpl implements ReservationManager{
     public void updateReservation(Reservation reservation) {
         checkReservationIsValid(reservation, false,"Updating reservation ");
         
+        if (reservation.getServicesSpendings().compareTo(BigDecimal.ZERO) == -1) {
+            throw new IllegalArgumentException("Updating reservation failure: Services spendings of reservation " + reservation
+                        + " is negative.");
+        }
+            
         checkDataSource();
         
         try (Connection conn = dataSource.getConnection()) {
@@ -142,7 +147,7 @@ public class ReservationManagerImpl implements ReservationManager{
                 st.setTimestamp(4, dateToTimestamp(reservation.getRealEndTime()));
                 st.setTimestamp(5, dateToTimestamp(reservation.getExpectedEndTime()));
                 st.setBigDecimal(6, reservation.getServicesSpendings());
-                st.setLong(6,reservation.getId());
+                st.setLong(7,reservation.getId());
                 if(st.executeUpdate()!=1) {
                     throw new IllegalArgumentException("cannot update reservation "+reservation);
                 }                
