@@ -314,6 +314,14 @@ public class ReservationManagerImpl implements ReservationManager{
 
     @Override
     public List<Room> findAllUnoccupiedRooms(Date from, Date to) {
+        if(from == null){
+            throw new IllegalArgumentException("Retrieving all unoccupied rooms failure: From date argument is null");
+        }
+        
+        if(to == null){
+            throw new IllegalArgumentException("Retrieving all unoccupied rooms failure: To date argument is null");
+        }
+        
         if(from.getTime() > to.getTime()){
             throw new IllegalArgumentException("Retrieving all unoccupied rooms failure: From date after to date.");
         }
