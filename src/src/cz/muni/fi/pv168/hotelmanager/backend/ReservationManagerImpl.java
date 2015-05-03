@@ -8,13 +8,18 @@ package cz.muni.fi.pv168.hotelmanager.backend;
 
 import cz.muni.fi.pv168.common.DBUtils;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,9 +37,11 @@ public class ReservationManagerImpl implements ReservationManager{
     
     private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
     private final DataSource dataSource;
+    private final TimeManager timeManager;
     
-    public ReservationManagerImpl(DataSource dataSource){
+    public ReservationManagerImpl(DataSource dataSource, TimeManager tm){
         this.dataSource = dataSource;
+        this.timeManager = tm;
     }
     
     @Override
@@ -256,16 +263,23 @@ public class ReservationManagerImpl implements ReservationManager{
     }
 
     @Override
-    public boolean isRoomAvailable(Room room) {
+    public boolean isRoomAvailable(Room room, Date to) {
         checkRoomIsValid(room,"Unquiring room for availability ");
+        if(to == null){
+            throw new IllegalArgumentException("Unquiring room for availability failure: Date \"to\" is null");
+        }                
+        if(timeManager.getCurrentDate().getTime() > to.getTime()){
+            throw new IllegalArgumentException("Unquiring room for availability failure: Current date is after date \"to\"");
+        }
         checkDataSource();
         
         try(Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(
-                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings "
-                    + "FROM Reservation WHERE room_id = ? AND real_end_time IS NOT NULL "
-                            + "AND expected_date < CURRENT_DATE")){
-            ps.setLong(1, room.getId());
+                    "SELECT id FROM Reservation WHERE room_id = ? AND real_end_time IS NULL AND "
+                            + "(start_time <= ? OR start_time <= ? )")){
+            ps.setLong(1, room.getId());            
+            ps.setTimestamp(2, dateToTimestamp(timeManager.getCurrentDate()));
+            ps.setTimestamp(3, dateToTimestamp(to));
             ResultSet rs = ps.executeQuery();
             
             return (!rs.next());
@@ -278,38 +292,11 @@ public class ReservationManagerImpl implements ReservationManager{
     }
 
     @Override
-    public BigDecimal getReservationPrice(Reservation reservation) {
-        checkReservationIsValid(reservation,false,"Retrieving reservation for its price ");
-        checkDataSource();
+    public BigDecimal getReservationPrice(Reservation reservation) {        
+        checkReservationIsValid(reservation,false,"Retrieving reservation for its price "); 
         
-        try(Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(
-                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings "
-                    + "FROM Reservation WHERE id = ?")){
-            ps.setLong(1, reservation.getId());
-            ResultSet rs = ps.executeQuery();
-            
-            Reservation retRes = null;
-            if(rs.next()){
-                retRes = resultSetToReservation(rs);
-                if(rs.next()){
-                    throw new ServiceFailureException("Internal error: More entities with the same id found "
-                            + "(source id: " + reservation.getId() + ", found " + retRes + " and " + resultSetToReservation(rs));
-                }       
-            }
-            
-            if(retRes != null){
-                return computeReservationPrice(retRes);
-            }else{
-                return null;
-            }
-            
-        } catch (SQLException ex) {
-            String errMsg = "Error occured when retrieving reservation " + reservation + " from DB in order to compute its price.";
-            logger.log(Level.SEVERE, errMsg, ex);
-            throw new ServiceFailureException(errMsg, ex);
-        }
-        
+        Reservation retRes = getReservationById(reservation.getId());        
+        return (retRes == null ? null : computeReservationPrice(retRes));        
     }
 
     @Override
@@ -328,16 +315,17 @@ public class ReservationManagerImpl implements ReservationManager{
         
         try(Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(
-                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings "
-                    + "FROM Reservation WHERE id NOT IN ((SELECT id FROM Reservation WHERE start_time > ? AND start_time < ? AND expected_end_time > ?) AND"
-                            +                           "(SELECT id FROM Reservation WHERE start_time < ? AND expected_end_time > ?) AND"
-                            +                           "(SELECT id FROM Reservation WHERE expected_end_time > ? AND expected_end_time < ?) AND"
-                            +                           "(SELECT id FROM Reservation WHERE start_time > ? AND expected_end_time < ?) AND"
-                            +                           "(SELECT id FROM Reservation WHERE start_time = ? AND expected_end_time = ?) AND"
-                            +                           "(SELECT id FROM Reservation WHERE start_time > ? AND start_time = ?) AND"
-                            +                           "(SELECT id FROM Reservation WHERE expected_end_time > ? AND expected_end_time = ?) AND"
-                            +                           "(SELECT id FROM Reservation WHERE start_time = ? AND start_time < ? AND expected_end_time > ?) AND"
-                            +                           "(SELECT id FROM Reservation WHERE expected_end_time = ? AND expected_end_time < ?)) AND real_end_time IS NOT NULL")){
+                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings FROM Reservation WHERE "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time > ? AND start_time < ? AND expected_end_time > ?) AND "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time < ? AND expected_end_time > ?) AND "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE expected_end_time > ? AND expected_end_time < ?) AND "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time > ? AND expected_end_time < ?) AND "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time = ? AND expected_end_time = ?) AND "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time > ? AND start_time = ?) AND "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE expected_end_time > ? AND expected_end_time = ?) AND "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time = ? AND start_time < ? AND expected_end_time > ?) AND "
+                            + "id NOT IN (SELECT id FROM Reservation WHERE expected_end_time = ? AND expected_end_time < ?) AND "
+                            + "real_end_time IS NOT NULL")){
             ps.setTimestamp(1, dateToTimestamp(from));
             ps.setTimestamp(2, dateToTimestamp(to));
             ps.setTimestamp(3, dateToTimestamp(to));
@@ -382,7 +370,8 @@ public class ReservationManagerImpl implements ReservationManager{
         try(Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(
                     "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings "
-                            + "FROM Reservation WHERE real_end_time IS NULL AND start_time < CURRENT_TIME")){
+                            + "FROM Reservation WHERE real_end_time IS NULL AND start_time <= ? ")){
+            ps.setTimestamp(1, dateToTimestamp(timeManager.getCurrentDate()));
             ResultSet rs = ps.executeQuery();
             
             List<Reservation> retRes = new ArrayList<>();
@@ -402,7 +391,7 @@ public class ReservationManagerImpl implements ReservationManager{
     private Timestamp dateToTimestamp(Date date){
         if (date == null) {
             return null;
-        }
+        }       
         
         return (date instanceof Timestamp ? (Timestamp) date : new Timestamp(date.getTime()));
     }
@@ -501,7 +490,7 @@ public class ReservationManagerImpl implements ReservationManager{
             throw new IllegalArgumentException(partOfErrMsg + "failure: Name of guest " + guest + " is null.");
         }
         
-        if (!Pattern.matches("[A-Z][a-zA-Z]*([ |\\-][A-Z][a-zA-Z]*)*", guest.getName())){
+        if (!Pattern.matches("[A-ZČĎŇŘŠŤŽĚÁÉÍÓÚÝ][a-zA-ZčČďĎňŇřŘšŠťŤžŽěĚáÁéÉíÍóÓúÚůýÝ]*([ |\\-][A-ZČĎŇŘŠŤŽĚÁÉÍÓÚÝ][a-zA-ZčČďĎňŇřŘšŠťŤžŽěĚáÁéÉíÍóÓúÚůýÝ]*)*", guest.getName())){
             throw new IllegalArgumentException(partOfErrMsg + "failure: Name of guest " + guest + " has a wrong form.");
         }
         
@@ -570,10 +559,22 @@ public class ReservationManagerImpl implements ReservationManager{
         }
     }
     
-    private BigDecimal computeReservationPrice(Reservation reservation){
+    public BigDecimal computeReservationPrice(Reservation reservation){
         long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
-        long numberOfDays = (reservation.getExpectedEndTime().getTime() 
-                                - reservation.getStartTime().getTime())/DAY_IN_MILLIS;
+        long startTime = reservation.getStartTime().getTime();
+        long endTime;
+        
+        if(reservation.getRealEndTime() != null){
+            endTime = reservation.getRealEndTime().getTime();
+        }else{
+            endTime = (timeManager.getCurrentDate().getTime() > reservation.getExpectedEndTime().getTime() ? 
+                            timeManager.getCurrentDate().getTime() : reservation.getExpectedEndTime().getTime());
+        }
+        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = new Date(endTime);
+        System.out.println("endTime format = " + df.format(date) + " / long = " + endTime);
+        long numberOfDays = (endTime - startTime)/DAY_IN_MILLIS + 1;
+        
         return new BigDecimal(numberOfDays * reservation.getRoom().getPrice().longValue());
     }
     
@@ -582,14 +583,12 @@ public class ReservationManagerImpl implements ReservationManager{
             return null;
         }
         
-        Map<BigDecimal, Guest> aux = new HashMap<>();
-        for(Reservation res : retRes){
-            aux.put(res.getServicesSpendings(), res.getGuest());
-        }
-        int n = 5;
+        Collections.sort(retRes, serviceSpendingsComparator);
         Map<BigDecimal, Guest> ret = new HashMap<>();
-        for(BigDecimal bd : ret.keySet()){
-            ret.put(bd, aux.get(bd));
+        int n = 5;
+        for(Reservation res : retRes){
+            System.out.println("value: " + res.getServicesSpendings());
+            ret.put(res.getServicesSpendings(), res.getGuest());
             --n;
             if(n <= 0){
                 break;
@@ -598,5 +597,13 @@ public class ReservationManagerImpl implements ReservationManager{
         
         return ret;
     }
+    
+    private static Comparator<Reservation> serviceSpendingsComparator = new Comparator<Reservation>() {
+
+        @Override
+        public int compare(Reservation o1, Reservation o2) {
+            return o2.getServicesSpendings().compareTo(o1.getServicesSpendings());
+        }
+    };
     
 }

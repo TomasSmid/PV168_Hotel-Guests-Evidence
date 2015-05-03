@@ -31,7 +31,7 @@ public interface ReservationManager {
     
     public List<Reservation> findReservationsForRoom(Room room);
     
-    public boolean isRoomAvailable(Room room);
+    public boolean isRoomAvailable(Room room, Date to);
     
     public BigDecimal getReservationPrice(Reservation reservation);
     

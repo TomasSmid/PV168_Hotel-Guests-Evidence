@@ -8,16 +8,17 @@ package cz.muni.fi.pv168.hotelmanager.backend;
 
 import cz.muni.fi.pv168.common.DBUtils;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.sql.DataSource;
@@ -28,16 +29,25 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+
 
 /**
  *
  * @author Ondrej Smelko, Tomas Smid
  */
+
 public class ReservationManagerImplTest {
     
     @Rule public ExpectedException exception = ExpectedException.none();
     
-    private static DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
+    //private static DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
+    private static DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     
     private static DataSource prepareDataSource(){
         BasicDataSource bds = new BasicDataSource();
@@ -47,12 +57,14 @@ public class ReservationManagerImplTest {
     
     private ReservationManagerImpl manager;    
     private DataSource dataSource;
+    private TimeManager tmMock;
     
     @Before
     public void setUp() throws SQLException {
+        tmMock = mock(TimeManager.class);
         dataSource = prepareDataSource();
         DBUtils.tryCreateTables(dataSource,ReservationManager.class.getResourceAsStream("createTables.sql"));
-        manager = new ReservationManagerImpl(dataSource);
+        manager = new ReservationManagerImpl(dataSource,tmMock);
     }
     
     @After
@@ -678,15 +690,16 @@ public class ReservationManagerImplTest {
     }    
     
     @Test
-    public void isRoomAvailableWithValidAvailableRoom(){
+    public void isRoomAvailableWithValidAvailableRoom() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
         Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
         Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
         Reservation res1 = new ResBuilder().build();
-        Reservation res2 = new ResBuilder().startTime(dateFromString("07/01/2015"))
-                                           .expectedEndTime(dateFromString("17/01/2015"))
-                                           .realEndTime(dateFromString("17/01/2015"))
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
                                            .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         
@@ -701,19 +714,191 @@ public class ReservationManagerImplTest {
         manager.createReservation(res2);
         manager.createReservation(res3);
         
-        assertTrue("Room " + room2.toString() + " should be available",manager.isRoomAvailable(room2));
+        assertTrue("Room " + room2.toString() + " should be available",manager.isRoomAvailable(room2, dateFromString("12/01/2015")));
     }
     
     @Test
-    public void isRoomAvailableWithValidUnavailableRoom(){
+    public void isRoomAvailableWithValidCloselyAvailableRoom() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
+        Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
+        Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
+        Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
+        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Reservation res1 = new ResBuilder().build();
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+        Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
+        Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
+                                           .expectedEndTime(dateFromString("20/01/2015"))
+                                           .guest(guest4).room(room2).build();                                           
+        
+        storeGuest(res1.getGuest());
+        storeGuest(guest2);
+        storeGuest(guest3);
+        storeGuest(guest4);
+        storeRoom(res1.getRoom());
+        storeRoom(room2);
+        storeRoom(room3);
+        
+        manager.createReservation(res1);
+        manager.createReservation(res2);
+        manager.createReservation(res3);
+        manager.createReservation(res4);
+        
+        assertTrue("Room " + room2.toString() + " should be available",manager.isRoomAvailable(room2, dateFromString("12/01/2015")));
+    }
+    
+    @Test
+    public void isRoomAvailableWithValidCloselyNotAvailableRoom() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
+        Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
+        Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
+        Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
+        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Reservation res1 = new ResBuilder().build();
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+        Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
+        Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
+                                           .expectedEndTime(dateFromString("20/01/2015"))
+                                           .guest(guest4).room(room2).build();                                           
+        
+        storeGuest(res1.getGuest());
+        storeGuest(guest2);
+        storeGuest(guest3);
+        storeGuest(guest4);
+        storeRoom(res1.getRoom());
+        storeRoom(room2);
+        storeRoom(room3);
+        
+        manager.createReservation(res1);
+        manager.createReservation(res2);
+        manager.createReservation(res3);
+        manager.createReservation(res4);
+        
+        assertFalse("Room " + room2.toString() + " should not be available",manager.isRoomAvailable(room2, dateFromString("13/01/2015")));
+    }
+    
+    @Test
+    public void isRoomAvailableWithValidNotAvailableRoom() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
+        Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
+        Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
+        Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
+        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Reservation res1 = new ResBuilder().build();
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+        Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
+        Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
+                                           .expectedEndTime(dateFromString("20/01/2015"))
+                                           .guest(guest4).room(room2).build();                                           
+        
+        storeGuest(res1.getGuest());
+        storeGuest(guest2);
+        storeGuest(guest3);
+        storeGuest(guest4);
+        storeRoom(res1.getRoom());
+        storeRoom(room2);
+        storeRoom(room3);
+        
+        manager.createReservation(res1);
+        manager.createReservation(res2);
+        manager.createReservation(res3);
+        manager.createReservation(res4);
+        
+        assertFalse("Room " + room2.toString() + " should not be available",manager.isRoomAvailable(room2, dateFromString("22/01/2015")));
+    }
+    
+    @Test
+    public void isRoomAvailableCurrentDateSameAsDateTo() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
+        Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
+        Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
+        Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
+        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Reservation res1 = new ResBuilder().build();
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+        Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
+        Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
+                                           .expectedEndTime(dateFromString("20/01/2015"))
+                                           .guest(guest4).room(room2).build();                                           
+        
+        storeGuest(res1.getGuest());
+        storeGuest(guest2);
+        storeGuest(guest3);
+        storeGuest(guest4);
+        storeRoom(res1.getRoom());
+        storeRoom(room2);
+        storeRoom(room3);
+        
+        manager.createReservation(res1);
+        manager.createReservation(res2);
+        manager.createReservation(res3);
+        manager.createReservation(res4);
+        
+        assertTrue("Room " + room2.toString() + " should be available",manager.isRoomAvailable(room2, dateFromString("09/01/2015")));
+    }
+    
+    @Test
+    public void isRoomAvailableCurrentDateAfterDateTo() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("11/01/2015"));
+        Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
+        Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
+        Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
+        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Reservation res1 = new ResBuilder().build();
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+        Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
+        Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
+                                           .expectedEndTime(dateFromString("20/01/2015"))
+                                           .guest(guest4).room(room2).build();                                           
+        
+        storeGuest(res1.getGuest());
+        storeGuest(guest2);
+        storeGuest(guest3);
+        storeGuest(guest4);
+        storeRoom(res1.getRoom());
+        storeRoom(room2);
+        storeRoom(room3);
+        
+        manager.createReservation(res1);
+        manager.createReservation(res2);
+        manager.createReservation(res3);
+        manager.createReservation(res4);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.isRoomAvailable(room2, dateFromString("10/01/2015"));
+    }
+    
+    @Test
+    public void isRoomAvailableCurrentlyUnavailableRoom() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));        
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("15/11/1978"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("16/08/1993"));
         Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
         Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
         Reservation res1 = new ResBuilder().build();
-        Reservation res2 = new ResBuilder().startTime(dateFromString("07/01/2015"))
-                                           .expectedEndTime(dateFromString("17/01/2015"))
-                                           .realEndTime(dateFromString("17/01/2015"))
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
                                            .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         
@@ -729,17 +914,102 @@ public class ReservationManagerImplTest {
         manager.createReservation(res2);
         manager.createReservation(res3);        
         
-        assertFalse("Room " + room3.toString() + " should not be available",manager.isRoomAvailable(room3));
+        assertFalse("Room " + room3.toString() + " should not be available",manager.isRoomAvailable(room3,dateFromString("15/01/2015")));
     }
+    
+    @Test
+    public void isRoomAvailableWithNotAvailableRoomForWholeTimeScope() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));        
+        Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("15/11/1978"));
+        Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("16/08/1993"));
+        Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
+        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
+        Reservation res1 = new ResBuilder().build();
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+        Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
+        Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
+                                           .expectedEndTime(dateFromString("20/01/2015"))
+                                           .guest(guest4).room(room2).build(); 
+        
+        storeGuest(res1.getGuest());
+        storeGuest(guest2);
+        storeGuest(guest3);
+        storeGuest(guest4);
+        storeRoom(res1.getRoom());
+        storeRoom(room2);
+        storeRoom(room3);
+        
+        
+        manager.createReservation(res1);
+        manager.createReservation(res2);
+        manager.createReservation(res3);
+        manager.createReservation(res4);
+        
+        assertFalse("Room " + room2.toString() + " should not be available",manager.isRoomAvailable(room2,dateFromString("15/01/2015")));
+    }
+    
+    @Test
+    public void isRoomAvailableWithNotAvailableRoomDueToExtendedEarlierReservation() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("12/01/2015"));        
+        Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("15/11/1978"));
+        Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("16/08/1993"));
+        Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
+        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
+        Reservation res1 = new ResBuilder().build();
+        Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
+                                           .expectedEndTime(dateFromString("08/01/2015"))
+                                           .realEndTime(dateFromString("08/01/2015"))
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+        Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
+        Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
+                                           .expectedEndTime(dateFromString("20/01/2015"))
+                                           .guest(guest4).room(room2).build(); 
+        
+        storeGuest(res1.getGuest());
+        storeGuest(guest2);
+        storeGuest(guest3);
+        storeGuest(guest4);
+        storeRoom(res1.getRoom());
+        storeRoom(room2);
+        storeRoom(room3);
+        
+        
+        manager.createReservation(res1);
+        manager.createReservation(res2);
+        manager.createReservation(res3);        
+        
+        assertFalse("Room " + room3.toString() + " should not be available",manager.isRoomAvailable(room3,dateFromString("15/01/2015")));
+    }
+    
     
     @Test
     public void isRoomAvailableWithNullRoom(){ 
         exception.expect(IllegalArgumentException.class);
-        manager.isRoomAvailable(null);
+        manager.isRoomAvailable(null,dateFromString("15/01/2015"));
     }
     
     @Test
-    public void getReservationPriceWithValidExistingReservation(){
+    public void isRoomAvailableWithNullDateTo(){
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("12/01/2015"));
+        Reservation res = new ResBuilder().build();
+        
+        storeGuest(res.getGuest());
+        storeRoom(res.getRoom());
+        manager.createReservation(res);
+        
+        exception.expect(IllegalArgumentException.class);
+        manager.isRoomAvailable(res.getRoom(), null);
+    }
+    
+    @Test
+    public void getReservationPriceWithValidExistingReservation() throws Exception{
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
+        
         Reservation res = new ResBuilder().build();
         BigDecimal expPrice = new BigDecimal(15_000.00);
         
@@ -757,7 +1027,7 @@ public class ReservationManagerImplTest {
         Guest guest = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
         Room room = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
         Reservation res = new ResBuilder().build();        
-        Reservation res2 = new ResBuilder().startTime(dateFromString("04/30/2015")) //  fromat: mm/dd/yyyy
+        Reservation res2 = new ResBuilder().startTime(dateFromString("30/04/2015")) //  format: dd/mm/yyyy
                                            .expectedEndTime(dateFromString("05/05/2015"))
                                            .guest(guest).room(room).build();
         
@@ -766,13 +1036,10 @@ public class ReservationManagerImplTest {
         manager.createReservation(res);
         
         storeGuest(guest);
-        storeRoom(room);  
-        manager.createReservation(res2); 
+        storeRoom(room);                
+        res2.setId(2L);
         
         BigDecimal actPrice = manager.getReservationPrice(res2);
-        
-        // asi spatne napsany test cen rezervace vyjde 2500
-        System.out.println("cena rezervace: " + actPrice);
         
         assertNull("Reservation price should be null",actPrice);
     }
@@ -799,16 +1066,16 @@ public class ReservationManagerImplTest {
         Guest guest4 = newGuest("Low Dubruis","300-410-100","111111245",dateFromString("02/01/1970"));
         
         Reservation res1 = new ResBuilder().build();
-        Reservation res2 = new ResBuilder().startTime(dateFromString("01/07/2015"))
-                                           .expectedEndTime(dateFromString("01/17/2015"))
-                                           .realEndTime(dateFromString("01/17/2015"))
+        Reservation res2 = new ResBuilder().startTime(dateFromString("07/01/2015"))
+                                           .expectedEndTime(dateFromString("09/01/2015"))
+                                           .realEndTime(dateFromString("09/01/2015"))
                                            .room(room2).guest(guest2).servicesSpendings(new BigDecimal(5420.50)).build();
-        Reservation res3 = new ResBuilder().startTime(dateFromString("01/18/2015"))
-                                           .expectedEndTime(dateFromString("01/21/2015"))
-                                           .realEndTime(dateFromString("01/21/2015"))
+        Reservation res3 = new ResBuilder().startTime(dateFromString("18/01/2015"))
+                                           .expectedEndTime(dateFromString("21/01/2015"))
+                                           .realEndTime(dateFromString("21/01/2015"))
                                            .room(room3).guest(guest3).build();
-        Reservation res4 = new ResBuilder().startTime(dateFromString("01/24/2015"))
-                                           .expectedEndTime(dateFromString("02/01/2015"))
+        Reservation res4 = new ResBuilder().startTime(dateFromString("24/01/2015"))
+                                           .expectedEndTime(dateFromString("01/02/2015"))
                                            .room(room4).guest(guest4).build();
         
         storeGuest(res1.getGuest());
@@ -824,8 +1091,8 @@ public class ReservationManagerImplTest {
         storeRoom(room4);
         manager.createReservation(res4);
         
-        Date from = dateFromString("01/22/2015");
-        Date to = dateFromString("01/28/2015");
+        Date from = dateFromString("22/01/2015");
+        Date to = dateFromString("28/01/2015");
         List<Room> expRooms = Arrays.asList(room2,room3);
         List<Room> actRooms = manager.findAllUnoccupiedRooms(from, to);
         
@@ -845,17 +1112,17 @@ public class ReservationManagerImplTest {
         Guest guest3 = newGuest("Franco Bernardi",null,"020304059",dateFromString("01/01/1968"));
         Guest guest4 = newGuest("Low Dubruis","300-410-100","111111245",dateFromString("02/01/1970"));
         
-        Reservation res1 = new ResBuilder().realEndTime(dateFromString("01/10/2015")).build();
-        Reservation res2 = new ResBuilder().startTime(dateFromString("01/01/2015"))
-                                           .expectedEndTime(dateFromString("01/17/2015"))
-                                           .realEndTime(dateFromString("01/17/2015"))
+        Reservation res1 = new ResBuilder().realEndTime(dateFromString("10/01/2015")).build();
+        Reservation res2 = new ResBuilder().startTime(dateFromString("11/01/2015"))
+                                           .expectedEndTime(dateFromString("17/01/2015"))
+                                           .realEndTime(dateFromString("17/01/2015"))
                                            .room(room2).guest(guest2).servicesSpendings(new BigDecimal(5420.50)).build();
-        Reservation res3 = new ResBuilder().startTime(dateFromString("12/28/2014"))
-                                           .expectedEndTime(dateFromString("12/31/2014"))
-                                           .realEndTime(dateFromString("12/31/201"))
+        Reservation res3 = new ResBuilder().startTime(dateFromString("28/12/2014"))
+                                           .expectedEndTime(dateFromString("31/12/2014"))
+                                           .realEndTime(dateFromString("31/12/2014"))
                                            .room(room3).guest(guest3).build();
-        Reservation res4 = new ResBuilder().startTime(dateFromString("01/10/2015"))
-                                           .expectedEndTime(dateFromString("01/20/2015")) 
+        Reservation res4 = new ResBuilder().startTime(dateFromString("10/01/2015"))
+                                           .expectedEndTime(dateFromString("20/01/2015")) 
                                            .room(room4).guest(guest4).build();
         
         storeGuest(res1.getGuest());
@@ -871,9 +1138,9 @@ public class ReservationManagerImplTest {
         storeRoom(room4);
         manager.createReservation(res4);
         
-        Date from = new Date(res1.getRealEndTime().getTime()+1);
-        Date to = new Date(res2.getStartTime().getTime()+1);
-        List<Room> expRooms = Arrays.asList(room3,res1.getRoom());
+        Date from = new Date(res3.getRealEndTime().getTime()+1);
+        Date to = new Date(res2.getStartTime().getTime()-1);
+        List<Room> expRooms = Arrays.asList(room3,room2);
         List<Room> actRooms = manager.findAllUnoccupiedRooms(from, to);
         
         Collections.sort(expRooms, roomIdComparator);
@@ -887,8 +1154,11 @@ public class ReservationManagerImplTest {
     public void findAllUnoccupiedRoomsWithValidArgumentsNoMatch(){
         Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
         Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
+        Room room4 = newRoom(null,2,new BigDecimal(1000.00),5,RoomType.SUITE,"505");
         Guest guest2 = newGuest("Silvio Pavi Run","222 474 222","544000444",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Franco Bernardi",null,"020304059",dateFromString("01/01/1968"));
+        Guest guest4 = newGuest("Low Dubruis","300-410-100","111111245",dateFromString("02/01/1970"));
+        
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("17/01/2015"))
                                            .expectedEndTime(dateFromString("24/01/2015"))
@@ -896,6 +1166,10 @@ public class ReservationManagerImplTest {
         Reservation res3 = new ResBuilder().startTime(dateFromString("15/01/2015"))
                                            .expectedEndTime(dateFromString("23/01/2015"))
                                            .room(room3).guest(guest3).build();
+        Reservation res4 = new ResBuilder().startTime(dateFromString("09/01/2015"))
+                                           .expectedEndTime(dateFromString("14/01/2015"))
+                                           .realEndTime(dateFromString("15/01/2015"))
+                                           .guest(guest4).room(room4).build();
         
         storeGuest(res1.getGuest());
         storeRoom(res1.getRoom());  
@@ -906,6 +1180,9 @@ public class ReservationManagerImplTest {
         storeGuest(guest3);
         storeRoom(room3);
         manager.createReservation(res3);
+        storeGuest(guest4);
+        storeRoom(room4);
+        manager.createReservation(res4);
         
         Date from = dateFromString("09/01/2015");
         Date to = dateFromString("19/01/2015");
@@ -972,28 +1249,31 @@ public class ReservationManagerImplTest {
     
     @Test
     public void findTopFiveSpendersWithRecordsInDB(){
+        when(tmMock.getCurrentDate()).thenReturn(dateFromString("13/01/2015"));
         Guest guest2 = newGuest("Silvio Pavi Run","222 474 222","544000444",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Franco Bernardi",null,"020304059",dateFromString("01/01/1968"));
         Guest guest4 = newGuest("Low Dubruis","300-410-100","111111245",dateFromString("02/01/1970"));
         Guest guest5 = newGuest("Jan Marek",null,"234561231",dateFromString("03/01/1980"));
         Guest guest6 = newGuest("Jakub Prak","(+480)-410-410-140","400450211",dateFromString("01/01/1970"));
         Guest guest7 = newGuest("Robert Koala",null,"894414470", dateFromString("03/01/1970"));
+        Guest guest8 = newGuest("Karel Malíček", null, "199888777", dateFromString("29/11/1991"));
         Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
         Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
         Room room4 = newRoom(null,2,new BigDecimal(1000.00),5,RoomType.SUITE,"505");
         Room room5 = newRoom(null,3,new BigDecimal(2750.00),2,RoomType.FAMILY,"217");
         Room room6 = newRoom(null,3,new BigDecimal(2100.00),2,RoomType.SUITE,"219");
         Room room7 = newRoom(null,6,new BigDecimal(4800.00),5,RoomType.APARTMENT,"535");
+        Room room8 = newRoom(null,4,new BigDecimal(1200.00),3,RoomType.FAMILY,"314");
         Reservation res1 = new ResBuilder().servicesSpendings(new BigDecimal(1159.48)).build();
         Reservation res2 = new ResBuilder().guest(guest2).realEndTime(dateFromString("12/01/2015"))
                                            .room(room2).servicesSpendings(new BigDecimal(5420.50)).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).servicesSpendings(new BigDecimal(10_410.21)).build();
-        Reservation res4 = new ResBuilder().guest(guest4).room(room4).servicesSpendings(new BigDecimal(1211.00)).build();
-        Reservation res5 = new ResBuilder().realEndTime(dateFromString("11/01/2015")).room(room2)
+        Reservation res4 = new ResBuilder().guest(guest4).room(room4).servicesSpendings(new BigDecimal(6146.20)).build();
+        Reservation res5 = new ResBuilder().realEndTime(dateFromString("11/01/2015")).room(room5).guest(guest5)
                                            .servicesSpendings(new BigDecimal(15_500.00)).build();
-        Reservation res6 = new ResBuilder().guest(guest5).room(room5).servicesSpendings(new BigDecimal(9874.00)).build();
-        Reservation res7 = new ResBuilder().guest(guest6).room(room6).servicesSpendings(new BigDecimal(10000.00)).build();
-        Reservation res8 = new ResBuilder().guest(guest7).room(room7).servicesSpendings(new BigDecimal(6147.80)).build();
+        Reservation res6 = new ResBuilder().guest(guest6).room(room6).servicesSpendings(new BigDecimal(9874.00)).build();
+        Reservation res7 = new ResBuilder().guest(guest7).room(room7).servicesSpendings(new BigDecimal(10000.00)).build();
+        Reservation res8 = new ResBuilder().guest(guest8).room(room8).servicesSpendings(new BigDecimal(6147.48)).build();
         
         //storeGuest(res5.getGuest());
         storeGuest(res1.getGuest());
@@ -1017,14 +1297,16 @@ public class ReservationManagerImplTest {
         storeGuest(guest7);
         storeRoom(room7);
         manager.createReservation(res7);
+        storeGuest(guest8);
+        storeRoom(room8);
         manager.createReservation(res8);
         
         Map<BigDecimal,Guest> expTopSpenders = new HashMap<>();
-        expTopSpenders.put(res3.getServicesSpendings(), res3.getGuest());
-        expTopSpenders.put(res7.getServicesSpendings(), res7.getGuest());
-        expTopSpenders.put(res6.getServicesSpendings(), res6.getGuest());
-        expTopSpenders.put(res8.getServicesSpendings(), res8.getGuest());
-        expTopSpenders.put(res4.getServicesSpendings(), res4.getGuest());
+        expTopSpenders.put(res3.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res3.getGuest());
+        expTopSpenders.put(res7.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res7.getGuest());
+        expTopSpenders.put(res6.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res6.getGuest());
+        expTopSpenders.put(res8.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res8.getGuest());
+        expTopSpenders.put(res4.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res4.getGuest());
         Map<BigDecimal,Guest> actTopSpenders = manager.findTopFiveSpenders();
         
         assertNotNull("There should be top 5 spenders",actTopSpenders);
@@ -1133,8 +1415,8 @@ public class ReservationManagerImplTest {
         assertEquals(expGuest.getBorn().getTime(), actGuest.getBorn().getTime());
     }
     
-    private Date dateFromString(String date){
-        try {
+    private Date dateFromString(String date){        
+        try {            
             return dateFormat.parse(date);
         } catch (ParseException ex) {
             throw new RuntimeException(ex);

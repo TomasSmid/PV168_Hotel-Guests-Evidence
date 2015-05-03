@@ -49,6 +49,7 @@ public class GuestManagerImpl implements GuestManager{
         checkGuestsPhone(guest, pem);
         checkGuestsIdCardNum(guest, pem);
         checkGuestsDateOfBirth(guest, pem);
+        checkGuestDuplicity(guest);
         
         checkDataSource();
         
@@ -298,7 +299,7 @@ public class GuestManagerImpl implements GuestManager{
                     + "Name of guest " + guest.toString() + " is null.");
         }
         
-        if (!Pattern.matches("[A-Z][a-zA-Z]*([ |\\-][A-Z][a-zA-Z]*)*", name)){
+        if (!Pattern.matches("[A-ZČĎŇŘŠŤŽĚÁÉÍÓÚÝ][a-zA-ZčČďĎňŇřŘšŠťŤžŽěĚáÁéÉíÍóÓúÚůýÝ]*([ |\\-][A-ZČĎŇŘŠŤŽĚÁÉÍÓÚÝ][a-zA-ZčČďĎňŇřŘšŠťŤžŽěĚáÁéÉíÍóÓúÚůýÝ]*)*", name)){
             throw new IllegalArgumentException(partOfErrMsg + " DB failure: "
                     + "Name of guest " + guest.toString() + " has a wrong form.");
         }
@@ -381,6 +382,18 @@ public class GuestManagerImpl implements GuestManager{
         guest.setBorn(rs.getTimestamp("born"));
         
         return guest;
+    }
+    
+    private void checkGuestDuplicity(Guest guest){
+        List<Guest> matchedGuests = findGuestByName(guest.getName());
+        
+        if(!matchedGuests.isEmpty()){
+            for(Guest g : matchedGuests){
+                if(g.getIdCardNum().equals(guest.getIdCardNum()) && g.getBorn().equals(guest.getBorn())){
+                    throw new DuplicateGuestException("Guest " + guest + " is already stored in DB.");
+                }
+            }
+        }
     }
     
 }

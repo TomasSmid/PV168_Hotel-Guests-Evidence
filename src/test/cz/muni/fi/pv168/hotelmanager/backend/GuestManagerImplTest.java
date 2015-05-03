@@ -308,6 +308,17 @@ public class GuestManagerImplTest {
         manager.createGuest(guest);
     }
     
+    @Test
+    public void createDuplicateGuest(){
+        Guest guest = new GuestBuilder().build();
+        Guest guest2 = new GuestBuilder().build();
+        
+        manager.createGuest(guest);
+        
+        exception.expect(DuplicateGuestException.class);        
+        manager.createGuest(guest2);
+    }
+    
     
     //tests focused on retrieving guest(s) from DB
     @Test

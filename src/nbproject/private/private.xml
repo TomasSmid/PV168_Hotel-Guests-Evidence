@@ -3,8 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Ondra/Documents/VS/6.semestr%20jaro%202015/Java/PV168_Hotel-Guests-Evidence/src/src/cz/muni/fi/pv168/hotelmanager/backend/ReservationManagerImpl.java</file>
-            <file>file:/C:/Users/Ondra/Documents/VS/6.semestr%20jaro%202015/Java/PV168_Hotel-Guests-Evidence/src/test/cz/muni/fi/pv168/hotelmanager/backend/ReservationManagerImplTest.java</file>
+            <file>file:/C:/Users/Tom/Documents/NetBeansProjects/PV168/HotelGuestsEvidence/src/cz/muni/fi/pv168/hotelmanager/backend/ReservationManagerImpl.java</file>
+            <file>file:/C:/Users/Tom/Documents/NetBeansProjects/PV168/HotelGuestsEvidence/src/cz/muni/fi/pv168/hotelmanager/backend/TimeManagerImpl.java</file>
+            <file>file:/C:/Users/Tom/Documents/NetBeansProjects/PV168/HotelGuestsEvidence/test/cz/muni/fi/pv168/hotelmanager/backend/ReservationManagerImplTest.java</file>
+            <file>file:/C:/Users/Tom/Documents/NetBeansProjects/PV168/HotelGuestsEvidence/src/cz/muni/fi/pv168/hotelmanager/backend/GuestManagerImpl.java</file>
         </group>
     </open-files>
 </project-private>
