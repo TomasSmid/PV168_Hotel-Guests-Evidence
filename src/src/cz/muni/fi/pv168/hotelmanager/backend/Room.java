@@ -6,6 +6,7 @@
 package cz.muni.fi.pv168.hotelmanager.backend;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  *
@@ -40,7 +41,7 @@ public class Room {
     }
 
     public void setPrice(BigDecimal price) {
-        this.price = price;
+        this.price = (price == null ? null : price.setScale(2, RoundingMode.HALF_EVEN));
     }
     
     public int getFloor() {

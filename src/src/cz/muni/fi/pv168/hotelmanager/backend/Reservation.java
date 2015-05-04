@@ -7,6 +7,7 @@
 package cz.muni.fi.pv168.hotelmanager.backend;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 
 /**
@@ -43,10 +44,7 @@ public class Reservation {
     }
 
     public void setStartTime(Date startTime) {
-        if(startTime == null)
-            this.startTime = null;
-        else
-            this.startTime = new Date(startTime.getTime());
+        this.startTime = (startTime == null ? null : new Date(startTime.getTime()));
     }
 
     public Date getRealEndTime() {        
@@ -54,10 +52,7 @@ public class Reservation {
     }
 
     public void setRealEndTime(Date realEndTime) {
-        if(realEndTime == null)
-            this.realEndTime = null;
-        else
-            this.realEndTime = new Date(realEndTime.getTime());
+        this.realEndTime = (realEndTime == null ? null : new Date(realEndTime.getTime()));
     }
 
     public Date getExpectedEndTime() {
@@ -65,10 +60,7 @@ public class Reservation {
     }
 
     public void setExpectedEndTime(Date expectedEndTime) {
-        if(expectedEndTime == null)
-            this.expectedEndTime = null;
-        else
-            this.expectedEndTime = new Date(expectedEndTime.getTime());
+        this.expectedEndTime = (expectedEndTime == null ? null : new Date(expectedEndTime.getTime()));
     }
 
     //upravit ala setter
@@ -86,7 +78,7 @@ public class Reservation {
     }
 
     public void setServicesSpendings(BigDecimal servicesSpendings) {
-        this.servicesSpendings = servicesSpendings;
+        this.servicesSpendings = (servicesSpendings == null ? null : servicesSpendings.setScale(2, RoundingMode.HALF_EVEN));
     }
     
     @Override

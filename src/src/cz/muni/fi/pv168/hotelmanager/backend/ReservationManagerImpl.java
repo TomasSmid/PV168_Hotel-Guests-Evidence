@@ -296,7 +296,7 @@ public class ReservationManagerImpl implements ReservationManager{
         checkReservationIsValid(reservation,false,"Retrieving reservation for its price "); 
         
         Reservation retRes = getReservationById(reservation.getId());        
-        return (retRes == null ? null : computeReservationPrice(retRes));        
+        return (retRes == null ? null : computeReservationPrice(retRes).setScale(2, RoundingMode.HALF_EVEN));        
     }
 
     @Override

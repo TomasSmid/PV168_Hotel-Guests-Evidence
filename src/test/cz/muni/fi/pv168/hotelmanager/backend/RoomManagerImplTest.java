@@ -8,13 +8,11 @@ package cz.muni.fi.pv168.hotelmanager.backend;
 import cz.muni.fi.pv168.common.DBUtils;
 import static cz.muni.fi.pv168.hotelmanager.backend.RoomType.*;
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.After;
@@ -112,7 +110,7 @@ public class RoomManagerImplTest {
         assertTrue(manager.findAllRooms().isEmpty());
 
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
 
         manager.createRoom(r1);
@@ -142,7 +140,7 @@ public class RoomManagerImplTest {
         assertTrue(manager.findAllRooms().isEmpty());
 
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
 
         manager.createRoom(r1);
@@ -172,7 +170,7 @@ public class RoomManagerImplTest {
         assertTrue(manager.findAllRooms().isEmpty());
 
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
 
         manager.createRoom(r1);
@@ -222,7 +220,7 @@ public class RoomManagerImplTest {
     @Test
     public void addRoomWithZeroPrice() {
         // price test
-        Room room = new RoomBuilder().price(new BigDecimal(0.00)).build();
+        Room room = new RoomBuilder().price(BigDecimal.ZERO).build();
         exception.expect(IllegalArgumentException.class);
         manager.createRoom(room);
     }
@@ -230,7 +228,7 @@ public class RoomManagerImplTest {
     @Test
     public void addRoomWithNegativeDecimalPrice() {
         // price test
-        Room room = new RoomBuilder().price(new BigDecimal(-0.01)).build();
+        Room room = new RoomBuilder().price(new BigDecimal("-0.01")).build();
         exception.expect(IllegalArgumentException.class);
         manager.createRoom(room);
     }
@@ -238,7 +236,7 @@ public class RoomManagerImplTest {
     @Test
     public void addRoomWithNegativePrice() {
         // price test
-        Room room = new RoomBuilder().price(new BigDecimal(-1.00)).build();
+        Room room = new RoomBuilder().price(new BigDecimal("-1.00")).build();
         exception.expect(IllegalArgumentException.class);
         manager.createRoom(room);
     }
@@ -339,7 +337,7 @@ public class RoomManagerImplTest {
     @Test
     public void updateRoomCapacity() {
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
         manager.createRoom(r1);
         manager.createRoom(r2);
@@ -350,7 +348,7 @@ public class RoomManagerImplTest {
         r1.setCapacity(3);
         manager.updateRoom(r1);
         assertEquals(3, r1.getCapacity());
-        assertEquals(new BigDecimal(1500.00), r1.getPrice());
+        assertEquals(new BigDecimal("1500.00"), r1.getPrice());
         assertEquals(5, r1.getFloor());
         assertEquals(STANDARD, r1.getType());
         assertEquals("501", r1.getNumber());
@@ -362,7 +360,7 @@ public class RoomManagerImplTest {
     @Test
     public void updateRoomPrice() {
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
         manager.createRoom(r1);
         manager.createRoom(r2);
@@ -370,7 +368,7 @@ public class RoomManagerImplTest {
         Long roomId1 = r1.getId();
         
         r1 = manager.getRoomById(roomId1);
-        BigDecimal bd3 = new BigDecimal(6000.00);
+        BigDecimal bd3 = new BigDecimal("6000.00");
         r1.setPrice(bd3);
         manager.updateRoom(r1);
         assertEquals(1, r1.getCapacity());
@@ -386,7 +384,7 @@ public class RoomManagerImplTest {
     @Test
     public void updateRoomFloor() {
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
         manager.createRoom(r1);
         manager.createRoom(r2);
@@ -397,7 +395,7 @@ public class RoomManagerImplTest {
         r1.setFloor(1);
         manager.updateRoom(r1);
         assertEquals(1, r1.getCapacity());
-        assertEquals(new BigDecimal(1500.00), r1.getPrice());
+        assertEquals(new BigDecimal("1500.00"), r1.getPrice());
         assertEquals(1, r1.getFloor());
         assertEquals(STANDARD, r1.getType());
         assertEquals("501", r1.getNumber());
@@ -409,7 +407,7 @@ public class RoomManagerImplTest {
     @Test
     public void updateRoomType() {
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
         manager.createRoom(r1);
         manager.createRoom(r2);
@@ -420,7 +418,7 @@ public class RoomManagerImplTest {
         r1.setType(SUITE);
         manager.updateRoom(r1);
         assertEquals(1, r1.getCapacity());
-        assertEquals(new BigDecimal(1500.00), r1.getPrice());
+        assertEquals(new BigDecimal("1500.00"), r1.getPrice());
         assertEquals(5, r1.getFloor());
         assertEquals(SUITE, r1.getType());
         assertEquals("501", r1.getNumber());
@@ -432,7 +430,7 @@ public class RoomManagerImplTest {
     @Test
     public void updateRoomNumber() {
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
         manager.createRoom(r1);
         manager.createRoom(r2);
@@ -443,7 +441,7 @@ public class RoomManagerImplTest {
         r1.setNumber("101");
         manager.updateRoom(r1);
         assertEquals(1, r1.getCapacity());
-        assertEquals(new BigDecimal(1500.00), r1.getPrice());
+        assertEquals(new BigDecimal("1500.00"), r1.getPrice());
         assertEquals(5, r1.getFloor());
         assertEquals(STANDARD, r1.getType());
         assertEquals("101", r1.getNumber());
@@ -539,7 +537,7 @@ public class RoomManagerImplTest {
 
         // price test
         room = manager.getRoomById(roomId);
-        BigDecimal bd1 = new BigDecimal(0.00);
+        BigDecimal bd1 = BigDecimal.ZERO;
         room.setPrice(bd1);
         exception.expect(IllegalArgumentException.class);
         manager.updateRoom(room);
@@ -555,7 +553,7 @@ public class RoomManagerImplTest {
 
         // price test
         room = manager.getRoomById(roomId);
-        BigDecimal bd1 = new BigDecimal(-0.01);
+        BigDecimal bd1 = new BigDecimal("-0.01");
         room.setPrice(bd1);
         exception.expect(IllegalArgumentException.class);
         manager.updateRoom(room);
@@ -571,7 +569,7 @@ public class RoomManagerImplTest {
 
         // price test
         room = manager.getRoomById(roomId);
-        BigDecimal bd1 = new BigDecimal(-1.00);
+        BigDecimal bd1 = new BigDecimal("-1.00");
         room.setPrice(bd1);
         exception.expect(IllegalArgumentException.class);
         manager.updateRoom(room);
@@ -747,7 +745,7 @@ public class RoomManagerImplTest {
     public void deleteRoom() {
 
         Room r1 = new RoomBuilder().build();
-        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal("3000.00"))
                                    .floor(3).number("301").type(FAMILY).build();
         manager.createRoom(r1);
         manager.createRoom(r2);
@@ -817,7 +815,7 @@ public class RoomManagerImplTest {
     class RoomBuilder {
 
         private int capacity = 1;
-        private BigDecimal price = new BigDecimal(1500.00);
+        private BigDecimal price = new BigDecimal("1500.00");
         private int floor = 5;
         private String number = "501";
         private RoomType type = STANDARD;

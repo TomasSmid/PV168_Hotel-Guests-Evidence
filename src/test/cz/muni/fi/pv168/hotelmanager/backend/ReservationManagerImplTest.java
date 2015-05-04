@@ -29,11 +29,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 
 
@@ -109,14 +106,14 @@ public class ReservationManagerImplTest {
         assertTrue(manager.findAllReservations().isEmpty());
 
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(null,1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room2 = newRoom(null,1, new BigDecimal("500.00"), 2, RoomType.STANDARD, "216");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.00)).build();
+                                         .servicesSpendings(new BigDecimal("5420.00")).build();
         storeGuest(r1.getGuest());
         storeGuest(guest2);
         storeRoom(r1.getRoom());
@@ -216,7 +213,7 @@ public class ReservationManagerImplTest {
     @Test
     public void addReservationWithNegativeServicesSpendings() {
         Reservation res = new ResBuilder().build();
-        res.setServicesSpendings(new BigDecimal(-1.00));
+        res.setServicesSpendings(new BigDecimal("-1.00"));
 
         exception.expect(IllegalArgumentException.class);
         manager.createReservation(res);
@@ -227,15 +224,15 @@ public class ReservationManagerImplTest {
     public void updateReservationRoom() {
         Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", dateFromString("24/04/1989"));
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room2 = newRoom(null, 1, new BigDecimal("500.00"), 2, RoomType.STANDARD, "216");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.00)).build();
-        BigDecimal bd = new BigDecimal(0.00);
+                                         .servicesSpendings(new BigDecimal("5420.00")).build();
+        BigDecimal bd = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         storeGuest(r1.getGuest());
         storeGuest(r2.getGuest());
         storeRoom(r1.getRoom());
@@ -246,7 +243,7 @@ public class ReservationManagerImplTest {
         Long resId1 = r1.getId();
 
         r1 = manager.getReservationById(resId1);
-        Room room3 = newRoom(null, 4, new BigDecimal(2500.00), 3, RoomType.FAMILY, "300");
+        Room room3 = newRoom(null, 4, new BigDecimal("2500.00"), 3, RoomType.FAMILY, "300");
         storeRoom(room3);
         r1.setRoom(room3);
         manager.updateReservation(r1);
@@ -267,16 +264,16 @@ public class ReservationManagerImplTest {
     public void updateReservationStartTime() {
         Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", dateFromString("24/04/1989"));
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
-        Room room3 = newRoom(null, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Room room2 = newRoom(null, 1, new BigDecimal("500.00"), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(null, 2, new BigDecimal("1500.00"), 5, RoomType.STANDARD, "501");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.00)).build();
-        BigDecimal bd = new BigDecimal(0.00);
+                                         .servicesSpendings(new BigDecimal("5420.00")).build();
+        BigDecimal bd = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         storeGuest(r1.getGuest());
         storeGuest(guest2);
         storeRoom(room2);        
@@ -307,16 +304,16 @@ public class ReservationManagerImplTest {
     public void updateReservationRealEndTime() {
         Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", dateFromString("24/04/1989"));
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
-        Room room3 = newRoom(null, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Room room2 = newRoom(null, 1, new BigDecimal("500.00"), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(null, 2, new BigDecimal("1500.00"), 5, RoomType.STANDARD, "501");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.00)).build();
-        BigDecimal bd = new BigDecimal(0.00);
+                                         .servicesSpendings(new BigDecimal("5420.00")).build();
+        BigDecimal bd = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         storeGuest(r1.getGuest());
         storeGuest(guest2);
         storeRoom(r1.getRoom());
@@ -347,16 +344,16 @@ public class ReservationManagerImplTest {
     public void updateReservationExpectedEndTime() {
         Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", dateFromString("24/04/1989"));
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
-        Room room3 = newRoom(null, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Room room2 = newRoom(null, 1, new BigDecimal("500.00"), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(null, 2, new BigDecimal("1500.00"), 5, RoomType.STANDARD, "501");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.00)).build();
-        BigDecimal bd = new BigDecimal(0.00);
+                                         .servicesSpendings(new BigDecimal("5420.00")).build();
+        BigDecimal bd = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         storeGuest(r1.getGuest());
         storeGuest(guest2);
         storeRoom(r1.getRoom());
@@ -386,16 +383,16 @@ public class ReservationManagerImplTest {
     @Test
     public void updateReservationGuest() {
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
-        Room room3 = newRoom(null, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Room room2 = newRoom(null, 1, new BigDecimal("500.00"), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(null, 2, new BigDecimal("1500.00"), 5, RoomType.STANDARD, "501");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.00)).build();
-        BigDecimal bd = new BigDecimal(0.00);
+                                         .servicesSpendings(new BigDecimal("5420.00")).build();
+        BigDecimal bd = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         storeGuest(r1.getGuest());
         storeGuest(guest2);
         storeRoom(r1.getRoom());
@@ -427,15 +424,15 @@ public class ReservationManagerImplTest {
     public void updateReservationServicesSpendings() {
         Guest guest = newGuest("Pepa Korek", "(+420) 777 888 999", "123456789", dateFromString("24/04/1989"));
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
-        Room room3 = newRoom(null, 2, new BigDecimal(1500.00), 5, RoomType.STANDARD, "501");
+        Room room2 = newRoom(null, 1, new BigDecimal("500.00"), 2, RoomType.STANDARD, "216");
+        Room room3 = newRoom(null, 2, new BigDecimal("1500.00"), 5, RoomType.STANDARD, "501");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.00)).build();
+                                         .servicesSpendings(new BigDecimal("5420.00")).build();
         storeGuest(r1.getGuest());
         storeGuest(guest2);
         storeRoom(r1.getRoom());
@@ -447,7 +444,7 @@ public class ReservationManagerImplTest {
         
 
         r1 = manager.getReservationById(resId1);
-        r1.setServicesSpendings(new BigDecimal(100.00));
+        r1.setServicesSpendings(new BigDecimal("100.00"));
         manager.updateReservation(r1);
         
         room3.setId(r1.getRoom().getId());
@@ -457,7 +454,7 @@ public class ReservationManagerImplTest {
         assertEquals(dateFromString("10/01/2015").getTime(), r1.getExpectedEndTime().getTime());
         guest.setId(r1.getGuest().getId());
         assertDeepGuestEquals(guest, r1.getGuest());
-        assertEquals(new BigDecimal(100.00), r1.getServicesSpendings());
+        assertEquals(new BigDecimal("100.00"), r1.getServicesSpendings());
 
         // Check if updates didn't affected other records
         assertDeepReservationEquals(r2, manager.getReservationById(r2.getId()));
@@ -616,7 +613,7 @@ public class ReservationManagerImplTest {
         Long resId = res.getId();
 
         res = manager.getReservationById(resId);
-        res.setServicesSpendings(new BigDecimal(-1.00));
+        res.setServicesSpendings(new BigDecimal("-1.00"));
         exception.expect(IllegalArgumentException.class);
         manager.updateReservation(res);
 
@@ -625,14 +622,14 @@ public class ReservationManagerImplTest {
     @Test
     public void deleteReservation() {
         Guest guest2 = newGuest("John Dragos", null, "151515151", new Date(0l));
-        Room room2 = newRoom(null, 1, new BigDecimal(500.00), 2, RoomType.STANDARD, "216");
+        Room room2 = newRoom(null, 1, new BigDecimal("500.00"), 2, RoomType.STANDARD, "216");
         Reservation r1 = new ResBuilder().build();
         Reservation r2 = new ResBuilder().startTime(new Date(63_000_000_000_158l))
                                          .expectedEndTime(new Date(63_000_001_800_000l))
                                          .realEndTime(new Date(63_000_001_800_000l))
                                          .guest(guest2)
                                          .room(room2)
-                                         .servicesSpendings(new BigDecimal(5420.00)).build();
+                                         .servicesSpendings(new BigDecimal("5420.00")).build();
         storeGuest(r1.getGuest());
         storeGuest(guest2);
         storeRoom(r1.getRoom());
@@ -694,13 +691,13 @@ public class ReservationManagerImplTest {
         when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         
         storeGuest(res1.getGuest());
@@ -723,13 +720,13 @@ public class ReservationManagerImplTest {
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
         Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");        
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
                                            .expectedEndTime(dateFromString("20/01/2015"))
@@ -757,13 +754,13 @@ public class ReservationManagerImplTest {
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
         Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");        
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
                                            .expectedEndTime(dateFromString("20/01/2015"))
@@ -791,13 +788,13 @@ public class ReservationManagerImplTest {
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
         Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");        
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
                                            .expectedEndTime(dateFromString("20/01/2015"))
@@ -825,13 +822,13 @@ public class ReservationManagerImplTest {
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
         Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");        
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
                                            .expectedEndTime(dateFromString("20/01/2015"))
@@ -859,13 +856,13 @@ public class ReservationManagerImplTest {
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("31/12/1947"));
         Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");        
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");        
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
                                            .expectedEndTime(dateFromString("20/01/2015"))
@@ -893,13 +890,13 @@ public class ReservationManagerImplTest {
         when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));        
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("15/11/1978"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("16/08/1993"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         
         storeGuest(res1.getGuest());
@@ -923,13 +920,13 @@ public class ReservationManagerImplTest {
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("15/11/1978"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("16/08/1993"));
         Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
                                            .expectedEndTime(dateFromString("20/01/2015"))
@@ -958,13 +955,13 @@ public class ReservationManagerImplTest {
         Guest guest2 = newGuest("John Dragos",null,"151515151",dateFromString("15/11/1978"));
         Guest guest3 = newGuest("Marek Mrak","505 050 654","548478789",dateFromString("16/08/1993"));
         Guest guest4 = newGuest("Martin Langer", null, "147158269", dateFromString("16/03/1976"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("04/01/2015"))
                                            .expectedEndTime(dateFromString("08/01/2015"))
                                            .realEndTime(dateFromString("08/01/2015"))
-                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal(5420.00)).build();
+                                           .guest(guest2).room(room2).servicesSpendings(new BigDecimal("5420.00")).build();
         Reservation res3 = new ResBuilder().guest(guest3).room(room3).build();
         Reservation res4 = new ResBuilder().startTime(dateFromString("13/01/2015"))
                                            .expectedEndTime(dateFromString("20/01/2015"))
@@ -1011,7 +1008,7 @@ public class ReservationManagerImplTest {
         when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
         
         Reservation res = new ResBuilder().build();
-        BigDecimal expPrice = new BigDecimal(15_000.00);
+        BigDecimal expPrice = new BigDecimal("15000.00");
         
         storeGuest(res.getGuest());
         storeRoom(res.getRoom());        
@@ -1025,7 +1022,7 @@ public class ReservationManagerImplTest {
     @Test
     public void getReservationPriceWithValidAbsentReservation(){
         Guest guest = newGuest("John Dragos",null,"151515151",dateFromString("01/01/1970"));
-        Room room = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
         Reservation res = new ResBuilder().build();        
         Reservation res2 = new ResBuilder().startTime(dateFromString("30/04/2015")) //  format: dd/mm/yyyy
                                            .expectedEndTime(dateFromString("05/05/2015"))
@@ -1058,9 +1055,9 @@ public class ReservationManagerImplTest {
     
     @Test
     public void findAllUnoccupiedRoomsWithValidArgumentsSomeMatch(){
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
-        Room room4 = newRoom(null,2,new BigDecimal(1000.00),5,RoomType.SUITE,"505");
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");
+        Room room4 = newRoom(null,2,new BigDecimal("1000.00"),5,RoomType.SUITE,"505");
         Guest guest2 = newGuest("Silvio Pavi Run","222 474 222","544000444",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Franco Bernardi",null,"020304059",dateFromString("01/01/1968"));
         Guest guest4 = newGuest("Low Dubruis","300-410-100","111111245",dateFromString("02/01/1970"));
@@ -1069,7 +1066,7 @@ public class ReservationManagerImplTest {
         Reservation res2 = new ResBuilder().startTime(dateFromString("07/01/2015"))
                                            .expectedEndTime(dateFromString("09/01/2015"))
                                            .realEndTime(dateFromString("09/01/2015"))
-                                           .room(room2).guest(guest2).servicesSpendings(new BigDecimal(5420.50)).build();
+                                           .room(room2).guest(guest2).servicesSpendings(new BigDecimal("5420.50")).build();
         Reservation res3 = new ResBuilder().startTime(dateFromString("18/01/2015"))
                                            .expectedEndTime(dateFromString("21/01/2015"))
                                            .realEndTime(dateFromString("21/01/2015"))
@@ -1105,9 +1102,9 @@ public class ReservationManagerImplTest {
     
     @Test
     public void findAllUnoccupiedRoomsWithCloseTimeComparison(){
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
-        Room room4 = newRoom(null,2,new BigDecimal(1000.00),5,RoomType.SUITE,"505");
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");
+        Room room4 = newRoom(null,2,new BigDecimal("1000.00"),5,RoomType.SUITE,"505");
         Guest guest2 = newGuest("Silvio Pavi Run","222 474 222","544000444",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Franco Bernardi",null,"020304059",dateFromString("01/01/1968"));
         Guest guest4 = newGuest("Low Dubruis","300-410-100","111111245",dateFromString("02/01/1970"));
@@ -1116,7 +1113,7 @@ public class ReservationManagerImplTest {
         Reservation res2 = new ResBuilder().startTime(dateFromString("11/01/2015"))
                                            .expectedEndTime(dateFromString("17/01/2015"))
                                            .realEndTime(dateFromString("17/01/2015"))
-                                           .room(room2).guest(guest2).servicesSpendings(new BigDecimal(5420.50)).build();
+                                           .room(room2).guest(guest2).servicesSpendings(new BigDecimal("5420.50")).build();
         Reservation res3 = new ResBuilder().startTime(dateFromString("28/12/2014"))
                                            .expectedEndTime(dateFromString("31/12/2014"))
                                            .realEndTime(dateFromString("31/12/2014"))
@@ -1152,9 +1149,9 @@ public class ReservationManagerImplTest {
     
     @Test
     public void findAllUnoccupiedRoomsWithValidArgumentsNoMatch(){
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
-        Room room4 = newRoom(null,2,new BigDecimal(1000.00),5,RoomType.SUITE,"505");
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");
+        Room room4 = newRoom(null,2,new BigDecimal("1000.00"),5,RoomType.SUITE,"505");
         Guest guest2 = newGuest("Silvio Pavi Run","222 474 222","544000444",dateFromString("01/01/1970"));
         Guest guest3 = newGuest("Franco Bernardi",null,"020304059",dateFromString("01/01/1968"));
         Guest guest4 = newGuest("Low Dubruis","300-410-100","111111245",dateFromString("02/01/1970"));
@@ -1162,7 +1159,7 @@ public class ReservationManagerImplTest {
         Reservation res1 = new ResBuilder().build();
         Reservation res2 = new ResBuilder().startTime(dateFromString("17/01/2015"))
                                            .expectedEndTime(dateFromString("24/01/2015"))
-                                           .room(room2).guest(guest2).servicesSpendings(new BigDecimal(5420.50)).build();
+                                           .room(room2).guest(guest2).servicesSpendings(new BigDecimal("5420.50")).build();
         Reservation res3 = new ResBuilder().startTime(dateFromString("15/01/2015"))
                                            .expectedEndTime(dateFromString("23/01/2015"))
                                            .room(room3).guest(guest3).build();
@@ -1257,23 +1254,23 @@ public class ReservationManagerImplTest {
         Guest guest6 = newGuest("Jakub Prak","(+480)-410-410-140","400450211",dateFromString("01/01/1970"));
         Guest guest7 = newGuest("Robert Koala",null,"894414470", dateFromString("03/01/1970"));
         Guest guest8 = newGuest("Karel Malíček", null, "199888777", dateFromString("29/11/1991"));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
-        Room room3 = newRoom(null,4,new BigDecimal(2500.00),3,RoomType.FAMILY,"300");
-        Room room4 = newRoom(null,2,new BigDecimal(1000.00),5,RoomType.SUITE,"505");
-        Room room5 = newRoom(null,3,new BigDecimal(2750.00),2,RoomType.FAMILY,"217");
-        Room room6 = newRoom(null,3,new BigDecimal(2100.00),2,RoomType.SUITE,"219");
-        Room room7 = newRoom(null,6,new BigDecimal(4800.00),5,RoomType.APARTMENT,"535");
-        Room room8 = newRoom(null,4,new BigDecimal(1200.00),3,RoomType.FAMILY,"314");
-        Reservation res1 = new ResBuilder().servicesSpendings(new BigDecimal(1159.48)).build();
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
+        Room room3 = newRoom(null,4,new BigDecimal("2500.00"),3,RoomType.FAMILY,"300");
+        Room room4 = newRoom(null,2,new BigDecimal("1000.00"),5,RoomType.SUITE,"505");
+        Room room5 = newRoom(null,3,new BigDecimal("2750.00"),2,RoomType.FAMILY,"217");
+        Room room6 = newRoom(null,3,new BigDecimal("2100.00"),2,RoomType.SUITE,"219");
+        Room room7 = newRoom(null,6,new BigDecimal("4800.00"),5,RoomType.APARTMENT,"535");
+        Room room8 = newRoom(null,4,new BigDecimal("1200.00"),3,RoomType.FAMILY,"314");
+        Reservation res1 = new ResBuilder().servicesSpendings(new BigDecimal("1159.48")).build();
         Reservation res2 = new ResBuilder().guest(guest2).realEndTime(dateFromString("12/01/2015"))
-                                           .room(room2).servicesSpendings(new BigDecimal(5420.50)).build();
-        Reservation res3 = new ResBuilder().guest(guest3).room(room3).servicesSpendings(new BigDecimal(10_410.21)).build();
-        Reservation res4 = new ResBuilder().guest(guest4).room(room4).servicesSpendings(new BigDecimal(6146.20)).build();
+                                           .room(room2).servicesSpendings(new BigDecimal("5420.50")).build();
+        Reservation res3 = new ResBuilder().guest(guest3).room(room3).servicesSpendings(new BigDecimal("10410.21")).build();
+        Reservation res4 = new ResBuilder().guest(guest4).room(room4).servicesSpendings(new BigDecimal("6146.20")).build();
         Reservation res5 = new ResBuilder().realEndTime(dateFromString("11/01/2015")).room(room5).guest(guest5)
-                                           .servicesSpendings(new BigDecimal(15_500.00)).build();
-        Reservation res6 = new ResBuilder().guest(guest6).room(room6).servicesSpendings(new BigDecimal(9874.00)).build();
-        Reservation res7 = new ResBuilder().guest(guest7).room(room7).servicesSpendings(new BigDecimal(10000.00)).build();
-        Reservation res8 = new ResBuilder().guest(guest8).room(room8).servicesSpendings(new BigDecimal(6147.48)).build();
+                                           .servicesSpendings(new BigDecimal("15500.00")).build();
+        Reservation res6 = new ResBuilder().guest(guest6).room(room6).servicesSpendings(new BigDecimal("9874.00")).build();
+        Reservation res7 = new ResBuilder().guest(guest7).room(room7).servicesSpendings(new BigDecimal("10000.00")).build();
+        Reservation res8 = new ResBuilder().guest(guest8).room(room8).servicesSpendings(new BigDecimal("6147.48")).build();
         
         //storeGuest(res5.getGuest());
         storeGuest(res1.getGuest());
@@ -1302,11 +1299,11 @@ public class ReservationManagerImplTest {
         manager.createReservation(res8);
         
         Map<BigDecimal,Guest> expTopSpenders = new HashMap<>();
-        expTopSpenders.put(res3.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res3.getGuest());
-        expTopSpenders.put(res7.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res7.getGuest());
-        expTopSpenders.put(res6.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res6.getGuest());
-        expTopSpenders.put(res8.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res8.getGuest());
-        expTopSpenders.put(res4.getServicesSpendings().setScale(0, RoundingMode.HALF_EVEN), res4.getGuest());
+        expTopSpenders.put(res3.getServicesSpendings(), res3.getGuest());
+        expTopSpenders.put(res7.getServicesSpendings(), res7.getGuest());
+        expTopSpenders.put(res6.getServicesSpendings(), res6.getGuest());
+        expTopSpenders.put(res8.getServicesSpendings(), res8.getGuest());
+        expTopSpenders.put(res4.getServicesSpendings(), res4.getGuest());
         Map<BigDecimal,Guest> actTopSpenders = manager.findTopFiveSpenders();
         
         assertNotNull("There should be top 5 spenders",actTopSpenders);
@@ -1316,10 +1313,10 @@ public class ReservationManagerImplTest {
     @Test
     public void findTopFiveSpendersWithNoActualReservetion(){
         Guest guest2 = newGuest("Silvio Pavi Run","222 474 222","454400044",new Date(0l));
-        Room room2 = newRoom(null,1,new BigDecimal(500.00),2,RoomType.STANDARD,"216");
+        Room room2 = newRoom(null,1,new BigDecimal("500.00"),2,RoomType.STANDARD,"216");
         Reservation res1 = new ResBuilder().realEndTime(dateFromString("11/01/2015")).build();
         Reservation res2 = new ResBuilder().guest(guest2).realEndTime(dateFromString("12/01/2015"))
-                                           .room(room2).servicesSpendings(new BigDecimal(5420.50)).build();
+                                           .room(room2).servicesSpendings(new BigDecimal("5420.50")).build();
         storeGuest(res1.getGuest());
         storeGuest(guest2);
         storeRoom(res1.getRoom());
@@ -1455,7 +1452,7 @@ public class ReservationManagerImplTest {
         private Date realEndTime = null;
         private Date expectedEndTime = dateFromString("10/01/2015");
         private Guest guest = newGuest();
-        private BigDecimal servicesSpendings = new BigDecimal(0.00);
+        private BigDecimal servicesSpendings = BigDecimal.ZERO;
 
         public ResBuilder(){
 
@@ -1515,7 +1512,7 @@ public class ReservationManagerImplTest {
         private Room newRoom(){
             Room r = new Room();
             r.setCapacity(2);
-            r.setPrice(new BigDecimal(1500.00));
+            r.setPrice(new BigDecimal("1500.00"));
             r.setFloor(5);
             r.setType(RoomType.STANDARD);
             r.setNumber("501");
