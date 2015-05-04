@@ -245,5 +245,82 @@ public class RoomManagerImpl implements RoomManager {
             throw new ServiceFailureException("Error when retrieving all rooms", ex);
         }
     }
+    
+    @Override
+    public Room getRoomByNumber(String number) throws ServiceFailureException {
+        if (!number.matches("[1-9][0-9][0-9]") ) {
+            throw new IllegalArgumentException("Error when finding room with defined number: wrong number format");
+        }
+        
+        try (Connection conn = dataSource.getConnection()) {
+            try (PreparedStatement st = conn.prepareStatement(
+                    "SELECT id,capacity,price,floor,number,room_type FROM ROOM WHERE number = ?")) {
+                st.setString(1, number);
+                ResultSet rs = st.executeQuery();
+                if (rs.next()) {
+                    Room room = resultSetToRoom(rs);
+                    if (rs.next()) {
+                        throw new ServiceFailureException(
+                                "Internal error: More entities with the same number found "
+                                        + "(source number: " + number + ", found " + room + " and " + resultSetToRoom(rs));
+                    }
+                    return room;
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException ex) {
+            //log.error("db connection problem", ex);
+            throw new ServiceFailureException("Error when selecting room", ex);
+        }
+    }
+    
+    @Override
+    public List<Room> findRoomsWithType(RoomType type) throws ServiceFailureException {
+        if (type == null) {
+            throw new IllegalArgumentException("Error when finding rooms with defined type: room type is null");
+        }
+       // log.debug("finding all graves");
+        try (Connection conn = dataSource.getConnection()) {
+            try (PreparedStatement st = conn.prepareStatement(
+                    "SELECT id,capacity,price,floor,number,room_type FROM ROOM WHERE room_type = ?")) {
+                st.setString(1, type.name());
+                ResultSet rs = st.executeQuery();
+                List<Room> result = new ArrayList<>();
+                while (rs.next()) {
+                    result.add(resultSetToRoom(rs));
+                }
+                return result;
+            }
+        } catch (SQLException ex) {
+           // log.error("db connection problem", ex);
+            throw new ServiceFailureException("Error when retrieving rooms with defined type", ex);
+        }
+    }
+    
+    @Override
+    public List<Room> findRoomsWithCapacity(int capacity) throws ServiceFailureException {
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("Error when finding rooms with "
+                    + "definded capacity: room capacity is zero or negative");
+        }
+        
+       // log.debug("finding all graves");
+        try (Connection conn = dataSource.getConnection()) {
+            try (PreparedStatement st = conn.prepareStatement(
+                    "SELECT id,capacity,price,floor,number,room_type FROM ROOM WHERE capacity = ?")) {
+                st.setInt(1, capacity);
+                ResultSet rs = st.executeQuery();
+                List<Room> result = new ArrayList<>();
+                while (rs.next()) {
+                    result.add(resultSetToRoom(rs));
+                }
+                return result;
+            }
+        } catch (SQLException ex) {
+           // log.error("db connection problem", ex);
+            throw new ServiceFailureException("Error when retrieving rooms with defined type", ex);
+        }
+    }
 
 }

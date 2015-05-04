@@ -83,6 +83,28 @@ public class RoomManagerImplTest {
         assertEquals(room, result);
         assertDeepEquals(room, result);
     }
+    
+    @Test
+    public void getRoomWithNumberTest() {
+
+        assertNull(manager.getRoomById(1l));
+
+        Room room = new RoomBuilder().build();
+
+        manager.createRoom(room);
+
+        Room result = manager.getRoomByNumber("501");
+        assertEquals(room, result);
+        assertDeepEquals(room, result);
+    }
+    
+    @Test
+    public void getRoomWithWrongNumberTest() {
+
+        exception.expect(IllegalArgumentException.class);
+        manager.getRoomByNumber("asdf");
+
+    }
 
     @Test
     public void getAllRooms() {
@@ -98,6 +120,66 @@ public class RoomManagerImplTest {
 
         List<Room> expected = Arrays.asList(r1, r2);
         List<Room> actual = manager.findAllRooms();
+
+        Collections.sort(actual, idComparator);
+        Collections.sort(expected, idComparator);
+
+        assertEquals(expected, actual);
+        assertDeepEquals(expected, actual);
+    }
+    
+    @Test
+    public void findRoomsWithWithNullType() {
+
+        exception.expect(IllegalArgumentException.class);
+        manager.findRoomsWithType(null);
+
+    }
+    
+    @Test
+    public void findRoomsWithType() {
+
+        assertTrue(manager.findAllRooms().isEmpty());
+
+        Room r1 = new RoomBuilder().build();
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+                                   .floor(3).number("301").type(FAMILY).build();
+
+        manager.createRoom(r1);
+        manager.createRoom(r2);
+
+        List<Room> expected = Arrays.asList(r2);
+        List<Room> actual = manager.findRoomsWithType(FAMILY);
+
+        Collections.sort(actual, idComparator);
+        Collections.sort(expected, idComparator);
+
+        assertEquals(expected, actual);
+        assertDeepEquals(expected, actual);
+    }
+    
+    @Test
+    public void findRoomsWithWithZeroCapacity() {
+
+        exception.expect(IllegalArgumentException.class);
+        manager.findRoomsWithCapacity(0);
+
+    }
+    
+    @Test
+    public void findRoomsWithCapacity() {
+
+        assertTrue(manager.findAllRooms().isEmpty());
+
+        Room r1 = new RoomBuilder().build();
+        Room r2 = new RoomBuilder().capacity(2).price(new BigDecimal(3000.00))
+                                   .floor(3).number("301").type(FAMILY).build();
+
+        manager.createRoom(r1);
+        manager.createRoom(r2);
+
+        List<Room> expected = Arrays.asList(r2);
+        List<Room> actual = manager.findRoomsWithCapacity(r2.getCapacity());
 
         Collections.sort(actual, idComparator);
         Collections.sort(expected, idComparator);

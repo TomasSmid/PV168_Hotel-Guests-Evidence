@@ -17,9 +17,15 @@ public interface RoomManager {
     
     Room getRoomById(Long id) throws ServiceFailureException;
     
+    Room getRoomByNumber(String number) throws ServiceFailureException;
+    
     void updateRoom(Room room) throws ServiceFailureException;
     
     void deleteRoom(Room room) throws ServiceFailureException;
     
     List<Room> findAllRooms() throws ServiceFailureException;
+    
+    List<Room> findRoomsWithType(RoomType type) throws ServiceFailureException;
+    
+    List<Room> findRoomsWithCapacity(int capacity) throws ServiceFailureException;
 }

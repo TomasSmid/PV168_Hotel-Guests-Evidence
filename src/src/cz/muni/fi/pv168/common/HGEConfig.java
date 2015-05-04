@@ -6,8 +6,12 @@
 package cz.muni.fi.pv168.common;
 
 import cz.muni.fi.pv168.hotelmanager.backend.GuestManager;
+import cz.muni.fi.pv168.hotelmanager.backend.RoomManager;
+import cz.muni.fi.pv168.hotelmanager.backend.RoomManagerImpl;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 
@@ -29,4 +33,18 @@ public class HGEConfig {
         bds.setPassword("skoc2po4501");
         return bds;
     }
+    
+    public RoomManager createRoomManager() throws SQLException{
+        
+    
+     BasicDataSource bds = new BasicDataSource();
+        bds.setDriverClassName("org.apache.derby.jdbc.ClientDriver");
+        bds.setUrl("jdbc:derby://localhost:1527/SSHotelGuestEvidenceDB;create=true");
+        bds.setUsername("smesmi");
+        bds.setPassword("skoc2po4501");
+
+            DBUtils.tryCreateTables(bds,RoomManager.class.getResourceAsStream("createTables.sql"));
+
+        return new RoomManagerImpl(bds);
+    } 
 }
