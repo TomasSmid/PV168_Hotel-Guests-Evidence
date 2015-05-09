@@ -30,6 +30,22 @@ public class GeneralButtonsAndTitlesNamesManager {
         return getResourceBundle().getString("Horni_lista_napoveda");
     }
     
+    public static String getSaveButtonName(){
+        return getResourceBundle().getString("Ulozit");
+    }
+    
+    public static String getCancelButtonName(){
+        return getResourceBundle().getString("Zrusit");
+    }
+    
+    public static String getSearchButtonName(){
+        return getResourceBundle().getString("Vyhledat");
+    }
+    
+    public static String getFindOutButtonName(){
+        return getResourceBundle().getString("Zjistit");
+    }
+    
     private static ResourceBundle getResourceBundle(){
         Locale locale = Locale.getDefault();
         ResourceBundle rb = ResourceBundle.getBundle("texty", locale);
