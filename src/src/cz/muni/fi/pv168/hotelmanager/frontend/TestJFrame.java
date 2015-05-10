@@ -166,11 +166,8 @@ public class TestJFrame extends javax.swing.JFrame {
         reservPastBut = new javax.swing.JButton();
         reservationNewPanel = new javax.swing.JPanel();
         reservNewCancelBut = new javax.swing.JButton();
-        reservServSpendLabel = new java.awt.Label();
-        reservServSpendTextField = new javax.swing.JTextField();
         reservExpEndTimeLabel = new java.awt.Label();
         reservNewSaveBut = new javax.swing.JButton();
-        reservEndTimeLabel = new java.awt.Label();
         reservStartTimeLabel = new java.awt.Label();
         jComboBox8 = new javax.swing.JComboBox();
         jComboBox9 = new javax.swing.JComboBox();
@@ -178,17 +175,10 @@ public class TestJFrame extends javax.swing.JFrame {
         guestNewMonthCombo5 = new javax.swing.JComboBox();
         guestNewMonthCombo6 = new javax.swing.JComboBox();
         guestNewDayCombo6 = new javax.swing.JComboBox();
-        guestNewDayCombo7 = new javax.swing.JComboBox();
-        jComboBox10 = new javax.swing.JComboBox();
-        guestNewMonthCombo7 = new javax.swing.JComboBox();
         reservationSearchPanel = new javax.swing.JPanel();
         reservSearchLabel = new java.awt.Label();
         reservSearchBut = new javax.swing.JButton();
         reservSearchCombo = new javax.swing.JComboBox();
-        reservSearchGuestLabel = new java.awt.Label();
-        reservSearchRoomLabel = new java.awt.Label();
-        reservSearchGuestTextField = new javax.swing.JTextField();
-        reservSearchRoomTextField = new javax.swing.JTextField();
         reservationEditPanel = new javax.swing.JPanel();
         reservEditCancelBut = new javax.swing.JButton();
         reservServSpendLabel1 = new java.awt.Label();
@@ -206,6 +196,7 @@ public class TestJFrame extends javax.swing.JFrame {
         jComboBox7 = new javax.swing.JComboBox();
         guestNewMonthCombo4 = new javax.swing.JComboBox();
         guestNewDayCombo4 = new javax.swing.JComboBox();
+        jCheckBox1 = new javax.swing.JCheckBox();
         reservationTables = new javax.swing.JPanel();
         reservationMainTable = new javax.swing.JScrollPane();
         jTableReservations = new javax.swing.JTable();
@@ -1306,8 +1297,6 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        reservServSpendLabel.setText("Services spendings: ");
-
         reservExpEndTimeLabel.setText("Expected end time: ");
 
         reservNewSaveBut.setText(GeneralButtonsAndTitlesNamesManager.getSaveButtonName());
@@ -1316,8 +1305,6 @@ public class TestJFrame extends javax.swing.JFrame {
                 reservNewSaveButActionPerformed(evt);
             }
         });
-
-        reservEndTimeLabel.setText("End time: ");
 
         reservStartTimeLabel.setText("Start time: ");
 
@@ -1335,19 +1322,12 @@ public class TestJFrame extends javax.swing.JFrame {
         guestNewDayCombo6.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" }));
         guestNewDayCombo6.setToolTipText("Day of birth");
 
-        guestNewDayCombo7.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" }));
-        guestNewDayCombo7.setToolTipText("Day of birth");
-
-        jComboBox10.setModel(ComboBoxManager.setYearComboBox(2010, 2100));
-
-        guestNewMonthCombo7.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" }));
-
         javax.swing.GroupLayout reservationNewPanelLayout = new javax.swing.GroupLayout(reservationNewPanel);
         reservationNewPanel.setLayout(reservationNewPanelLayout);
         reservationNewPanelLayout.setHorizontalGroup(
             reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(reservationNewPanelLayout.createSequentialGroup()
-                .addGap(10, 10, 10)
+                .addGap(16, 16, 16)
                 .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(reservationNewPanelLayout.createSequentialGroup()
                         .addComponent(reservNewSaveBut, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1356,16 +1336,9 @@ public class TestJFrame extends javax.swing.JFrame {
                     .addGroup(reservationNewPanelLayout.createSequentialGroup()
                         .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(reservStartTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(reservExpEndTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(reservEndTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(reservExpEndTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(reservationNewPanelLayout.createSequentialGroup()
-                                .addComponent(guestNewDayCombo7, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(14, 14, 14)
-                                .addComponent(guestNewMonthCombo7, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jComboBox10, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(reservationNewPanelLayout.createSequentialGroup()
                                 .addComponent(guestNewDayCombo6, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(14, 14, 14)
@@ -1377,47 +1350,31 @@ public class TestJFrame extends javax.swing.JFrame {
                                 .addGap(14, 14, 14)
                                 .addComponent(guestNewMonthCombo5, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jComboBox9, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(reservationNewPanelLayout.createSequentialGroup()
-                        .addComponent(reservServSpendLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(8, 8, 8)
-                        .addComponent(reservServSpendTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jComboBox9, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(284, Short.MAX_VALUE))
         );
         reservationNewPanelLayout.setVerticalGroup(
             reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(reservationNewPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(reservationNewPanelLayout.createSequentialGroup()
-                        .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(guestNewDayCombo5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(guestNewMonthCombo5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jComboBox9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(reservStartTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(guestNewDayCombo6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(guestNewMonthCombo6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jComboBox8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(reservExpEndTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(guestNewDayCombo7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(guestNewMonthCombo7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboBox10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(reservEndTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(reservServSpendTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(reservServSpendLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(guestNewDayCombo5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(guestNewMonthCombo5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jComboBox9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(reservStartTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(guestNewDayCombo6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(guestNewMonthCombo6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jComboBox8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(reservExpEndTimeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(reservationNewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(reservNewSaveBut, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(reservNewCancelBut, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(71, 71, 71))
+                .addContainerGap())
         );
 
         reservationMainPanel.add(reservationNewPanel, "reservationNewPanel");
@@ -1431,26 +1388,10 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        reservSearchCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "room ID", "guest ID", "both" }));
+        reservSearchCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "room", "guest", "both" }));
         reservSearchCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reservSearchComboActionPerformed(evt);
-            }
-        });
-
-        reservSearchGuestLabel.setText("Guest ID: ");
-
-        reservSearchRoomLabel.setText("Room ID: ");
-
-        reservSearchGuestTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reservSearchGuestTextFieldActionPerformed(evt);
-            }
-        });
-
-        reservSearchRoomTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reservSearchRoomTextFieldActionPerformed(evt);
             }
         });
 
@@ -1463,15 +1404,9 @@ public class TestJFrame extends javax.swing.JFrame {
                 .addGroup(reservationSearchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(reservSearchBut, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(reservationSearchPanelLayout.createSequentialGroup()
-                        .addGroup(reservationSearchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(reservSearchGuestLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(reservSearchRoomLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(reservSearchLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(reservSearchLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(reservationSearchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(reservSearchGuestTextField)
-                            .addComponent(reservSearchRoomTextField)
-                            .addComponent(reservSearchCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(reservSearchCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(346, Short.MAX_VALUE))
         );
         reservationSearchPanelLayout.setVerticalGroup(
@@ -1481,17 +1416,9 @@ public class TestJFrame extends javax.swing.JFrame {
                 .addGroup(reservationSearchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(reservSearchCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(reservSearchLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(reservationSearchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(reservSearchRoomLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(reservSearchRoomTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(reservationSearchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(reservSearchGuestLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(reservSearchGuestTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(reservSearchBut)
-                .addContainerGap(113, Short.MAX_VALUE))
+                .addContainerGap(180, Short.MAX_VALUE))
         );
 
         reservationMainPanel.add(reservationSearchPanel, "reservationSearchPanel");
@@ -1539,6 +1466,8 @@ public class TestJFrame extends javax.swing.JFrame {
         guestNewDayCombo4.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" }));
         guestNewDayCombo4.setToolTipText("Day of birth");
 
+        jCheckBox1.setText("Text placeholder");
+
         javax.swing.GroupLayout reservationEditPanelLayout = new javax.swing.GroupLayout(reservationEditPanel);
         reservationEditPanel.setLayout(reservationEditPanelLayout);
         reservationEditPanelLayout.setHorizontalGroup(
@@ -1569,14 +1498,16 @@ public class TestJFrame extends javax.swing.JFrame {
                         .addGap(14, 14, 14)
                         .addComponent(guestNewMonthCombo4, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jComboBox7, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jComboBox7, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jCheckBox1))
                     .addGroup(reservationEditPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(reservationEditPanelLayout.createSequentialGroup()
                             .addComponent(reservEditSaveBut, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(reservEditCancelBut, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(reservServSpendTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(282, Short.MAX_VALUE))
+                .addContainerGap(171, Short.MAX_VALUE))
         );
         reservationEditPanelLayout.setVerticalGroup(
             reservationEditPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1603,7 +1534,8 @@ public class TestJFrame extends javax.swing.JFrame {
                     .addGroup(reservationEditPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(guestNewDayCombo4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(guestNewMonthCombo4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jComboBox7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jComboBox7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jCheckBox1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(reservationEditPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(reservServSpendLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1612,7 +1544,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 .addGroup(reservationEditPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE, false)
                     .addComponent(reservEditCancelBut)
                     .addComponent(reservEditSaveBut))
-                .addContainerGap(90, Short.MAX_VALUE))
+                .addContainerGap(87, Short.MAX_VALUE))
         );
 
         reservationMainPanel.add(reservationEditPanel, "reservationEditPanel");
@@ -1741,7 +1673,7 @@ public class TestJFrame extends javax.swing.JFrame {
             .addComponent(label1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Evidence, javax.swing.GroupLayout.PREFERRED_SIZE, 746, Short.MAX_VALUE)
+                .addComponent(Evidence, javax.swing.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
@@ -1806,7 +1738,7 @@ public class TestJFrame extends javax.swing.JFrame {
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationSearchPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
-        tableCard.show(reservationTables, "reservationMainTable");
+        tableCard.show(reservationTables, "addReservationTables");
     }//GEN-LAST:event_reservSearchActionPerformed
 
     private void guestMenuShowAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guestMenuShowAllActionPerformed
@@ -1948,14 +1880,6 @@ public class TestJFrame extends javax.swing.JFrame {
     private void reservSearchComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservSearchComboActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_reservSearchComboActionPerformed
-
-    private void reservSearchGuestTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservSearchGuestTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_reservSearchGuestTextFieldActionPerformed
-
-    private void reservSearchRoomTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservSearchRoomTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_reservSearchRoomTextFieldActionPerformed
 
     private void reservNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewActionPerformed
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
@@ -2177,7 +2101,6 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox guestNewDayCombo4;
     private javax.swing.JComboBox guestNewDayCombo5;
     private javax.swing.JComboBox guestNewDayCombo6;
-    private javax.swing.JComboBox guestNewDayCombo7;
     private javax.swing.JComboBox guestNewDayCombo8;
     private javax.swing.JComboBox guestNewDayCombo9;
     private javax.swing.JComboBox guestNewMonthCombo;
@@ -2187,7 +2110,6 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox guestNewMonthCombo4;
     private javax.swing.JComboBox guestNewMonthCombo5;
     private javax.swing.JComboBox guestNewMonthCombo6;
-    private javax.swing.JComboBox guestNewMonthCombo7;
     private javax.swing.JComboBox guestNewMonthCombo8;
     private javax.swing.JComboBox guestNewMonthCombo9;
     private javax.swing.JPanel guestNewPanel;
@@ -2199,7 +2121,7 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JButton guestSearchBut;
     private javax.swing.JPanel guestSearchPanel;
     private javax.swing.JTextField guestSearchTextField;
-    private javax.swing.JComboBox jComboBox10;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox jComboBox11;
     private javax.swing.JComboBox jComboBox12;
     private javax.swing.JComboBox jComboBox3;
@@ -2240,7 +2162,6 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JButton reservEdit;
     private javax.swing.JButton reservEditCancelBut;
     private javax.swing.JButton reservEditSaveBut;
-    private java.awt.Label reservEndTimeLabel;
     private java.awt.Label reservEndTimeLabel1;
     private java.awt.Label reservExpEndTimeLabel;
     private java.awt.Label reservExpEndTimeLabel1;
@@ -2252,14 +2173,8 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JButton reservSearch;
     private javax.swing.JButton reservSearchBut;
     private javax.swing.JComboBox reservSearchCombo;
-    private java.awt.Label reservSearchGuestLabel;
-    private javax.swing.JTextField reservSearchGuestTextField;
     private java.awt.Label reservSearchLabel;
-    private java.awt.Label reservSearchRoomLabel;
-    private javax.swing.JTextField reservSearchRoomTextField;
-    private java.awt.Label reservServSpendLabel;
     private java.awt.Label reservServSpendLabel1;
-    private javax.swing.JTextField reservServSpendTextField;
     private javax.swing.JTextField reservServSpendTextField1;
     private javax.swing.JButton reservShowAll;
     private java.awt.Label reservStartTimeLabel;
