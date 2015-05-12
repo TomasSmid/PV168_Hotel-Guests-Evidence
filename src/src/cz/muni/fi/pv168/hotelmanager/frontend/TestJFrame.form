@@ -170,52 +170,11 @@
                   <SubComponents>
                     <Component class="javax.swing.JTable" name="jTableRooms">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Arial" size="11" style="0"/>
-                        </Property>
-                        <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                          <Table columnCount="6" rowCount="15">
-                            <Column editable="true" title="ID" type="java.lang.Long"/>
-                            <Column editable="true" title="Number" type="java.lang.String"/>
-                            <Column editable="true" title="Capacity" type="java.lang.Integer"/>
-                            <Column editable="true" title="Floor" type="java.lang.Integer"/>
-                            <Column editable="true" title="Type" type="java.lang.Object"/>
-                            <Column editable="true" title="Price" type="java.lang.Object"/>
-                          </Table>
+                        <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="new RoomsTableModel()" type="code"/>
                         </Property>
                         <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
-                          <TableColumnModel selectionModel="0">
-                            <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                              <Title value="ID"/>
-                              <Editor/>
-                              <Renderer/>
-                            </Column>
-                            <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                              <Title/>
-                              <Editor/>
-                              <Renderer/>
-                            </Column>
-                            <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                              <Title/>
-                              <Editor/>
-                              <Renderer/>
-                            </Column>
-                            <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                              <Title/>
-                              <Editor/>
-                              <Renderer/>
-                            </Column>
-                            <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                              <Title/>
-                              <Editor/>
-                              <Renderer/>
-                            </Column>
-                            <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                              <Title/>
-                              <Editor/>
-                              <Renderer/>
-                            </Column>
-                          </TableColumnModel>
+                          <TableColumnModel selectionModel="0"/>
                         </Property>
                         <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
                           <Color id="Default Cursor"/>
@@ -422,10 +381,10 @@
                                           <Group type="102" attributes="0">
                                               <Group type="103" groupAlignment="0" attributes="0">
                                                   <Component id="typeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="priceLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="capacityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                                   <Component id="floorLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                                   <Component id="numberLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="capacityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="priceLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
@@ -451,7 +410,7 @@
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="priceLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          <Component id="capacityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                           <Component id="capacityTextField" alignment="1" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -466,7 +425,7 @@
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="capacityLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="priceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="priceTextField" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -487,7 +446,9 @@
                             </Component>
                             <Component class="java.awt.Label" name="numberLabel">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Number: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditNumberName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
                             <Component class="javax.swing.JTextField" name="floorTextField">
@@ -502,9 +463,11 @@
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="roomNewCancelButActionPerformed"/>
                               </Events>
                             </Component>
-                            <Component class="java.awt.Label" name="capacityLabel">
+                            <Component class="java.awt.Label" name="priceLabel">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Price: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditPriceName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
                             <Component class="javax.swing.JButton" name="roomNewSaveBut">
@@ -526,29 +489,30 @@
                             </Component>
                             <Component class="javax.swing.JComboBox" name="roomTypeCombo">
                               <Properties>
-                                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                                  <StringArray count="4">
-                                    <StringItem index="0" value="APARTMENT"/>
-                                    <StringItem index="1" value="FAMILY"/>
-                                    <StringItem index="2" value="STANDARD"/>
-                                    <StringItem index="3" value="SUITE"/>
-                                  </StringArray>
+                                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="ComboBoxManager.setRoomTypeComboBox()" type="code"/>
                                 </Property>
                               </Properties>
                             </Component>
                             <Component class="java.awt.Label" name="typeLabel">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Type: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditTypeName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
-                            <Component class="java.awt.Label" name="priceLabel">
+                            <Component class="java.awt.Label" name="capacityLabel">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Capacity: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditCapacityName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
                             <Component class="java.awt.Label" name="floorLabel">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Floor: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditFloorName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
                           </SubComponents>
@@ -583,7 +547,7 @@
                                           </Group>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="319" max="32767" attributes="0"/>
+                                  <EmptySpace pref="322" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -615,7 +579,9 @@
                       <SubComponents>
                         <Component class="java.awt.Label" name="roomSearchByLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Search by: "/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="RoomsButtonsNamesManager.getSearchConditionName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JButton" name="roomSearchBut">
@@ -630,12 +596,8 @@
                         </Component>
                         <Component class="javax.swing.JComboBox" name="roomSearchSelectCombo">
                           <Properties>
-                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                              <StringArray count="3">
-                                <StringItem index="0" value="room capacity"/>
-                                <StringItem index="1" value="room type"/>
-                                <StringItem index="2" value="both"/>
-                              </StringArray>
+                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ComboBoxManager.setRoomSearchConditionComboBox()" type="code"/>
                             </Property>
                           </Properties>
                           <Events>
@@ -644,12 +606,16 @@
                         </Component>
                         <Component class="java.awt.Label" name="roomTypeLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Room type: "/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="RoomsButtonsNamesManager.getSearchRoomTypeName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                         <Component class="java.awt.Label" name="roomCapLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Room capacity: "/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="RoomsButtonsNamesManager.getSearchRoomCapacityName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="jTextField24">
@@ -659,13 +625,8 @@
                         </Component>
                         <Component class="javax.swing.JComboBox" name="roomTypeCombo2">
                           <Properties>
-                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                              <StringArray count="4">
-                                <StringItem index="0" value="APARTMENT"/>
-                                <StringItem index="1" value="FAMILY"/>
-                                <StringItem index="2" value="STANDARD"/>
-                                <StringItem index="3" value="SUITE"/>
-                              </StringArray>
+                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ComboBoxManager.setRoomTypeComboBox()" type="code"/>
                             </Property>
                           </Properties>
                         </Component>
@@ -1002,10 +963,10 @@
                                           <Group type="102" attributes="0">
                                               <Group type="103" groupAlignment="0" attributes="0">
                                                   <Component id="typeLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="priceLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="capacityLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
                                                   <Component id="floorLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
                                                   <Component id="numberLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="capacityLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="priceLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
@@ -1031,7 +992,7 @@
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="priceLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          <Component id="capacityLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
                                           <Component id="capacityTextField1" alignment="1" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -1046,7 +1007,7 @@
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="capacityLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="priceLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                                           <Component id="priceTextField1" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -1067,7 +1028,9 @@
                             </Component>
                             <Component class="java.awt.Label" name="numberLabel1">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Number: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditNumberName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
                             <Component class="javax.swing.JTextField" name="floorTextField1">
@@ -1082,9 +1045,11 @@
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="roomEditCancelButActionPerformed"/>
                               </Events>
                             </Component>
-                            <Component class="java.awt.Label" name="capacityLabel1">
+                            <Component class="java.awt.Label" name="priceLabel1">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Price: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditPriceName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
                             <Component class="javax.swing.JButton" name="roomEditSaveBut">
@@ -1106,29 +1071,30 @@
                             </Component>
                             <Component class="javax.swing.JComboBox" name="roomTypeCombo1">
                               <Properties>
-                                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                                  <StringArray count="4">
-                                    <StringItem index="0" value="APARTMENT"/>
-                                    <StringItem index="1" value="FAMILY"/>
-                                    <StringItem index="2" value="STANDARD"/>
-                                    <StringItem index="3" value="SUITE"/>
-                                  </StringArray>
+                                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="ComboBoxManager.setRoomTypeComboBox()" type="code"/>
                                 </Property>
                               </Properties>
                             </Component>
                             <Component class="java.awt.Label" name="typeLabel1">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Type: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditTypeName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
-                            <Component class="java.awt.Label" name="priceLabel1">
+                            <Component class="java.awt.Label" name="capacityLabel1">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Capacity: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditCapacityName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
                             <Component class="java.awt.Label" name="floorLabel1">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Floor: "/>
+                                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="RoomsButtonsNamesManager.getNewAndEditFloorName()" type="code"/>
+                                </Property>
                               </Properties>
                             </Component>
                           </SubComponents>
@@ -2859,52 +2825,11 @@
                           <SubComponents>
                             <Component class="javax.swing.JTable" name="jTableRooms1">
                               <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Arial" size="11" style="0"/>
-                                </Property>
-                                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                                  <Table columnCount="6" rowCount="15">
-                                    <Column editable="true" title="ID" type="java.lang.Long"/>
-                                    <Column editable="true" title="Number" type="java.lang.String"/>
-                                    <Column editable="true" title="Capacity" type="java.lang.Integer"/>
-                                    <Column editable="true" title="Floor" type="java.lang.Integer"/>
-                                    <Column editable="true" title="Type" type="java.lang.Object"/>
-                                    <Column editable="true" title="Price" type="java.lang.Object"/>
-                                  </Table>
+                                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="new RoomsTableModel()" type="code"/>
                                 </Property>
                                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
-                                  <TableColumnModel selectionModel="0">
-                                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                      <Title/>
-                                      <Editor/>
-                                      <Renderer/>
-                                    </Column>
-                                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                      <Title/>
-                                      <Editor/>
-                                      <Renderer/>
-                                    </Column>
-                                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                      <Title/>
-                                      <Editor/>
-                                      <Renderer/>
-                                    </Column>
-                                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                      <Title/>
-                                      <Editor/>
-                                      <Renderer/>
-                                    </Column>
-                                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                      <Title/>
-                                      <Editor/>
-                                      <Renderer/>
-                                    </Column>
-                                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                                      <Title/>
-                                      <Editor/>
-                                      <Renderer/>
-                                    </Column>
-                                  </TableColumnModel>
+                                  <TableColumnModel selectionModel="0"/>
                                 </Property>
                                 <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
                                   <Color id="Default Cursor"/>

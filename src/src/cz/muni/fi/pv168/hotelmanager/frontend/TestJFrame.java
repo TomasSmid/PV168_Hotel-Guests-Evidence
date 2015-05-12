@@ -6,16 +6,38 @@
 package cz.muni.fi.pv168.hotelmanager.frontend;
 
 import cz.muni.fi.pv168.common.HGEConfig;
+import cz.muni.fi.pv168.hotelmanager.backend.DuplicateRoomException;
 import cz.muni.fi.pv168.hotelmanager.backend.Guest;
 import cz.muni.fi.pv168.hotelmanager.backend.GuestManager;
 import cz.muni.fi.pv168.hotelmanager.backend.GuestManagerImpl;
+import cz.muni.fi.pv168.hotelmanager.backend.Reservation;
+import cz.muni.fi.pv168.hotelmanager.backend.ReservationManager;
+import cz.muni.fi.pv168.hotelmanager.backend.ReservationManagerImpl;
+import cz.muni.fi.pv168.hotelmanager.backend.Room;
+import cz.muni.fi.pv168.hotelmanager.backend.RoomManager;
+import cz.muni.fi.pv168.hotelmanager.backend.RoomManagerImpl;
+import cz.muni.fi.pv168.hotelmanager.backend.RoomType;
+import cz.muni.fi.pv168.hotelmanager.backend.ServiceFailureException;
+import cz.muni.fi.pv168.hotelmanager.backend.TimeManagerImpl;
 import java.awt.CardLayout;
 import java.awt.Font;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingWorker;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -23,18 +45,27 @@ import javax.swing.JOptionPane;
  */
 public class TestJFrame extends javax.swing.JFrame {
 
+    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
+    private DataSource dataSource;
+    private ResourceBundle resourceBundle;
+    private AddNewRoomSwingWorker addNewRoomSwingWorker = null;
+    private DeleteRoomSwingWorker deleteRoomSwingWorker = null;
+    private UpdateRoomSwingWorker updateRoomSwingWorker = null;
+    private SetUpKeySwingWorker setUpKeySwingWorker = null;
+    private ShowAllRoomsSwingWorker showAllRoomsSwingWorker = null;
+    private SearchRoomSwingWorker searchRoomSwingWorker = null;
+    private Long key = null;
+    private int m_row = -1;
+    
     /**
      * Creates new form TestJFrame
      */
     public TestJFrame() {
         initComponents();
-        try {
-            fulfillTable();
-        } catch (IOException ex) {
-            //napr. otevrit nove okno s chybovou hlaskou
-        } catch (SQLException ex) {
-            //napr. otevrit nove okno s chybovou hlaskou
-        }
+        dataSource = setUpDataSource();
+        Locale locale = Locale.getDefault();
+        resourceBundle = ResourceBundle.getBundle("texty", locale);
+        fulfillAllTables();
     }
 
     /**
@@ -67,13 +98,13 @@ public class TestJFrame extends javax.swing.JFrame {
         numberLabel = new java.awt.Label();
         floorTextField = new javax.swing.JTextField();
         roomNewCancelBut = new javax.swing.JButton();
-        capacityLabel = new java.awt.Label();
+        priceLabel = new java.awt.Label();
         roomNewSaveBut = new javax.swing.JButton();
         priceTextField = new javax.swing.JTextField();
         capacityTextField = new javax.swing.JTextField();
         roomTypeCombo = new javax.swing.JComboBox();
         typeLabel = new java.awt.Label();
-        priceLabel = new java.awt.Label();
+        capacityLabel = new java.awt.Label();
         floorLabel = new java.awt.Label();
         roomSearchPanel = new javax.swing.JPanel();
         roomSearchByLabel = new java.awt.Label();
@@ -103,13 +134,13 @@ public class TestJFrame extends javax.swing.JFrame {
         numberLabel1 = new java.awt.Label();
         floorTextField1 = new javax.swing.JTextField();
         roomEditCancelBut = new javax.swing.JButton();
-        capacityLabel1 = new java.awt.Label();
+        priceLabel1 = new java.awt.Label();
         roomEditSaveBut = new javax.swing.JButton();
         priceTextField1 = new javax.swing.JTextField();
         capacityTextField1 = new javax.swing.JTextField();
         roomTypeCombo1 = new javax.swing.JComboBox();
         typeLabel1 = new java.awt.Label();
-        priceLabel1 = new java.awt.Label();
+        capacityLabel1 = new java.awt.Label();
         floorLabel1 = new java.awt.Label();
         GuestEvidence = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -224,42 +255,9 @@ public class TestJFrame extends javax.swing.JFrame {
         RoomEvidence.setFocusable(false);
         RoomEvidence.setFont(new java.awt.Font("Georgia", 0, 11)); // NOI18N
 
-        jTableRooms.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        jTableRooms.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
-            },
-            new String [] {
-                "ID", "Number", "Capacity", "Floor", "Type", "Price"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Long.class, java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
+        jTableRooms.setModel(new RoomsTableModel());
         jTableRooms.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jScrollPane1.setViewportView(jTableRooms);
-        if (jTableRooms.getColumnModel().getColumnCount() > 0) {
-            jTableRooms.getColumnModel().getColumn(0).setHeaderValue("ID");
-        }
 
         RoomMenu.setBackground(new java.awt.Color(255, 255, 255));
         RoomMenu.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153), 2));
@@ -365,7 +363,7 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        numberLabel.setText("Number: ");
+        numberLabel.setText(RoomsButtonsNamesManager.getNewAndEditNumberName());
 
         roomNewCancelBut.setText(GeneralButtonsAndTitlesNamesManager.getCancelButtonName());
         roomNewCancelBut.addActionListener(new java.awt.event.ActionListener() {
@@ -374,7 +372,7 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        capacityLabel.setText("Price: ");
+        priceLabel.setText(RoomsButtonsNamesManager.getNewAndEditPriceName());
 
         roomNewSaveBut.setText(GeneralButtonsAndTitlesNamesManager.getSaveButtonName());
         roomNewSaveBut.addActionListener(new java.awt.event.ActionListener() {
@@ -389,13 +387,13 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        roomTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "APARTMENT", "FAMILY", "STANDARD", "SUITE" }));
+        roomTypeCombo.setModel(ComboBoxManager.setRoomTypeComboBox());
 
-        typeLabel.setText("Type: ");
+        typeLabel.setText(RoomsButtonsNamesManager.getNewAndEditTypeName());
 
-        priceLabel.setText("Capacity: ");
+        capacityLabel.setText(RoomsButtonsNamesManager.getNewAndEditCapacityName());
 
-        floorLabel.setText("Floor: ");
+        floorLabel.setText(RoomsButtonsNamesManager.getNewAndEditFloorName());
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -411,10 +409,10 @@ public class TestJFrame extends javax.swing.JFrame {
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(typeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(priceLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(capacityLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(floorLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(numberLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(capacityLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(priceLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(10, 10, 10)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(floorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -433,7 +431,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     .addComponent(numberTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(priceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(capacityLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(capacityTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -445,7 +443,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     .addComponent(roomTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(capacityLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(priceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(priceTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -471,7 +469,7 @@ public class TestJFrame extends javax.swing.JFrame {
 
         roomMainPanel.add(roomNewPanel, "roomNewPanel");
 
-        roomSearchByLabel.setText("Search by: ");
+        roomSearchByLabel.setText(RoomsButtonsNamesManager.getSearchConditionName());
 
         roomSearchBut.setText(GeneralButtonsAndTitlesNamesManager.getSearchButtonName());
         roomSearchBut.addActionListener(new java.awt.event.ActionListener() {
@@ -480,16 +478,16 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        roomSearchSelectCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "room capacity", "room type", "both" }));
+        roomSearchSelectCombo.setModel(ComboBoxManager.setRoomSearchConditionComboBox());
         roomSearchSelectCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 roomSearchSelectComboActionPerformed(evt);
             }
         });
 
-        roomTypeLabel.setText("Room type: ");
+        roomTypeLabel.setText(RoomsButtonsNamesManager.getSearchRoomTypeName());
 
-        roomCapLabel.setText("Room capacity: ");
+        roomCapLabel.setText(RoomsButtonsNamesManager.getSearchRoomCapacityName());
 
         jTextField24.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -497,7 +495,7 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        roomTypeCombo2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "APARTMENT", "FAMILY", "STANDARD", "SUITE" }));
+        roomTypeCombo2.setModel(ComboBoxManager.setRoomTypeComboBox());
 
         javax.swing.GroupLayout roomSearchPanelLayout = new javax.swing.GroupLayout(roomSearchPanel);
         roomSearchPanel.setLayout(roomSearchPanelLayout);
@@ -517,7 +515,7 @@ public class TestJFrame extends javax.swing.JFrame {
                             .addComponent(jTextField24)
                             .addComponent(roomSearchSelectCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(roomTypeCombo2, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(319, Short.MAX_VALUE))
+                .addContainerGap(322, Short.MAX_VALUE))
         );
         roomSearchPanelLayout.setVerticalGroup(
             roomSearchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -665,7 +663,7 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        numberLabel1.setText("Number: ");
+        numberLabel1.setText(RoomsButtonsNamesManager.getNewAndEditNumberName());
 
         roomEditCancelBut.setText(GeneralButtonsAndTitlesNamesManager.getCancelButtonName());
         roomEditCancelBut.addActionListener(new java.awt.event.ActionListener() {
@@ -674,7 +672,7 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        capacityLabel1.setText("Price: ");
+        priceLabel1.setText(RoomsButtonsNamesManager.getNewAndEditPriceName());
 
         roomEditSaveBut.setText(GeneralButtonsAndTitlesNamesManager.getSaveButtonName());
         roomEditSaveBut.addActionListener(new java.awt.event.ActionListener() {
@@ -689,13 +687,13 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        roomTypeCombo1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "APARTMENT", "FAMILY", "STANDARD", "SUITE" }));
+        roomTypeCombo1.setModel(ComboBoxManager.setRoomTypeComboBox());
 
-        typeLabel1.setText("Type: ");
+        typeLabel1.setText(RoomsButtonsNamesManager.getNewAndEditTypeName());
 
-        priceLabel1.setText("Capacity: ");
+        capacityLabel1.setText(RoomsButtonsNamesManager.getNewAndEditCapacityName());
 
-        floorLabel1.setText("Floor: ");
+        floorLabel1.setText(RoomsButtonsNamesManager.getNewAndEditFloorName());
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -711,10 +709,10 @@ public class TestJFrame extends javax.swing.JFrame {
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(typeLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(priceLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(capacityLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(floorLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(numberLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(capacityLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(priceLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(10, 10, 10)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(floorTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -733,7 +731,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     .addComponent(numberTextField1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(priceLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(capacityLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(capacityTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -745,7 +743,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     .addComponent(roomTypeCombo1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(capacityLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(priceLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(priceTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1579,37 +1577,7 @@ public class TestJFrame extends javax.swing.JFrame {
         reservationTables.add(reservationMainTable, "reservationMainTable");
         reservationMainTable.getAccessibleContext().setAccessibleName("reservationMainTable");
 
-        jTableRooms1.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        jTableRooms1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
-            },
-            new String [] {
-                "ID", "Number", "Capacity", "Floor", "Type", "Price"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Long.class, java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
+        jTableRooms1.setModel(new RoomsTableModel());
         jTableRooms1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jScrollPane3.setViewportView(jTableRooms1);
 
@@ -1755,9 +1723,13 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservShowAllActionPerformed
 
     private void RoomNewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RoomNewButtonActionPerformed
-        JOptionPane.showMessageDialog(null,
-    "Yo momma so fat, that she uses Google Earth to take a selfie.",
-    "Internal error", JOptionPane.ERROR_MESSAGE);
+        //clear the last used values for add function
+        if(!numberTextField.getText().isEmpty()){ numberTextField.setText(""); }
+        if(!capacityTextField.getText().isEmpty()){ capacityTextField.setText(""); }
+        if(!floorTextField.getText().isEmpty()){ floorTextField.setText(""); }
+        roomTypeCombo.setSelectedIndex(0);
+        if(!priceTextField.getText().isEmpty()){ priceTextField.setText(""); }
+        
         CardLayout card = (CardLayout)roomMainPanel.getLayout();
         card.show(roomMainPanel, "roomNewPanel");
     }//GEN-LAST:event_RoomNewButtonActionPerformed
@@ -1775,13 +1747,45 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField24ActionPerformed
 
     private void RoomEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RoomEditButtonActionPerformed
-        // TODO dodelani editacni logiky
         
-        CardLayout card = (CardLayout)roomMainPanel.getLayout();
-        card.show(roomMainPanel, "roomEditPanel");
+        if(setUpKeySwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'RoomEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating room in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'RoomEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating room in DB operation is already in progress, can't run multiply");
+        }
+        
+        if(jTableRooms.getSelectedRow() == -1){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Pokoj_upravit_nevybrany_zaznam"),
+                                          resourceBundle.getString("Chybna_operace"), JOptionPane.ERROR_MESSAGE);            
+            CardLayout card = (CardLayout)roomMainPanel.getLayout();
+            card.show(roomMainPanel, "emptyPanel");
+        }else{
+            RoomEditButton.setEnabled(false);
+            m_row = jTableRooms.getSelectedRow();
+            if(key != null){
+                key = null;
+            }
+            
+            Room room = getRoomFromTable(jTableRooms);
+            numberTextField1.setText(room.getNumber());
+            capacityTextField1.setText(String.valueOf(room.getCapacity()));
+            floorTextField1.setText(String.valueOf(room.getFloor()));
+            roomTypeCombo1.setSelectedIndex(getRoomTypeIndex(room.getType()));
+            priceTextField1.setText(String.valueOf(room.getPrice()));
+            
+            setUpKeySwingWorker = new SetUpKeySwingWorker(room,"Room");
+            setUpKeySwingWorker.execute();
+            
+            CardLayout card = (CardLayout)roomMainPanel.getLayout();
+            card.show(roomMainPanel, "roomEditPanel");
+        }
     }//GEN-LAST:event_RoomEditButtonActionPerformed
 
     private void RoomSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RoomSearchButtonActionPerformed
+        
+        if(roomSearchSelectCombo.getSelectedIndex() != 0){ roomSearchSelectCombo.setSelectedIndex(0); }
+        if(!jTextField24.getText().isEmpty()){ jTextField24.setText(""); }
+        if(roomTypeCombo2.getSelectedIndex() != 0){ roomTypeCombo2.setSelectedIndex(0); }
+        
         CardLayout card = (CardLayout)roomMainPanel.getLayout();
         card.show(roomMainPanel, "roomSearchPanel");
     }//GEN-LAST:event_RoomSearchButtonActionPerformed
@@ -1801,21 +1805,71 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_numberTextFieldActionPerformed
 
     private void RoomShowAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RoomShowAllButtonActionPerformed
-        // TODO zobrazeni vsech zazanamu
+        
+        if(showAllRoomsSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'RoomShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'RoomShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation is already in progress, can't run multiply");
+        }
+        RoomShowAllButton.setEnabled(false);
+        showAllRoomsSwingWorker = new ShowAllRoomsSwingWorker();
+        showAllRoomsSwingWorker.execute();
+        
         CardLayout card = (CardLayout)roomMainPanel.getLayout();
         card.show(roomMainPanel, "emptyPanel");
     }//GEN-LAST:event_RoomShowAllButtonActionPerformed
 
     private void RoomDeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RoomDeleteButtonActionPerformed
-        // TODO dodelat smazani zaznamu
+        if(deleteRoomSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'RoomDeleteButtonActionPerformed' of class 'TestJFrame' - deleting room from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'RoomDeleteButtonActionPerformed' of class 'TestJFrame' - deleting room from DB operation is already in progress, can't run multiply");
+        }
+        RoomDeleteButton.setEnabled(false);
+        int choice = makeARoomDeletionChoice(jTableRooms);
+        
+        if(choice == 0){
+            deleteRoomSwingWorker = new DeleteRoomSwingWorker(jTableRooms);
+            deleteRoomSwingWorker.execute();
+        }else{
+            RoomDeleteButton.setEnabled(true);
+        }
+        
         CardLayout card = (CardLayout)roomMainPanel.getLayout();
         card.show(roomMainPanel, "emptyPanel");
     }//GEN-LAST:event_RoomDeleteButtonActionPerformed
 
     private void roomNewSaveButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomNewSaveButActionPerformed
-        //TODO co se stane po zmakcnuti tohoto tlacitka jestli jeste nejaka zprava nebo neco       
-        CardLayout card = (CardLayout)roomMainPanel.getLayout();
-        card.show(roomMainPanel, "emptyPanel");
+        //TODO co se stane po zmakcnuti tohoto tlacitka jestli jeste nejaka zprava nebo neco
+        if(addNewRoomSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'roomNewSaveButActionPerformed' of class 'TestJFrame' - saving room to DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomNewSaveButActionPerformed' of class 'TestJFrame' - saving room to DB operation is already in progress, can't run multiply");
+        }
+        roomNewSaveBut.setEnabled(false);
+        String[] inVals = {numberTextField.getText(), capacityTextField.getText(),
+                           floorTextField.getText(), getStringRoomType(roomTypeCombo.getSelectedItem().toString()),
+                           priceTextField.getText()};
+        String msgs = checkAllRoomValuesWereFilledOut(inVals);
+        if(msgs == null){
+            addNewRoomSwingWorker = new AddNewRoomSwingWorker(inVals);
+            try{
+                addNewRoomSwingWorker.execute();
+            }catch(IllegalArgumentException ex){
+                logger.log(Level.SEVERE, "AddNewRoomSwingWorker - error during adding new room to DB -> ", ex);
+                JOptionPane.showMessageDialog(null, getInvalidRoomArgMsg(ex.getMessage(),"pridat"),
+                                              resourceBundle.getString("Neplatny_argument"),
+                                              JOptionPane.ERROR_MESSAGE);
+            }catch(DuplicateRoomException ex){
+                logger.log(Level.SEVERE, "AddNewRoomSwingWorker - error during adding new room to DB -> ", ex);
+                JOptionPane.showMessageDialog(null, getDuplRoomMsg(ex.getMessage()), resourceBundle.getString("Neplatny_argument"),
+                                              JOptionPane.ERROR_MESSAGE);
+            }catch(ServiceFailureException ex){
+                logger.log(Level.SEVERE, "AddNewRoomSwingWorker - error during adding new room to DB -> ", ex);
+                JOptionPane.showMessageDialog(null,resourceBundle.getString("Pokoj_pridat_interni_chyba"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);            
+            }
+        }else{
+            roomNewSaveBut.setEnabled(true);
+            JOptionPane.showMessageDialog(null, msgs, resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_roomNewSaveButActionPerformed
 
     private void roomNewCancelButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomNewCancelButActionPerformed
@@ -1825,10 +1879,26 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_roomNewCancelButActionPerformed
 
     private void roomSearchButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomSearchButActionPerformed
-        // TODO add your handling code here:
-        // dodelani vyhledavani
-        CardLayout card = (CardLayout)roomMainPanel.getLayout();
-        card.show(roomMainPanel, "emptyPanel");
+        
+        if(searchRoomSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'roomSearchButActionPerformed' of class 'TestJFrame' - searching suitable rooms in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomSearchButActionPerformed' of class 'TestJFrame' - searching suitable rooms in DB operation is already in progress, can't run multiply");
+        }
+        roomSearchBut.setEnabled(false);
+        int capacity = -1;
+        String roomType = null;
+        switch(roomSearchSelectCombo.getSelectedIndex()){
+            case 0: capacity = Integer.parseInt(jTextField24.getText()); break;
+            case 1: roomType = getStringRoomType(roomTypeCombo2.getSelectedItem().toString()); break;
+            case 2: capacity = Integer.parseInt(jTextField24.getText());
+                    roomType = getStringRoomType(roomTypeCombo2.getSelectedItem().toString());
+                    break;
+            default: throw new IllegalStateException("Unexpected index retrieved from roomSearchSelectCombo combo boxu while trying to search required rooms");
+        }
+        searchRoomSwingWorker = new SearchRoomSwingWorker(capacity, roomType);
+        searchRoomSwingWorker.execute();
+        /*CardLayout card = (CardLayout)roomMainPanel.getLayout();
+        card.show(roomMainPanel, "emptyPanel");*/
     }//GEN-LAST:event_roomSearchButActionPerformed
 
     private void findOutButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findOutButActionPerformed
@@ -1957,6 +2027,25 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_roomEditCancelButActionPerformed
 
     private void roomEditSaveButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomEditSaveButActionPerformed
+        
+        if(updateRoomSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'roomEditSaveButActionPerformed' of class 'TestJFrame' - updating room in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomEditSaveButActionPerformed' of class 'TestJFrame' - updating room in DB operation is already in progress, can't run multiply");
+        }
+        roomEditSaveBut.setEnabled(false);
+        String[] inVals = {numberTextField1.getText(), capacityTextField1.getText(),
+                           floorTextField1.getText(), getStringRoomType(roomTypeCombo1.getSelectedItem().toString()),
+                           priceTextField1.getText()};
+        String msgs = checkAllRoomValuesWereFilledOut(inVals);
+        if(msgs == null){
+            updateRoomSwingWorker = new UpdateRoomSwingWorker(inVals);
+            updateRoomSwingWorker.execute();
+        }else{
+            roomNewSaveBut.setEnabled(true);
+            JOptionPane.showMessageDialog(null, msgs, resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+        }
+        
+        
         CardLayout card = (CardLayout)roomMainPanel.getLayout();
         card.show(roomMainPanel, "emptyPanel");
     }//GEN-LAST:event_roomEditSaveButActionPerformed
@@ -2039,6 +2128,7 @@ public class TestJFrame extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new TestJFrame().setVisible(true);
             }
@@ -2210,21 +2300,634 @@ public class TestJFrame extends javax.swing.JFrame {
     private java.awt.Label typeLabel1;
     // End of variables declaration//GEN-END:variables
 
-    private void fulfillTable() throws IOException, SQLException{
+    private DataSource setUpDataSource(){
         HGEConfig config = new HGEConfig();
-        DataSource dataSource = config.dataSource();
-        config.setupDataSource(dataSource);
+        DataSource ds = null;
+        try{
+            ds = config.dataSource();
+            config.setupDataSource(ds);
+        }catch(IOException ex){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Naplneni_tabulek_daty_DB_config_chybi_poskozen"),
+                                          resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+        }catch(SQLException ex){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Naplneni_tabulek_daty_nevytvoreni_tab_v_DB"),
+                                          resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+        }
+        
+        return ds;
+    }
+    
+    private void fulfillAllTables(){
+        GuestsToGUITablesSwingWorker gsw = new GuestsToGUITablesSwingWorker();
+        RoomsToGUITablesSwingWorker rsw = new RoomsToGUITablesSwingWorker();
+        
+        gsw.execute();
+        rsw.execute();
+    }
+    
+    private void fulfillGuestsTables(DataSource dataSource){
+        fulfillGuestsTable(dataSource, jTableGuests.getModel());
+        fulfillGuestsTable(dataSource, jTableGuests1.getModel());
+        jTableGuests.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        jTableGuests1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setUpGuestsTablesHeaderG();
+    }
+    
+    private void fulfillGuestsTable(DataSource dataSource, TableModel tableModel){
         GuestManager guestManager = new GuestManagerImpl(dataSource);
         List<Guest> guests = guestManager.findAllGuests();
-        GuestsTableModel gtm = (GuestsTableModel) jTableGuests.getModel();
-        setUpGuestsTableHeaderG();
+        GuestsTableModel gtm = (GuestsTableModel) tableModel;
         
         for(Guest guest : guests){
             gtm.addGuest(guest);
         }
     }
     
-    private void setUpGuestsTableHeaderG(){
-        jTableGuests.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+    private void fulfillRoomsTables(DataSource dataSource){
+        fulfillRoomsTable(dataSource, jTableRooms.getModel());
+        fulfillRoomsTable(dataSource, jTableRooms1.getModel());
+        jTableRooms.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        jTableRooms1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setUpRoomsTablesHeaderG();
+    }
+    
+    private void fulfillRoomsTable(DataSource dataSource, TableModel tableModel){
+        RoomsTableModel rtm = (RoomsTableModel) tableModel;
+        RoomManager roomManager = new RoomManagerImpl(dataSource);
+        List<Room> rooms = roomManager.findAllRooms();        
+        
+        for(Room room : rooms){
+            rtm.addRoom(room);
+        }
+    }
+    
+    private void setUpGuestsTablesHeaderG(){
+        jTableGuests.getTableHeader().setFont(new Font("Georgia", Font.BOLD, 12));
+        jTableGuests1.getTableHeader().setFont(new Font("Georgia", Font.BOLD, 12));
+    }
+    
+    private void setUpRoomsTablesHeaderG(){
+        jTableRooms.getTableHeader().setFont(new Font("Georgia", Font.BOLD, 12));
+        jTableRooms1.getTableHeader().setFont(new Font("Georgia", Font.BOLD, 12));
+    }
+    
+    private Room createRoomFromStrings(String[] inVals){
+        return createRoomFromStrings(Arrays.asList(inVals));
+    }
+    
+    private Room createRoomFromStrings(List<String> inVals){
+        Room room = new Room();
+        room.setNumber(inVals.get(0));
+        room.setCapacity(Integer.parseInt(inVals.get(1)));
+        room.setFloor(Integer.parseInt(inVals.get(2)));
+        room.setType(RoomType.valueOf(inVals.get(3)));
+        room.setPrice(new BigDecimal(inVals.get(4)));
+        return room;
+    }
+    
+    private String getDuplRoomMsg(String errMsg){
+        String[] errMsgParts = errMsg.split(" ");        
+        return resourceBundle.getString("Pokoj_pridat_duplicita_cast1") + " " + errMsgParts[4]
+               + " " + resourceBundle.getString("Pokoj_pridat_duplicita_cast2");
+    }
+    
+    private String getInvalidRoomArgMsg(String errMsg, String oper){
+            
+        if(errMsg.contains("Creating room failure: room has 0 or negative capacity")){
+            return resourceBundle.getString("Pokoj_pridat_spatny_argument_kapacita");
+        }
+        
+        if(errMsg.contains("Creating room failure: room price is 0 or negative number")){
+            return resourceBundle.getString("Pokoj_pridat_spatny_argument_cena");
+        }
+        
+        if(errMsg.contains("Creating room failure: room floor is 0  or negative number")){
+            return resourceBundle.getString("Pokoj_pridat_spatny_argument_podlazi");
+        }
+        
+        if(errMsg.contains("Creating room failure: room number is in wrong format")){
+            return resourceBundle.getString("Pokoj_pridat_spatny_argument_cislo");
+        }
+        
+        return resourceBundle.getString("Pokoj_" + oper + "_spatny_argument_default");
+    }
+    
+    private String checkAllRoomValuesWereFilledOut(String[] inVals){
+        if(inVals[0].trim().isEmpty()){
+            return resourceBundle.getString("Pokoj_pridat_nevyplneny_argument_cislo");
+        }
+        
+        if(inVals[1].trim().isEmpty()){
+            return resourceBundle.getString("Pokoj_pridat_nevyplneny_argument_kapacita");
+        }
+        
+        if(inVals[2].trim().isEmpty()){
+            return resourceBundle.getString("Pokoj_pridat_nevyplneny_argument_podlazi");
+        }
+        
+        if(inVals[4].trim().isEmpty()){
+            return resourceBundle.getString("Pokoj_pridat_nevyplneny_argument_cena");
+        }
+        
+        return null;
+    }
+    
+    private String getStringRoomType(String inType){
+        
+        switch(inType){
+            case "APARTMENT"    :
+            case "APARTMÁN"     : return "APARTMENT";
+                
+            case "FAMILY"       :
+            case "RODINNÝ"      : return "FAMILY";
+                
+            case "STANDARD"     :
+            case "STANDARDNÍ"   :
+            case "ŠTANDARD"     : return "STANDARD";
+                
+            case "SUITE"        : return "SUITE";
+                
+            default:
+                logger.log(Level.SEVERE, "Creating new room failure: Filled unexpected type of room.");
+                throw new IllegalStateException("Creating new room failure: Filled unexpected type of room.");
+        }
+    }
+    
+    private int makeARoomDeletionChoice(JTable table){
+        if(table.getSelectedRow() != -1){
+            Object[] options = {resourceBundle.getString("Ano"),
+                                resourceBundle.getString("Ne")};
+            int n = JOptionPane.showOptionDialog(null, resourceBundle.getString("Pokoj_smazat_dotazani_na_potvrzeni"),
+                                                 resourceBundle.getString("Potvrzeni_operace"),
+                                                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                                                 null, options, options[1]);
+            return n;
+        }else{
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Pokoj_smazat_nevybrany_zaznam"),
+                                          resourceBundle.getString("Chybna_operace"), JOptionPane.ERROR_MESSAGE);
+            return -1;
+        }
+    }
+    
+    private List<Object> getSelectedTableRoomNumberAndRow(JTable table){
+        int row = table.getSelectedRow();
+        String roomNumber = table.getValueAt(row, 1).toString();
+        List<Object> rets = new ArrayList<>();
+        
+        rets.add(roomNumber);
+        rets.add(row);
+        
+        return rets;
+    }
+    
+    private void deleteRoomFromDB(String roomNumber){
+        RoomManager roomManager = new RoomManagerImpl(dataSource);
+        Room matchedRoom = roomManager.getRoomByNumber(roomNumber);
+        
+       if(matchedRoom == null){
+           throw new IllegalStateException("Internal error: Room with number " + roomNumber + " should "
+                   + "be stored in DB, but it is not.");
+       }
+       
+       roomManager.deleteRoom(matchedRoom);
+    }
+    
+    private Room getRoomFromTable(JTable table){
+        int row = table.getSelectedRow();
+        List<String> tabVals = new ArrayList<>();
+        
+        for(int col = 1; col < 5; col++){
+            tabVals.add(table.getValueAt(row, col).toString());
+        }
+        
+        tabVals.add(getNonFormattedPrice(table.getValueAt(row, 5).toString()));
+        Room room = createRoomFromStrings(tabVals);
+        
+        return room;
+    }
+    
+    private String getNonFormattedPrice(String formattedPrice){
+        
+        if(formattedPrice.contains("Kč") || formattedPrice.contains("€")){
+            int lind = formattedPrice.lastIndexOf(" ");
+            String price = formattedPrice.substring(0, lind);            
+            price = price.replace("\u00A0", "");
+            price = price.replace(",", ".");
+            return price;
+        }
+        
+        if(formattedPrice.contains("$")){
+            String[] fpParts = formattedPrice.split("$", 2);
+            String price = fpParts[1];
+            return price.replaceAll("[,]", "");
+        }
+        
+        logger.log(Level.SEVERE, "Updating room failure: In rooms JTable object appeared unexpected currency.");
+        throw new IllegalStateException("Unexpected currency in rooms JTable object");
+    }
+    
+    private int getRoomTypeIndex(RoomType roomType){
+        switch(roomType){
+            case APARTMENT  : return 0;
+            case FAMILY     : return 1;
+            case STANDARD   : return 2;
+            case SUITE      : return 3;
+            default: throw new IllegalStateException("Unexpected room type appeared");
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    private class GuestsToGUITablesSwingWorker extends SwingWorker<Void, Void>{
+        
+        @Override
+        protected Void doInBackground() throws Exception {
+            fulfillGuestsTables(dataSource);
+            return null;
+        }
+        
+    }
+    
+    private class RoomsToGUITablesSwingWorker extends SwingWorker<Void, Void>{
+        
+        @Override
+        protected Void doInBackground() throws Exception {
+            fulfillRoomsTables(dataSource);
+            return null;
+        }
+        
+    }
+    
+    private class AddNewRoomSwingWorker extends SwingWorker<Room, Void>{
+
+        String[] inVals;
+        
+        public AddNewRoomSwingWorker(String[] inVals){
+            this.inVals = inVals;
+        }
+        
+        @Override
+        protected Room doInBackground() throws Exception {
+            return saveRoomToDB();
+        }
+        
+        @Override
+        protected void done(){
+            roomNewSaveBut.setEnabled(true);
+            addNewRoomSwingWorker = null;
+            RoomsTableModel rtm = (RoomsTableModel) jTableRooms.getModel();
+            Room room = null;
+            List<String> msgs = new ArrayList<>();
+            try{
+                room = get();
+            }catch(ExecutionException ex){
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'AddNewRoomSwingWorker': ", ex);
+                msgs = getMessagesForDialogWindow(ex);
+                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), JOptionPane.ERROR_MESSAGE);                
+            }catch(InterruptedException ex){
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            }
+            
+            if(room != null){
+                rtm.addRoom(room);
+            }
+            
+            if(msgs.isEmpty() || !msgs.get(1).equals(resourceBundle.getString("Neplatny_argument"))){
+                CardLayout card = (CardLayout)roomMainPanel.getLayout();
+                card.show(roomMainPanel, "emptyPanel");
+            }
+        }
+        
+        private Room saveRoomToDB(){
+            Room room = createRoomFromStrings(inVals);
+            RoomManager roomManager = new RoomManagerImpl(dataSource);
+            roomManager.createRoom(room);
+            return room;
+        }
+        
+        private List<String> getMessagesForDialogWindow(Throwable ex){
+            List<String> msgs = new ArrayList<>();
+            
+            if(ex.toString().contains("IllegalArgumentException")){
+                msgs.add(getInvalidRoomArgMsg(ex.getMessage(),"pridat"));
+                msgs.add(resourceBundle.getString("Neplatny_argument"));
+                return msgs;
+            }
+            
+            if(ex.toString().contains("DuplicateRoomException")){
+                msgs.add(getDuplRoomMsg(ex.getMessage()));
+                msgs.add(resourceBundle.getString("Neplatny_argument"));
+                return msgs;
+            }
+            
+            msgs.add(resourceBundle.getString("Pokoj_pridat_interni_chyba"));
+            msgs.add(resourceBundle.getString("Interni_chyba"));
+            return msgs;
+        }
+    }
+    
+    private class DeleteRoomSwingWorker extends SwingWorker<Integer,Void>{
+
+        private JTable table;
+        
+        public DeleteRoomSwingWorker(JTable table){
+            this.table = table;
+        }
+        
+        @Override
+        protected Integer doInBackground() throws Exception {
+            List<Object> fromTable = getSelectedTableRoomNumberAndRow(table);            
+            deleteRoomFromDB((String)fromTable.get(0));
+            return (Integer) fromTable.get(1);
+        }
+        
+        @Override
+        protected void done(){
+            RoomDeleteButton.setEnabled(true);
+            deleteRoomSwingWorker = null;
+            RoomsTableModel rtm = (RoomsTableModel) table.getModel();
+            Integer row = null;
+            List<String> msgs;
+            try {
+                row = get();
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'DeleteRoomSwingWorker': ", ex);
+                msgs = getMessagesForDialogWindow(ex);
+                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), JOptionPane.ERROR_MESSAGE);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            }
+            
+            if(row != null){
+                rtm.removeRoom(row);
+            }
+        }
+        
+        private List<String> getMessagesForDialogWindow(Throwable ex){
+            List<String> msgs = new ArrayList<>();
+            
+            if(ex.toString().contains("IllegalArgumentException")){
+                msgs.add(resourceBundle.getString("Pokoj_smazat_neplatne_hodnoty "));
+                msgs.add(resourceBundle.getString("Interni_chyba"));
+                return msgs;
+            }
+            
+            if(ex.toString().contains("IllegalStateException")){
+                msgs.add(resourceBundle.getString("Pokoj_smazat_neocekavane_neexistujici_pokoj_v_DB"));
+                msgs.add(resourceBundle.getString("Interni_chyba"));
+                return msgs;
+            }
+            
+            msgs.add(resourceBundle.getString("Pokoj_smazat_chyba_sql"));
+            msgs.add(resourceBundle.getString("Interni_chyba"));
+            return msgs;
+        }        
+    }
+    
+    private class SetUpKeySwingWorker extends SwingWorker<Void, Void>{
+
+        private Object entity;
+        private String info;
+        
+        public SetUpKeySwingWorker(Object entObject, String info){
+            this.entity = entObject;
+            this.info = info;
+        }
+        
+        @Override
+        protected Void doInBackground() throws Exception {
+            switch(info){
+                case "Room": Room room = (Room) entity;
+                             RoomManager rm = new RoomManagerImpl(dataSource);
+                             key = rm.getRoomByNumber(room.getNumber()).getId();
+                             break;
+                case "Guest": Guest guest = (Guest) entity;
+                              GuestManager gm = new GuestManagerImpl(dataSource);
+                              List<Guest> guestsDB = gm.findGuestByName(guest.getName());
+                              for(Guest g : guestsDB){
+                                  if(g.getIdCardNum().equals(guest.getIdCardNum()) &&
+                                      g.getBorn().equals(guest.getBorn()) && g.getPhone().equals(guest.getPhone())){
+                                      key = g.getId();
+                                  }
+                              }
+                              break;
+                case "Reservation": Reservation reservation = (Reservation) entity;
+                                    ReservationManager resm = new ReservationManagerImpl(dataSource, new TimeManagerImpl());
+                                    List<Reservation> resDB = resm.findAllReservations();
+                                    for(Reservation r : resDB){
+                                        if(r.getRoom().equals(reservation.getRoom()) &&
+                                            r.getGuest().equals(reservation.getGuest()) &&
+                                            r.getStartTime().equals(reservation.getStartTime()) &&
+                                            r.getExpectedEndTime().equals(reservation.getExpectedEndTime()) &&
+                                            r.getRealEndTime().equals(reservation.getRealEndTime()) &&
+                                            r.getServicesSpendings().equals(reservation.getServicesSpendings())){
+                                            
+                                            key = r.getId();
+                                        }
+                                    }
+                                    break;
+            }
+            return null;
+        }
+        
+        @Override
+        protected void done(){
+            RoomEditButton.setEnabled(true);
+            setUpKeySwingWorker = null;
+        }
+        
+    }
+    
+    private class UpdateRoomSwingWorker extends SwingWorker<Room, Void>{
+
+        String[] inVals;
+        
+        public UpdateRoomSwingWorker(String[] inVals){
+            this.inVals = inVals;
+        }
+        
+        @Override
+        protected Room doInBackground() throws Exception {
+            return updateRoomInDB();
+        }
+        
+        @Override
+        protected void done(){
+            roomEditSaveBut.setEnabled(true);
+            updateRoomSwingWorker = null;
+            key = null;
+            RoomsTableModel rtm = (RoomsTableModel) jTableRooms.getModel();
+            Room room = null;
+            List<String> msgs = new ArrayList<>();
+            try{
+                room = get();
+            }catch(ExecutionException ex){
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'UpdateRoomSwingWorker': ", ex);
+                msgs = getMessagesForDialogWindow(ex);
+                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), JOptionPane.ERROR_MESSAGE);                
+            }catch(InterruptedException ex){
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            }
+            
+            if(room != null){
+                rtm.updateRoom(room, m_row);
+            }
+            
+            m_row = -1;
+            if(msgs.isEmpty() || !msgs.get(1).equals(resourceBundle.getString("Neplatny_argument"))){
+                CardLayout card = (CardLayout)roomMainPanel.getLayout();
+                card.show(roomMainPanel, "emptyPanel");
+            }
+        }
+        
+        private Room updateRoomInDB(){
+            RoomManager roomManager = new RoomManagerImpl(dataSource);            
+            
+            if(!isRoomNumberUnique(inVals[0], roomManager)){                
+                throw new DuplicateRoomException("Room with number " + inVals[0] + " already exists in DB.");
+            }
+            
+            Room origRoom = roomManager.getRoomById(key);
+            Room newRoom = createRoomFromStrings(inVals);    
+                
+            if(anyChange(origRoom, newRoom)){
+                newRoom.setId(key);
+                roomManager.updateRoom(newRoom);
+                return newRoom;
+            }else{
+                return origRoom;
+            }
+        }
+        
+        private boolean isRoomNumberUnique(String number, RoomManager roomManager){
+            Room room = roomManager.getRoomByNumber(number);
+            if(room == null){
+                return true;
+            }
+            return room.getId().equals(key);
+        }
+        
+        private boolean anyChange(Room origRoom, Room newRoom){
+            return !(newRoom.getNumber().equals(origRoom.getNumber()) &&
+                      newRoom.getCapacity() == origRoom.getCapacity() &&
+                      newRoom.getFloor() == origRoom.getFloor() &&
+                      newRoom.getType().equals(origRoom.getType()) &&
+                      newRoom.getPrice().equals(origRoom.getPrice()));
+        }
+        
+        private List<String> getMessagesForDialogWindow(Throwable ex){
+            List<String> msgs = new ArrayList<>();
+            
+            if(ex.toString().contains("IllegalArgumentException")){
+                msgs.add(getInvalidRoomArgMsg(ex.getMessage(),"upravit"));
+                msgs.add(resourceBundle.getString("Neplatny_argument"));
+                return msgs;
+            }
+            
+            if(ex.toString().contains("DuplicateRoomException")){
+                msgs.add(getDuplRoomMsg(ex.getMessage()));
+                msgs.add(resourceBundle.getString("Neplatny_argument"));
+                return msgs;
+            }
+            
+            msgs.add(resourceBundle.getString("Pokoj_upravit_interni_chyba"));
+            msgs.add(resourceBundle.getString("Interni_chyba"));
+            return msgs;
+        }
+        
+    }
+    
+    private class SearchRoomSwingWorker extends SwingWorker<Void, Void>{
+
+        private final int capacity;
+        private final RoomType roomType;
+        
+        public SearchRoomSwingWorker(int capacity, String roomType){
+            this.capacity = capacity;
+            this.roomType = (roomType == null ? null : RoomType.valueOf(roomType));
+        }
+        
+        @Override
+        protected Void doInBackground() throws Exception {
+            RoomsTableModel rtm = (RoomsTableModel) jTableRooms.getModel();
+            rtm.removeAllRoomsOnlyVisually();
+            List<Room> rooms = getSuitableRooms();
+            
+            if(rooms.isEmpty()){
+                rtm.removeAllRoomsOnlyVisually();
+            }else{
+                for(Room room : rooms){
+                    rtm.addRoom(room);
+                }
+            }
+            
+            return null;
+        }
+        
+        @Override
+        protected void done(){
+            roomSearchBut.setEnabled(true);
+            searchRoomSwingWorker = null;
+        }
+        
+        private List<Room> getSuitableRooms(){
+            RoomManager roomManager = new RoomManagerImpl(dataSource);
+            
+            if(capacity <= 0){
+                return roomManager.findRoomsWithType(roomType);
+            }
+            
+            if(roomType == null){
+                return roomManager.findRoomsWithCapacity(capacity);
+            }
+            
+           /* List<Room> capRooms = roomManager.findRoomsWithCapacity(capacity);
+            List<Room> typeRooms = roomManager.findRoomsWithType(roomType);
+            List<Room> rets = new ArrayList<>();
+            
+            for(Room room : capRooms){
+                if(typeRooms.contains(room)){
+                    rets.add(room);
+                }
+            }*/
+            List<Room> allRooms = roomManager.findAllRooms();
+            List<Room> rets = new ArrayList<>();
+            
+            for(Room room : allRooms){
+                if(room.getCapacity() == capacity && room.getType().equals(roomType)){
+                    rets.add(room);
+                }
+            }
+            
+            return rets;
+        }
+        
+    }
+    
+    private class ShowAllRoomsSwingWorker extends SwingWorker<Void, Void>{
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            RoomsTableModel rtm = (RoomsTableModel) jTableRooms.getModel();
+            rtm.removeAllRoomsOnlyVisually();
+            fulfillRoomsTable(dataSource, rtm);
+            return null;
+        }
+        
+        @Override
+        protected void done(){
+            RoomShowAllButton.setEnabled(true);
+            showAllRoomsSwingWorker = null;
+        }
+        
     }
 }

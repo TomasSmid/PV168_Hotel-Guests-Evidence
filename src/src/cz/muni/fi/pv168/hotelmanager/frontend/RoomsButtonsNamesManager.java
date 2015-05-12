@@ -42,6 +42,38 @@ public class RoomsButtonsNamesManager {
         return getResourceBundle().getString("Pokoj_menu_tlacitko_zobrazit_vse");
     }
     
+    public static String getNewAndEditNumberName(){
+        return getResourceBundle().getString("Pokoj_pridat_upravit_popis_cislo");
+    }
+    
+    public static String getNewAndEditCapacityName(){
+        return getResourceBundle().getString("Pokoj_pridat_upravit_popis_kapacita");
+    }
+    
+    public static String getNewAndEditFloorName(){
+        return getResourceBundle().getString("Pokoj_pridat_upravit_popis_podlazi");
+    }
+    
+    public static String getNewAndEditTypeName(){
+        return getResourceBundle().getString("Pokoj_pridat_upravit_popis_typ");
+    }
+    
+    public static String getNewAndEditPriceName(){
+        return getResourceBundle().getString("Pokoj_pridat_upravit_popis_cena");
+    }
+    
+    public static String getSearchConditionName(){
+        return getResourceBundle().getString("Pokoj_hledat_popis_podle");
+    }
+    
+    public static String getSearchRoomCapacityName(){
+        return getResourceBundle().getString("Pokoj_hledat_popis_kapacita");
+    }
+    
+    public static String getSearchRoomTypeName(){
+        return getResourceBundle().getString("Pokoj_hledat_popis_typ");
+    }
+    
     private static ResourceBundle getResourceBundle(){
         Locale locale = Locale.getDefault();
         ResourceBundle rb = ResourceBundle.getBundle("texty", locale);

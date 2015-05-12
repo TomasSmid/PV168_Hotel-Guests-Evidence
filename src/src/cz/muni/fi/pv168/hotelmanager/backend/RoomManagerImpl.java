@@ -68,6 +68,8 @@ public class RoomManagerImpl implements RoomManager {
             throw new IllegalArgumentException("Creating room failure: room type is null");
         }
         
+        checkRoomDuplicity(room);
+        
         try (Connection conn = dataSource.getConnection()) {
             try (PreparedStatement st = conn.prepareStatement(
                         "INSERT INTO ROOM (capacity,price,floor,number,room_type) VALUES (?,?,?,?,?)",
@@ -108,6 +110,13 @@ public class RoomManagerImpl implements RoomManager {
             throw new ServiceFailureException("Internal Error: Generated key"
                     + "retriving failed when trying to insert room " + room
                     + " - no key found");
+        }
+    }
+    
+    private void checkRoomDuplicity(Room room){
+        Room matchedRoom = getRoomByNumber(room.getNumber());
+        if(matchedRoom != null){
+            throw new DuplicateRoomException("Room with number " + room.getNumber() + " is already stored in DB.");
         }
     }
 

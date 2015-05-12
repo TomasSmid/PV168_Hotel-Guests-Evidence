@@ -37,7 +37,7 @@ public class GuestsTableModel extends AbstractTableModel {
         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
         Guest guest = guests.get(rowIndex);
         switch(columnIndex){
-            case 0: return guest.getId();
+            case 0: return rowIndex+1;
             case 1: return guest.getName();
             case 2: return guest.getIdCardNum();
             case 3: return dateFormat.format(guest.getBorn());
