@@ -4,6 +4,7 @@
  */
 package cz.muni.fi.pv168.hotelmanager.backend;
 
+import cz.muni.fi.pv168.common.DBUtils;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,6 +13,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 
@@ -23,6 +26,8 @@ import javax.sql.DataSource;
  */
 public class RoomManagerImpl implements RoomManager {
 
+    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
+    
     private DataSource dataSource;
     
     public RoomManagerImpl(DataSource dataSource){
@@ -53,7 +58,7 @@ public class RoomManagerImpl implements RoomManager {
         }
         
         if (room.getFloor() <= 0) {
-            throw new IllegalArgumentException("Creating room failure: room floor is 0  or negative number");
+            throw new IllegalArgumentException("Creating room failure: room floor is 0 or negative number");
         }
         
         if (room.getNumber() == null) {
@@ -70,7 +75,11 @@ public class RoomManagerImpl implements RoomManager {
         
         checkRoomDuplicity(room);
         
+        checkDataSource();
+        
         try (Connection conn = dataSource.getConnection()) {
+            
+            conn.setAutoCommit(false);
             try (PreparedStatement st = conn.prepareStatement(
                         "INSERT INTO ROOM (capacity,price,floor,number,room_type) VALUES (?,?,?,?,?)",
                     Statement.RETURN_GENERATED_KEYS)) {
@@ -85,10 +94,21 @@ public class RoomManagerImpl implements RoomManager {
                 }
                 ResultSet keyRS = st.getGeneratedKeys();
                 room.setId(getKey(keyRS, room));
+                
+                conn.commit();
+                
+            }catch(SQLException ex){
+                String errMsg = "Error occured when inserting room " + room + " into DB.";
+                logger.log(Level.SEVERE, errMsg, ex);
+                throw new ServiceFailureException(errMsg, ex);
+            }finally{
+                DBUtils.doRollbackQuietly(conn);
+                DBUtils.switchAutocommitBackToTrue(conn);
             }
         } catch (SQLException ex) {
-            //log.error("db connection problem", ex);
-            throw new ServiceFailureException("Creating room failure: Error when retrieving all room", ex);
+            String errMsg = "Connection error occured when inserting room " + room + " into DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
         }
     }
     
@@ -122,8 +142,15 @@ public class RoomManagerImpl implements RoomManager {
 
     @Override
     public Room getRoomById(Long id) throws ServiceFailureException {
-        try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement st = conn.prepareStatement(
+        if(id == null){
+            throw new IllegalArgumentException("Retrieving room from DB failure: "
+                    + "There was made an attempt to retrieve a room by a null id.");
+        }
+        
+        checkDataSource();
+        
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement st = conn.prepareStatement(
                     "SELECT id,capacity,price,floor,number,room_type FROM ROOM WHERE id = ?")) {
                 st.setLong(1, id);
                 ResultSet rs = st.executeQuery();
@@ -138,10 +165,11 @@ public class RoomManagerImpl implements RoomManager {
                 } else {
                     return null;
                 }
-            }
+            
         } catch (SQLException ex) {
-            //log.error("db connection problem", ex);
-            throw new ServiceFailureException("Error when retrieving all rooms", ex);
+            String errMsg = "Connection error occured when retrieving room with id " + id + " from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
         }
     }
     
@@ -195,6 +223,8 @@ public class RoomManagerImpl implements RoomManager {
         }
         
         try (Connection conn = dataSource.getConnection()) {
+            
+            conn.setAutoCommit(false);
             try(PreparedStatement st = conn.prepareStatement(
                     "UPDATE ROOM SET capacity=?,price=?,floor=?,number=?,room_type=? WHERE id=?")) {
                 st.setInt(1, room.getCapacity());
@@ -206,10 +236,21 @@ public class RoomManagerImpl implements RoomManager {
                 if(st.executeUpdate()!=1) {
                     throw new IllegalArgumentException("cannot update room "+room);
                 }
+                
+                conn.commit();
+                
+            }catch(SQLException ex){
+                String errMsg = "Error occured when updating room " + room + " in DB.";
+                logger.log(Level.SEVERE, errMsg, ex);
+                throw new ServiceFailureException(errMsg, ex);
+            }finally{
+                DBUtils.doRollbackQuietly(conn);
+                DBUtils.switchAutocommitBackToTrue(conn);
             }
         } catch (SQLException ex) {
-           // log.error("db connection problem", ex);
-            throw new ServiceFailureException("Update room: Error when retrieving all rooms", ex);
+            String errMsg = "Connection error occured when updating room " + room + " in DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
         }
     }
 
@@ -224,23 +265,35 @@ public class RoomManagerImpl implements RoomManager {
         }
         
         try (Connection conn = dataSource.getConnection()) {
+            
+            conn.setAutoCommit(false);
             try(PreparedStatement st = conn.prepareStatement("DELETE FROM ROOM WHERE id=?")) {
                 st.setLong(1,room.getId());
                 if(st.executeUpdate()!=1) {
                     throw new ServiceFailureException("did not delete room with id ="+room.getId());
                 }
+                
+                conn.commit();
+                
+            }catch(SQLException ex){
+                String errMsg = "Error occured when deleting room " + room + " from DB.";
+                logger.log(Level.SEVERE, errMsg, ex);
+                throw new ServiceFailureException(errMsg, ex);
+            }finally{
+                DBUtils.doRollbackQuietly(conn);
+                DBUtils.switchAutocommitBackToTrue(conn);
             }
         } catch (SQLException ex) {
-            //log.error("db connection problem", ex);
-            throw new ServiceFailureException("Error when retrieving all rooms", ex);
+            String errMsg = "Connection error occured when deleting room " + room + " from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
         }
     }
 
     @Override
     public List<Room> findAllRooms() throws ServiceFailureException {
-       // log.debug("finding all graves");
-        try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement st = conn.prepareStatement(
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement st = conn.prepareStatement(
                     "SELECT id,capacity,price,floor,number,room_type FROM ROOM")) {
                 ResultSet rs = st.executeQuery();
                 List<Room> result = new ArrayList<>();
@@ -248,10 +301,11 @@ public class RoomManagerImpl implements RoomManager {
                     result.add(resultSetToRoom(rs));
                 }
                 return result;
-            }
+            
         } catch (SQLException ex) {
-           // log.error("db connection problem", ex);
-            throw new ServiceFailureException("Error when retrieving all rooms", ex);
+            String errMsg = "Connection error occured when retrieving all rooms from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
         }
     }
     
@@ -261,8 +315,8 @@ public class RoomManagerImpl implements RoomManager {
             throw new IllegalArgumentException("Error when finding room with defined number: wrong number format");
         }
         
-        try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement st = conn.prepareStatement(
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement st = conn.prepareStatement(
                     "SELECT id,capacity,price,floor,number,room_type FROM ROOM WHERE number = ?")) {
                 st.setString(1, number);
                 ResultSet rs = st.executeQuery();
@@ -277,10 +331,11 @@ public class RoomManagerImpl implements RoomManager {
                 } else {
                     return null;
                 }
-            }
+            
         } catch (SQLException ex) {
-            //log.error("db connection problem", ex);
-            throw new ServiceFailureException("Error when selecting room", ex);
+            String errMsg = "Connection error occured when retrieving room with number " + number + " from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
         }
     }
     
@@ -289,9 +344,8 @@ public class RoomManagerImpl implements RoomManager {
         if (type == null) {
             throw new IllegalArgumentException("Error when finding rooms with defined type: room type is null");
         }
-       // log.debug("finding all graves");
-        try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement st = conn.prepareStatement(
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement st = conn.prepareStatement(
                     "SELECT id,capacity,price,floor,number,room_type FROM ROOM WHERE room_type = ?")) {
                 st.setString(1, type.name());
                 ResultSet rs = st.executeQuery();
@@ -300,10 +354,11 @@ public class RoomManagerImpl implements RoomManager {
                     result.add(resultSetToRoom(rs));
                 }
                 return result;
-            }
+            
         } catch (SQLException ex) {
-           // log.error("db connection problem", ex);
-            throw new ServiceFailureException("Error when retrieving rooms with defined type", ex);
+            String errMsg = "Connection error occured when retrieving room with type " + type.name() + " from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
         }
     }
     
@@ -314,9 +369,8 @@ public class RoomManagerImpl implements RoomManager {
                     + "definded capacity: room capacity is zero or negative");
         }
         
-       // log.debug("finding all graves");
-        try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement st = conn.prepareStatement(
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement st = conn.prepareStatement(
                     "SELECT id,capacity,price,floor,number,room_type FROM ROOM WHERE capacity = ?")) {
                 st.setInt(1, capacity);
                 ResultSet rs = st.executeQuery();
@@ -325,10 +379,17 @@ public class RoomManagerImpl implements RoomManager {
                     result.add(resultSetToRoom(rs));
                 }
                 return result;
-            }
+            
         } catch (SQLException ex) {
-           // log.error("db connection problem", ex);
-            throw new ServiceFailureException("Error when retrieving rooms with defined type", ex);
+            String errMsg = "Connection error occured when retrieving room with capacity " + capacity + " from DB.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
+    }
+    
+    private void checkDataSource() {
+        if (dataSource == null) {
+            throw new IllegalStateException("DataSource is not set");
         }
     }
 

@@ -48,6 +48,10 @@ public class ReservationManagerImpl implements ReservationManager{
     public void createReservation(Reservation reservation) {
         checkReservationIsValid(reservation, true,"Creating reservation ");
         
+        if(!isRoomAvailable(reservation.getRoom(), reservation.getStartTime(), reservation.getExpectedEndTime())){
+            throw new IllegalArgumentException("Creating reservation in DB failure: Used room is not available at specified date.");
+        }
+        
         checkDataSource();
         
         try (Connection conn = dataSource.getConnection()) {
@@ -71,7 +75,7 @@ public class ReservationManagerImpl implements ReservationManager{
                 
                 conn.commit();
             }catch(SQLException ex){
-                logger.log(Level.SEVERE, "Creating reservation failure: connection error when inserting reservation " + reservation, ex);
+                logger.log(Level.SEVERE, "Creating reservation failure: error when inserting reservation " + reservation, ex);
                 throw new ServiceFailureException("Creating reservation failure: Error when retrieving all reservations", ex);
             }finally{
                 DBUtils.doRollbackQuietly(conn);
@@ -263,35 +267,6 @@ public class ReservationManagerImpl implements ReservationManager{
     }
 
     @Override
-    public boolean isRoomAvailable(Room room, Date to) {
-        checkRoomIsValid(room,"Unquiring room for availability ");
-        if(to == null){
-            throw new IllegalArgumentException("Unquiring room for availability failure: Date \"to\" is null");
-        }                
-        if(timeManager.getCurrentDate().getTime() > to.getTime()){
-            throw new IllegalArgumentException("Unquiring room for availability failure: Current date is after date \"to\"");
-        }
-        checkDataSource();
-        
-        try(Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(
-                    "SELECT id FROM Reservation WHERE room_id = ? AND real_end_time IS NULL AND "
-                            + "(start_time <= ? OR start_time <= ? )")){
-            ps.setLong(1, room.getId());            
-            ps.setTimestamp(2, dateToTimestamp(timeManager.getCurrentDate()));
-            ps.setTimestamp(3, dateToTimestamp(to));
-            ResultSet rs = ps.executeQuery();
-            
-            return (!rs.next());
-            
-        } catch (SQLException ex) {
-            String errMsg = "Error occured when inquiring for room " + room + " availability.";
-            logger.log(Level.SEVERE, errMsg, ex);
-            throw new ServiceFailureException(errMsg, ex);
-        }
-    }
-
-    @Override
     public BigDecimal getReservationPrice(Reservation reservation) {        
         checkReservationIsValid(reservation,false,"Retrieving reservation for its price "); 
         
@@ -388,6 +363,40 @@ public class ReservationManagerImpl implements ReservationManager{
         }
     }
     
+    
+    
+    
+    private boolean isRoomAvailable(Room room, Date from, Date to) {
+        checkRoomIsValid(room,"Unquiring room for availability ");
+        if(to == null){
+            throw new IllegalArgumentException("Unquiring room for availability failure: Date \"to\" is null");
+        }
+        if(from == null){
+            throw new IllegalArgumentException("Unquiring room for availability failure: Date \"from\" is null");
+        }
+        if(from.getTime() > to.getTime()){
+            throw new IllegalArgumentException("Unquiring room for availability failure: Date \"from\" is after date \"to\"");
+        }
+        checkDataSource();
+        
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT id FROM Reservation WHERE room_id = ? AND real_end_time IS NULL AND "
+                            + "(start_time <= ? OR start_time <= ? )")){
+            ps.setLong(1, room.getId());            
+            ps.setTimestamp(2, dateToTimestamp(from));
+            ps.setTimestamp(3, dateToTimestamp(to));
+            ResultSet rs = ps.executeQuery();
+            
+            return (!rs.next());
+            
+        } catch (SQLException ex) {
+            String errMsg = "Error occured when inquiring for room " + room + " availability.";
+            logger.log(Level.SEVERE, errMsg, ex);
+            throw new ServiceFailureException(errMsg, ex);
+        }
+    }
+    
     private Timestamp dateToTimestamp(Date date){
         if (date == null) {
             return null;
@@ -469,7 +478,7 @@ public class ReservationManagerImpl implements ReservationManager{
         }
         
         if (!room.getNumber().matches("[1-9][0-9][0-9]") ) {
-            throw new IllegalArgumentException(partOfErrMsg + "failure: Wrong form of room number.");
+            throw new IllegalArgumentException(partOfErrMsg + "failure: room number is in wrong format.");
         }
         
         if (room.getType() == null) {

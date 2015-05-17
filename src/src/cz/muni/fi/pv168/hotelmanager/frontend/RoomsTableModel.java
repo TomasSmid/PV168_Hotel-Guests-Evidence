@@ -5,10 +5,7 @@
  */
 package cz.muni.fi.pv168.hotelmanager.frontend;
 
-import cz.muni.fi.pv168.hotelmanager.backend.Guest;
 import cz.muni.fi.pv168.hotelmanager.backend.Room;
-import java.math.RoundingMode;
-import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +15,7 @@ import javax.swing.table.AbstractTableModel;
 
 /**
  *
- * @author Tom
+ * @author Tomas Smid
  */
 public class RoomsTableModel extends AbstractTableModel{
     

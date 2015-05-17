@@ -48,6 +48,8 @@ public class GuestsTableModel extends AbstractTableModel {
     
     public void addGuest(Guest guest){
         guests.add(guest);
+        int lastRow = guests.size()-1;
+        fireTableRowsInserted(lastRow, lastRow);
     }
     
     @Override
@@ -62,5 +64,21 @@ public class GuestsTableModel extends AbstractTableModel {
             case 4: return rb.getString("Host_tab_hlav_tel");
             default: throw new IllegalArgumentException("Invalid column index in table.");
         }
+    }
+    
+    public void removeGuest(int row){
+        guests.remove(row);
+        fireTableRowsDeleted(row, row);
+    }
+    
+    public void removeAllGuestsOnlyVisually(){
+        int lastRow = (guests.size()-1 >= 0 ? guests.size()-1 : 0);
+        guests.clear();
+        fireTableRowsDeleted(0, lastRow);
+    }
+    
+    public void updateGuest(Guest guest, int row){
+        guests.set(row, guest);
+        fireTableRowsUpdated(row, row);
     }
 }

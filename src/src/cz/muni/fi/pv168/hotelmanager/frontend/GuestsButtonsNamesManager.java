@@ -38,6 +38,26 @@ public class GuestsButtonsNamesManager {
         return getResourceBundle().getString("Host_menu_tlacitko_zobrazit_vse");
     }
     
+    public static String getNewAndEditNameName(){
+        return getResourceBundle().getString("Host_pridat_upravit_popis_jmeno");
+    }
+    
+    public static String getNewAndEditIDCardName(){
+        return getResourceBundle().getString("Host_pridat_upravit_popis_cop");
+    }
+    
+    public static String getNewAndEditBornName(){
+        return getResourceBundle().getString("Host_pridat_upravit_popis_datum_nar");
+    }
+    
+    public static String getNewAndEditPhoneName(){
+        return getResourceBundle().getString("Host_pridat_upravit_popis_tel");
+    }
+    
+    public static String getSearchConditionName(){
+        return getResourceBundle().getString("Host_hledat_popis_podle");
+    }
+    
     private static ResourceBundle getResourceBundle(){
         Locale locale = Locale.getDefault();
         ResourceBundle rb = ResourceBundle.getBundle("texty", locale);

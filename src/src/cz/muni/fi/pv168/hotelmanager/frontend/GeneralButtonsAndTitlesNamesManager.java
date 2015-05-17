@@ -46,6 +46,14 @@ public class GeneralButtonsAndTitlesNamesManager {
         return getResourceBundle().getString("Zjistit");
     }
     
+    public static String getNextButtonName(){
+        return getResourceBundle().getString("Dalsi");
+    }
+    
+    public static String getBackButtonName(){
+        return getResourceBundle().getString("Zpet");
+    }
+    
     private static ResourceBundle getResourceBundle(){
         Locale locale = Locale.getDefault();
         ResourceBundle rb = ResourceBundle.getBundle("texty", locale);
