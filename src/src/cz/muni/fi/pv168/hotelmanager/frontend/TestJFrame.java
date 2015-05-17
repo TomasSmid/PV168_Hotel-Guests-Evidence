@@ -236,6 +236,12 @@ public class TestJFrame extends javax.swing.JFrame {
         reservNewDateToMonthCombo = new javax.swing.JComboBox();
         reservNewDateToDayCombo = new javax.swing.JComboBox();
         reservNewStepOneCancelButton = new javax.swing.JButton();
+        reservationTopFiveSpendersPanel = new javax.swing.JPanel();
+        reservFutureButton1 = new javax.swing.JButton();
+        reservPastButton1 = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTableTopFiveSpenders = new javax.swing.JTable();
+        reservTopFiveSpendersLabel = new javax.swing.JLabel();
         reservationTables = new javax.swing.JPanel();
         reservationMainTable = new javax.swing.JScrollPane();
         jTableReservations = new javax.swing.JTable();
@@ -244,11 +250,6 @@ public class TestJFrame extends javax.swing.JFrame {
         jTableRooms1 = new javax.swing.JTable();
         jScrollPane5 = new javax.swing.JScrollPane();
         jTableGuests1 = new javax.swing.JTable();
-        topFiveSpendersTables = new javax.swing.JPanel();
-        jScrollPane6 = new javax.swing.JScrollPane();
-        jTableReservations1 = new javax.swing.JTable();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        jTableTopFiveSpenders = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         Menu = new javax.swing.JMenu();
         Exit = new javax.swing.JMenuItem();
@@ -1490,6 +1491,83 @@ public class TestJFrame extends javax.swing.JFrame {
 
         reservationMainPanel.add(reservationNewStepOnePanel, "roomAvailabilityPanel");
 
+        reservFutureButton1.setText(ReservationsButtonsNamesManager.getButtonFutureName());
+        reservFutureButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reservFutureButton1ActionPerformed(evt);
+            }
+        });
+
+        reservPastButton1.setText(ReservationsButtonsNamesManager.getButtonPastName());
+        reservPastButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reservPastButton1ActionPerformed(evt);
+            }
+        });
+
+        jTableTopFiveSpenders.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Reservation", "Room number", "Guest name", "Services spendings"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, true, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane4.setViewportView(jTableTopFiveSpenders);
+
+        reservTopFiveSpendersLabel.setFont(new java.awt.Font("Georgia", 0, 14)); // NOI18N
+        reservTopFiveSpendersLabel.setText("Top five spenders");
+
+        javax.swing.GroupLayout reservationTopFiveSpendersPanelLayout = new javax.swing.GroupLayout(reservationTopFiveSpendersPanel);
+        reservationTopFiveSpendersPanel.setLayout(reservationTopFiveSpendersPanelLayout);
+        reservationTopFiveSpendersPanelLayout.setHorizontalGroup(
+            reservationTopFiveSpendersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
+            .addGroup(reservationTopFiveSpendersPanelLayout.createSequentialGroup()
+                .addComponent(reservPastButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(reservFutureButton1)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(reservationTopFiveSpendersPanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(reservTopFiveSpendersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        reservationTopFiveSpendersPanelLayout.setVerticalGroup(
+            reservationTopFiveSpendersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, reservationTopFiveSpendersPanelLayout.createSequentialGroup()
+                .addComponent(reservTopFiveSpendersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(reservationTopFiveSpendersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(reservPastButton1)
+                    .addComponent(reservFutureButton1))
+                .addContainerGap(70, Short.MAX_VALUE))
+        );
+
+        reservationMainPanel.add(reservationTopFiveSpendersPanel, "topFiveSpendersPanel");
+        reservationTopFiveSpendersPanel.getAccessibleContext().setAccessibleName("topFiveSpendersPanel");
+
         reservationTables.setLayout(new java.awt.CardLayout());
 
         jTableReservations.setModel(new ReservationsTableModel());
@@ -1529,57 +1607,6 @@ public class TestJFrame extends javax.swing.JFrame {
 
         reservationTables.add(addReservationTables, "addReservationTables");
         addReservationTables.getAccessibleContext().setAccessibleName("addReservationTables");
-
-        jTableReservations1.setModel(new ReservationsTableModel());
-        jTableReservations1.setPreferredSize(new java.awt.Dimension(450, 240));
-        jScrollPane6.setViewportView(jTableReservations1);
-
-        jTableTopFiveSpenders.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Reservation", "Room number", "Guest name", "Services spendings"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, true, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane4.setViewportView(jTableTopFiveSpenders);
-
-        javax.swing.GroupLayout topFiveSpendersTablesLayout = new javax.swing.GroupLayout(topFiveSpendersTables);
-        topFiveSpendersTables.setLayout(topFiveSpendersTablesLayout);
-        topFiveSpendersTablesLayout.setHorizontalGroup(
-            topFiveSpendersTablesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 597, Short.MAX_VALUE)
-            .addComponent(jScrollPane4)
-        );
-        topFiveSpendersTablesLayout.setVerticalGroup(
-            topFiveSpendersTablesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(topFiveSpendersTablesLayout.createSequentialGroup()
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        reservationTables.add(topFiveSpendersTables, "topFiveSpendersTables");
-        topFiveSpendersTables.getAccessibleContext().setAccessibleName("topFiveSpendersTables");
 
         javax.swing.GroupLayout ReservationEvidenceLayout = new javax.swing.GroupLayout(ReservationEvidence);
         ReservationEvidence.setLayout(ReservationEvidenceLayout);
@@ -2247,9 +2274,9 @@ public class TestJFrame extends javax.swing.JFrame {
     private void reservActualButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservActualButtonActionPerformed
         // TODO shows actual reservations
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
-        card.show(reservationMainPanel, "reservationEmptyPanel");
+        card.show(reservationMainPanel, "reservationTopFiveSpendersPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
-        tableCard.show(reservationTables, "topFiveSpendersTables");
+        tableCard.show(reservationTables, "reservationMainTable");
     }//GEN-LAST:event_reservActualButtonActionPerformed
 
     private void reservFutureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservFutureButtonActionPerformed
@@ -2405,6 +2432,20 @@ public class TestJFrame extends javax.swing.JFrame {
         tableCard.show(reservationTables, "reservationMainTable");
     }//GEN-LAST:event_reservNewStepOneCancelButtonActionPerformed
 
+    private void reservFutureButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservFutureButton1ActionPerformed
+        CardLayout card = (CardLayout)reservationMainPanel.getLayout();
+        card.show(reservationMainPanel, "reservationEmptyPanel");
+        CardLayout tableCard = (CardLayout)reservationTables.getLayout();
+        tableCard.show(reservationTables, "reservationMainTable");
+    }//GEN-LAST:event_reservFutureButton1ActionPerformed
+
+    private void reservPastButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservPastButton1ActionPerformed
+        CardLayout card = (CardLayout)reservationMainPanel.getLayout();
+        card.show(reservationMainPanel, "reservationEmptyPanel");
+        CardLayout tableCard = (CardLayout)reservationTables.getLayout();
+        tableCard.show(reservationTables, "reservationMainTable");
+    }//GEN-LAST:event_reservPastButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2500,11 +2541,9 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTable jTableGuests;
     private javax.swing.JTable jTableGuests1;
     private javax.swing.JTable jTableReservations;
-    private javax.swing.JTable jTableReservations1;
     private javax.swing.JTable jTableRooms;
     private javax.swing.JTable jTableRooms1;
     private javax.swing.JTable jTableTopFiveSpenders;
@@ -2531,6 +2570,7 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox reservEditStartTimeMonthCombo;
     private javax.swing.JComboBox reservEditStartTimeYearCombo;
     private javax.swing.JButton reservFutureButton;
+    private javax.swing.JButton reservFutureButton1;
     private javax.swing.JButton reservNewButton;
     private javax.swing.JComboBox reservNewDateFromDayCombo;
     private java.awt.Label reservNewDateFromLabel;
@@ -2546,11 +2586,13 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JButton reservNewStepTwoCancelButton;
     private javax.swing.JButton reservNewStepTwoSaveButton;
     private javax.swing.JButton reservPastButton;
+    private javax.swing.JButton reservPastButton1;
     private javax.swing.JButton reservSearchButton;
     private javax.swing.JButton reservSearchSearchButton;
     private javax.swing.JComboBox reservSearchSearchByCombo;
     private java.awt.Label reservSearchSearchByLabel;
     private javax.swing.JButton reservShowAllButton;
+    private javax.swing.JLabel reservTopFiveSpendersLabel;
     private javax.swing.JPanel reservationEditPanel;
     private javax.swing.JPanel reservationEmptyPanel;
     private javax.swing.JPanel reservationMainPanel;
@@ -2560,6 +2602,7 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JPanel reservationNewStepTwoPanel;
     private javax.swing.JPanel reservationSearchPanel;
     private javax.swing.JPanel reservationTables;
+    private javax.swing.JPanel reservationTopFiveSpendersPanel;
     private javax.swing.JButton roomDeleteButton;
     private javax.swing.JButton roomEditButton;
     private javax.swing.JButton roomEditCancelButton;
@@ -2600,7 +2643,6 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox roomSearchTypeCombo;
     private java.awt.Label roomSearchTypeLabel;
     private javax.swing.JButton roomShowAllButton;
-    private javax.swing.JPanel topFiveSpendersTables;
     // End of variables declaration//GEN-END:variables
 
     private DataSource setUpDataSource(){
