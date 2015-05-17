@@ -244,6 +244,11 @@ public class TestJFrame extends javax.swing.JFrame {
         jTableRooms1 = new javax.swing.JTable();
         jScrollPane5 = new javax.swing.JScrollPane();
         jTableGuests1 = new javax.swing.JTable();
+        topFiveSpendersTables = new javax.swing.JPanel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        jTableReservations1 = new javax.swing.JTable();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTableTopFiveSpenders = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         Menu = new javax.swing.JMenu();
         Exit = new javax.swing.JMenuItem();
@@ -1525,6 +1530,57 @@ public class TestJFrame extends javax.swing.JFrame {
         reservationTables.add(addReservationTables, "addReservationTables");
         addReservationTables.getAccessibleContext().setAccessibleName("addReservationTables");
 
+        jTableReservations1.setModel(new ReservationsTableModel());
+        jTableReservations1.setPreferredSize(new java.awt.Dimension(450, 240));
+        jScrollPane6.setViewportView(jTableReservations1);
+
+        jTableTopFiveSpenders.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Reservation", "Room number", "Guest name", "Services spendings"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, true, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane4.setViewportView(jTableTopFiveSpenders);
+
+        javax.swing.GroupLayout topFiveSpendersTablesLayout = new javax.swing.GroupLayout(topFiveSpendersTables);
+        topFiveSpendersTables.setLayout(topFiveSpendersTablesLayout);
+        topFiveSpendersTablesLayout.setHorizontalGroup(
+            topFiveSpendersTablesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 597, Short.MAX_VALUE)
+            .addComponent(jScrollPane4)
+        );
+        topFiveSpendersTablesLayout.setVerticalGroup(
+            topFiveSpendersTablesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(topFiveSpendersTablesLayout.createSequentialGroup()
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        reservationTables.add(topFiveSpendersTables, "topFiveSpendersTables");
+        topFiveSpendersTables.getAccessibleContext().setAccessibleName("topFiveSpendersTables");
+
         javax.swing.GroupLayout ReservationEvidenceLayout = new javax.swing.GroupLayout(ReservationEvidence);
         ReservationEvidence.setLayout(ReservationEvidenceLayout);
         ReservationEvidenceLayout.setHorizontalGroup(
@@ -1558,7 +1614,7 @@ public class TestJFrame extends javax.swing.JFrame {
             .addComponent(label1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Evidence, javax.swing.GroupLayout.PREFERRED_SIZE, 746, Short.MAX_VALUE)
+                .addComponent(Evidence, javax.swing.GroupLayout.DEFAULT_SIZE, 746, Short.MAX_VALUE)
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
@@ -2193,7 +2249,7 @@ public class TestJFrame extends javax.swing.JFrame {
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEmptyPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
-        tableCard.show(reservationTables, "reservationMainTable");
+        tableCard.show(reservationTables, "topFiveSpendersTables");
     }//GEN-LAST:event_reservActualButtonActionPerformed
 
     private void reservFutureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservFutureButtonActionPerformed
@@ -2442,12 +2498,16 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTable jTableGuests;
     private javax.swing.JTable jTableGuests1;
     private javax.swing.JTable jTableReservations;
+    private javax.swing.JTable jTableReservations1;
     private javax.swing.JTable jTableRooms;
     private javax.swing.JTable jTableRooms1;
+    private javax.swing.JTable jTableTopFiveSpenders;
     private java.awt.Label label1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton reservActualButton;
@@ -2540,6 +2600,7 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox roomSearchTypeCombo;
     private java.awt.Label roomSearchTypeLabel;
     private javax.swing.JButton roomShowAllButton;
+    private javax.swing.JPanel topFiveSpendersTables;
     // End of variables declaration//GEN-END:variables
 
     private DataSource setUpDataSource(){
