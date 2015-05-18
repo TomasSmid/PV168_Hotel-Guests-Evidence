@@ -35,5 +35,5 @@ public interface ReservationManager {
     
     public List<Room> findAllUnoccupiedRooms(Date from, Date to);
     
-    public Map<BigDecimal, Guest> findTopFiveSpenders();
+    public List<Reservation> findTopFiveSpenders();
 }

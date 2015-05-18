@@ -74,6 +74,14 @@ public class ReservationsButtonsNamesManager {
         return getResourceBundle().getString("Rezervace_upravit_popis_sluzby_utrata");
     }
     
+    public static String getSearchSearchByName(){
+        return getResourceBundle().getString("Rezervace_hledat_popis_podle");
+    }
+    
+    public static String getRealEndCheckBoxName(){
+        return getResourceBundle().getString("Rezervace_upravit_popis_checkbox_konec");
+    }
+    
     private static ResourceBundle getResourceBundle(){
         Locale locale = Locale.getDefault();
         ResourceBundle rb = ResourceBundle.getBundle("texty", locale);

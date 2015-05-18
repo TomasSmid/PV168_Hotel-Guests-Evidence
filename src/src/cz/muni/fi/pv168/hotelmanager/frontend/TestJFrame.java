@@ -19,6 +19,7 @@ import cz.muni.fi.pv168.hotelmanager.backend.RoomManager;
 import cz.muni.fi.pv168.hotelmanager.backend.RoomManagerImpl;
 import cz.muni.fi.pv168.hotelmanager.backend.RoomType;
 import cz.muni.fi.pv168.hotelmanager.backend.ServiceFailureException;
+import cz.muni.fi.pv168.hotelmanager.backend.TimeManager;
 import cz.muni.fi.pv168.hotelmanager.backend.TimeManagerImpl;
 import java.awt.CardLayout;
 import java.awt.Font;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -67,17 +69,28 @@ public class TestJFrame extends javax.swing.JFrame {
     private SearchGuestSwingWorker searchGuestSwingWorker = null;
     private UpdateGuestSwingWorker updateGuestSwingWorker = null;
     private AddNewReservationSwingWorker addNewReservationSwingWorker = null;
+    private UnoccupiedRoomsSwingWorker unoccupiedRoomsSwingWorker = null;
+    private ShowPastReservationsSwingWorker showPastReservationsSwingWorker = null;
+    private ShowFutureReservationsSwingWorker showFutureReservationsSwingWorker = null;
+    private ShowActualReservationsSwingWorker showActualReservationsSwingWorker = null;
+    private ShowTopFiveSpendersSwingWorker showTopFiveSpendersSwingWorker = null;
+    private DeleteReservationSwingWorker deleteReservationSwingWorker = null;
+    private SearchReservationSwingWorker searchReservationSwingWorker = null;
+    private TableRoomRowSwingWorker tableRoomRowSwingWorker = null;
+    private TableGuestRowSwingWorker tableGuestRowSwingWorker = null;
+    private UpdateReservationSwingWorker updateReservationSwingWorker = null;
     private Long guestKey = null;
     private Long roomKey = null;
     private Long resKey = null;
     private int m_rowGuest = -1;
     private int m_rowRoom = -1;
     private int m_rowReservation = -1;
+    private List<Integer> m_rowsRes = null;
     private Date dateFrom = null;
     private Date dateTo = null;
     
     /**
-     * Creates new form TestJFrame
+     * Creates new form TestJFrame1
      */
     public TestJFrame() {
         initComponents();
@@ -237,8 +250,8 @@ public class TestJFrame extends javax.swing.JFrame {
         reservNewDateToDayCombo = new javax.swing.JComboBox();
         reservNewStepOneCancelButton = new javax.swing.JButton();
         reservationTopFiveSpendersPanel = new javax.swing.JPanel();
-        reservFutureButton1 = new javax.swing.JButton();
-        reservPastButton1 = new javax.swing.JButton();
+        reservFutureButtonInActual = new javax.swing.JButton();
+        reservPastButtonInActual = new javax.swing.JButton();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTableTopFiveSpenders = new javax.swing.JTable();
         reservTopFiveSpendersLabel = new javax.swing.JLabel();
@@ -1201,7 +1214,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 .addComponent(reservNewStepTwoSaveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(reservNewStepTwoCancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(163, Short.MAX_VALUE))
+                .addContainerGap(207, Short.MAX_VALUE))
         );
         reservationNewStepTwoPanelLayout.setVerticalGroup(
             reservationNewStepTwoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1216,7 +1229,7 @@ public class TestJFrame extends javax.swing.JFrame {
 
         reservationMainPanel.add(reservationNewStepTwoPanel, "reservationNewPanel");
 
-        reservSearchSearchByLabel.setText("Search by: ");
+        reservSearchSearchByLabel.setText(ReservationsButtonsNamesManager.getSearchSearchByName());
 
         reservSearchSearchButton.setText(GeneralButtonsAndTitlesNamesManager.getSearchButtonName());
         reservSearchSearchButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1225,7 +1238,7 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        reservSearchSearchByCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "room", "guest", "both" }));
+        reservSearchSearchByCombo.setModel(ComboBoxManager.setReservationSearchConditionComboBox());
         reservSearchSearchByCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reservSearchSearchByComboActionPerformed(evt);
@@ -1244,7 +1257,7 @@ public class TestJFrame extends javax.swing.JFrame {
                         .addComponent(reservSearchSearchByLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(reservSearchSearchByCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(380, Short.MAX_VALUE))
+                .addContainerGap(366, Short.MAX_VALUE))
         );
         reservationSearchPanelLayout.setVerticalGroup(
             reservationSearchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1267,9 +1280,9 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        reservEditServsSpendsLabel.setText("Services spendings: ");
+        reservEditServsSpendsLabel.setText(ReservationsButtonsNamesManager.getServicesSpendingsName());
 
-        reservEditExpEndTimeLabel.setText("Expected end time: ");
+        reservEditExpEndTimeLabel.setText(ReservationsButtonsNamesManager.getExpectedEndName());
 
         reservEditSaveButton.setText(GeneralButtonsAndTitlesNamesManager.getSaveButtonName());
         reservEditSaveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1278,32 +1291,32 @@ public class TestJFrame extends javax.swing.JFrame {
             }
         });
 
-        reservEditRealEndTimeLabel.setText("End time: ");
+        reservEditRealEndTimeLabel.setText(ReservationsButtonsNamesManager.getRealEndName());
 
-        reservEditStartTimeLabel.setText("Start time: ");
+        reservEditStartTimeLabel.setText(ReservationsButtonsNamesManager.getStartTimeName());
 
-        reservEditStartTimeYearCombo.setModel(ComboBoxManager.setYearComboBox(2010, 2100));
+        reservEditStartTimeYearCombo.setModel(ComboBoxManager.setYearComboBox(2015, 2100));
 
         reservEditStartTimeMonthCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" }));
 
         reservEditStartTimeDayCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" }));
         reservEditStartTimeDayCombo.setToolTipText("Day of birth");
 
-        reservEditExpEndYearCombo.setModel(ComboBoxManager.setYearComboBox(2010, 2100));
+        reservEditExpEndYearCombo.setModel(ComboBoxManager.setYearComboBox(2015, 2100));
 
         reservEditExpEndMonthCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" }));
 
         reservEditExpEndDayCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" }));
         reservEditExpEndDayCombo.setToolTipText("Day of birth");
 
-        reservEditRealEndYearCombo.setModel(ComboBoxManager.setYearComboBox(2010, 2100));
+        reservEditRealEndYearCombo.setModel(ComboBoxManager.setYearComboBox(2015, 2100));
 
         reservEditRealEndMonthCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" }));
 
         reservEditRealEndDayCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" }));
         reservEditRealEndDayCombo.setToolTipText("Day of birth");
 
-        reservEditRealEndUsageCheckBox.setText("Text placeholder");
+        reservEditRealEndUsageCheckBox.setText(ReservationsButtonsNamesManager.getRealEndCheckBoxName());
 
         javax.swing.GroupLayout reservationEditPanelLayout = new javax.swing.GroupLayout(reservationEditPanel);
         reservationEditPanel.setLayout(reservationEditPanelLayout);
@@ -1344,7 +1357,7 @@ public class TestJFrame extends javax.swing.JFrame {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(reservEditCancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(reservEditServsSpendsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(205, Short.MAX_VALUE))
+                .addContainerGap(260, Short.MAX_VALUE))
         );
         reservationEditPanelLayout.setVerticalGroup(
             reservationEditPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1460,7 +1473,7 @@ public class TestJFrame extends javax.swing.JFrame {
                                 .addComponent(reservNewDateFromMonthCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(reservNewDateFromYearCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(313, Short.MAX_VALUE))
+                .addContainerGap(357, Short.MAX_VALUE))
         );
         reservationNewStepOnePanelLayout.setVerticalGroup(
             reservationNewStepOnePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1491,51 +1504,25 @@ public class TestJFrame extends javax.swing.JFrame {
 
         reservationMainPanel.add(reservationNewStepOnePanel, "roomAvailabilityPanel");
 
-        reservFutureButton1.setText(ReservationsButtonsNamesManager.getButtonFutureName());
-        reservFutureButton1.addActionListener(new java.awt.event.ActionListener() {
+        reservFutureButtonInActual.setText(ReservationsButtonsNamesManager.getButtonFutureName());
+        reservFutureButtonInActual.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reservFutureButton1ActionPerformed(evt);
+                reservFutureButtonInActualActionPerformed(evt);
             }
         });
 
-        reservPastButton1.setText(ReservationsButtonsNamesManager.getButtonPastName());
-        reservPastButton1.addActionListener(new java.awt.event.ActionListener() {
+        reservPastButtonInActual.setText(ReservationsButtonsNamesManager.getButtonPastName());
+        reservPastButtonInActual.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reservPastButton1ActionPerformed(evt);
+                reservPastButtonInActualActionPerformed(evt);
             }
         });
 
-        jTableTopFiveSpenders.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Reservation", "Room number", "Guest name", "Services spendings"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Integer.class, java.lang.Object.class, java.lang.Object.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, true, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        jTableTopFiveSpenders.setModel(new TopFiveSpendersTableModel());
         jScrollPane4.setViewportView(jTableTopFiveSpenders);
 
         reservTopFiveSpendersLabel.setFont(new java.awt.Font("Georgia", 0, 14)); // NOI18N
-        reservTopFiveSpendersLabel.setText("Top five spenders");
+        reservTopFiveSpendersLabel.setText(TopFiveSpendersButtonsNamesManager.getTitleTopFiveSpendersName());
 
         javax.swing.GroupLayout reservationTopFiveSpendersPanelLayout = new javax.swing.GroupLayout(reservationTopFiveSpendersPanel);
         reservationTopFiveSpendersPanel.setLayout(reservationTopFiveSpendersPanelLayout);
@@ -1543,9 +1530,9 @@ public class TestJFrame extends javax.swing.JFrame {
             reservationTopFiveSpendersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE)
             .addGroup(reservationTopFiveSpendersPanelLayout.createSequentialGroup()
-                .addComponent(reservPastButton1)
+                .addComponent(reservPastButtonInActual)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(reservFutureButton1)
+                .addComponent(reservFutureButtonInActual)
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(reservationTopFiveSpendersPanelLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1560,13 +1547,13 @@ public class TestJFrame extends javax.swing.JFrame {
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(reservationTopFiveSpendersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(reservPastButton1)
-                    .addComponent(reservFutureButton1))
+                    .addComponent(reservPastButtonInActual)
+                    .addComponent(reservFutureButtonInActual))
                 .addContainerGap(70, Short.MAX_VALUE))
         );
 
-        reservationMainPanel.add(reservationTopFiveSpendersPanel, "topFiveSpendersPanel");
-        reservationTopFiveSpendersPanel.getAccessibleContext().setAccessibleName("topFiveSpendersPanel");
+        reservationMainPanel.add(reservationTopFiveSpendersPanel, "reservationTopFiveSpendersPanel");
+        reservationTopFiveSpendersPanel.getAccessibleContext().setAccessibleName("reservationTopFiveSpendersPanel");
 
         reservationTables.setLayout(new java.awt.CardLayout());
 
@@ -1723,13 +1710,40 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void reservDeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservDeleteButtonActionPerformed
         // TODO deleting reservation
-        CardLayout card = (CardLayout)reservationMainPanel.getLayout();
+        if(deleteReservationSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservDeleteButtonActionPerformed' of class 'TestJFrame' - deleting reservation from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservDeleteButtonActionPerformed' of class 'TestJFrame' - deleting reservation from DB operation is already in progress, can't run multiply");
+        }
+        reservDeleteButton.setEnabled(false);
+        reservNewButton.setEnabled(false);
+        reservEditButton.setEnabled(false);
+        reservSearchButton.setEnabled(false);
+        reservShowAllButton.setEnabled(false);
+        jTableReservations.setRowSelectionAllowed(false);
+        int choice = makeAReservationDeletionChoice(jTableReservations);
+        
+        if(choice == 0){
+            deleteReservationSwingWorker = new DeleteReservationSwingWorker();
+            deleteReservationSwingWorker.execute();
+        }else{
+            reservDeleteButton.setEnabled(true);
+            reservNewButton.setEnabled(true);
+            reservEditButton.setEnabled(true);
+            reservSearchButton.setEnabled(true);
+            reservShowAllButton.setEnabled(true);
+            jTableReservations.setRowSelectionAllowed(true);
+        }
+        
+        /*CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEmptyPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
-        tableCard.show(reservationTables, "reservationMainTable");
+        tableCard.show(reservationTables, "reservationMainTable");*/
     }//GEN-LAST:event_reservDeleteButtonActionPerformed
 
     private void reservSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservSearchButtonActionPerformed
+        
+        reservSearchSearchByCombo.setSelectedIndex(0);        
+        
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationSearchPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
@@ -1755,6 +1769,22 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void reservShowAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservShowAllButtonActionPerformed
         // TODO show all
+        if(showAllReservationsSW != null){
+            logger.log(Level.SEVERE, "Error in method 'reservShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all reservationss from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all reservations from DB operation is already in progress, can't run multiply");
+        }
+        reservShowAllButton.setEnabled(false);        
+        showAllReservationsSW = new ReservationsToJTableSwingWorker(jTableReservations.getModel());
+        ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+        
+        reservationsTableModel.removeAllReservationsOnlyVisually();
+        showAllReservationsSW.execute();
+        
+        reservNewButton.setEnabled(true);
+        reservEditButton.setEnabled(true);
+        reservDeleteButton.setEnabled(true);
+        reservSearchButton.setEnabled(true);
+        
         jTableGuests1.setRowSelectionAllowed(true);
         jTableRooms1.setRowSelectionAllowed(true);
         
@@ -1996,9 +2026,11 @@ public class TestJFrame extends javax.swing.JFrame {
     private void reservNewStepOneNextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewStepOneNextButtonActionPerformed
         // TODO udelat logiku vyhledavani volnych mistnosti
         
-        reservNewStepOneNextButton.setEnabled(false);
-        jTableGuests1.setRowSelectionAllowed(true);
-        jTableRooms1.setRowSelectionAllowed(true);
+        if(unoccupiedRoomsSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservNewStepOneNextButtonActionPerformed' of class 'TestJFrame' - searching all unoccupied rooms in required term in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservNewStepOneNextButtonActionPerformed' of class 'TestJFrame' - searching all unoccupied rooms in required term in DB operation is already in progress, can't run multiply");
+        }
+        reservNewStepOneNextButton.setEnabled(false);        
         String strDateFrom = getStringDateFromComboBoxes(reservNewDateFromDayCombo.getSelectedItem().toString(),
                                                          reservNewDateFromMonthCombo.getSelectedItem().toString(),
                                                          reservNewDateFromYearCombo.getSelectedItem().toString());
@@ -2012,9 +2044,11 @@ public class TestJFrame extends javax.swing.JFrame {
             if(ex.getMessage().contains(strDateFrom)){
                 JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_spatny_argument_datum_od"),
                                               resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+                reservNewStepOneNextButton.setEnabled(true);
             }else{
                 JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_spatny_argument_datum_do"),
                                               resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+                reservNewStepOneNextButton.setEnabled(true);
             }
             return;
         }
@@ -2026,14 +2060,23 @@ public class TestJFrame extends javax.swing.JFrame {
             dateTo = null;
             dateFrom = null;
             reservNewStepOneNextButton.setEnabled(true);
-            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_spatny_argument_datum_do_pred_do"),
-                                              resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_spatny_argument_datum_do_pred_od"),
+                                          resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);            
             return;
         }
         
+        if(dateTo.getTime() == dateFrom.getTime()){
+            dateTo = null;
+            dateFrom = null;
+            reservNewStepOneNextButton.setEnabled(true);
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_spatny_argument_datum_do_stejne_od"),
+                                          resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         
-        CardLayout card = (CardLayout)reservationMainPanel.getLayout();
-        card.show(reservationMainPanel, "reservationNewPanel");
+        unoccupiedRoomsSwingWorker = new UnoccupiedRoomsSwingWorker();
+        unoccupiedRoomsSwingWorker.execute();
+        
     }//GEN-LAST:event_reservNewStepOneNextButtonActionPerformed
 
     private void guestNewCardIDTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guestNewCardIDTextFieldActionPerformed
@@ -2175,6 +2218,17 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservSearchSearchByComboActionPerformed
 
     private void reservNewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewButtonActionPerformed
+        if(showAllRoomsSW != null){
+            logger.log(Level.SEVERE, "Error in method 'reservNewButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation for showing them in jTable is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservNewButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation for showing them in jTable is already in progress, can't run multiply");
+        }
+        
+        showAllRoomsSW = new RoomsToJTableSwingWorker(jTableRooms1.getModel());
+        RoomsTableModel roomsTableModel = (RoomsTableModel)jTableRooms1.getModel();
+        
+        roomsTableModel.removeAllRoomsOnlyVisually();        
+        showAllRoomsSW.execute();
+        
         reservNewDateFromDayCombo.setSelectedIndex(0);
         reservNewDateToDayCombo.setSelectedIndex(0);
         reservNewDateFromMonthCombo.setSelectedIndex(0);
@@ -2197,14 +2251,171 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservNewButtonActionPerformed
 
     private void reservEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservEditButtonActionPerformed
+        if(tableRoomRowSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservEditButtonActionPerformed' of class 'TestJFrame' - retrieving room from DB in order to get row in jTable operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservEditButtonActionPerformed' of class 'TestJFrame' - retrieving room from DB in order to get row in jTable operation is already in progress, can't run multiply");
+        }
+
+        if(tableGuestRowSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservEditButtonActionPerformed' of class 'TestJFrame' - retrieving guest from DB in order to get row in jTable operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservEditButtonActionPerformed' of class 'TestJFrame' - retrieving guest from DB in order to get row in jTable operation is already in progress, can't run multiply");
+        }
+        
+        if(setUpKeySwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating reservation in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating reservation in DB operation is already in progress, can't run multiply");
+        }
+        
+        if(showAllRoomsSW != null){
+            logger.log(Level.SEVERE, "Error in method 'reservNewStepTwoBackButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation for showing them in jTable is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservNewStepTwoBackButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation for showing them in jTable is already in progress, can't run multiply");
+        }
+        
+        
+        
+        if(jTableReservations.getSelectedRow() == -1){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_upravit_nevybrany_zaznam"),
+                                          resourceBundle.getString("Chybna_operace"), JOptionPane.ERROR_MESSAGE);            
+            return;
+        }
+
+        reservNewButton.setEnabled(false);
+        reservDeleteButton.setEnabled(false);
+        reservSearchButton.setEnabled(false);
+
+        int row = jTableReservations.getSelectedRow();
+        String roomNumber = jTableReservations.getValueAt(row, 1).toString();
+        String guestName = jTableReservations.getValueAt(row, 2).toString();
+        String guestCardID = jTableReservations.getValueAt(row, 3).toString();
+        Date startTime = getDateFromTableStringDate(jTableReservations.getValueAt(row, 4).toString());
+        Date expEndTime = getDateFromTableStringDate(jTableReservations.getValueAt(row, 5).toString());
+        Date realEndTime = jTableReservations.getValueAt(row, 6) == null ? null : getDateFromTableStringDate(jTableReservations.getValueAt(row, 6).toString());
+        BigDecimal servSpends = new BigDecimal(getNonFormattedPrice(jTableReservations.getValueAt(row, 8).toString()));
+        Reservation reservation = new Reservation();
+        Room room = new Room();
+        Guest guest = new Guest();
+        
+        room.setNumber(roomNumber);
+        guest.setName(guestName);
+        guest.setIdCardNum(guestCardID);
+        reservation.setGuest(guest);
+        reservation.setRoom(room);
+        reservation.setStartTime(startTime);
+        reservation.setExpectedEndTime(expEndTime);
+        reservation.setRealEndTime(realEndTime);
+        reservation.setServicesSpendings(servSpends);
+        
+        showAllRoomsSW = new RoomsToJTableSwingWorker(jTableRooms1.getModel());
+        RoomsTableModel roomsTableModel = (RoomsTableModel)jTableRooms1.getModel();
+        
+        roomsTableModel.removeAllRoomsOnlyVisually();        
+        showAllRoomsSW.execute();
+        
+        setUpKeySwingWorker = new SetUpKeySwingWorker(reservation);
+        tableRoomRowSwingWorker = new TableRoomRowSwingWorker(roomNumber);
+        tableGuestRowSwingWorker = new TableGuestRowSwingWorker(guestName, guestCardID);
+        tableRoomRowSwingWorker.execute();
+        tableGuestRowSwingWorker.execute();
+        setUpKeySwingWorker.execute();
+
+        String[] strStartTime = getSplittedDateForComboBoxes(jTableReservations.getValueAt(row, 4).toString());
+        String[] strExpEndTime = getSplittedDateForComboBoxes(jTableReservations.getValueAt(row, 5).toString());
+        String ret = jTableReservations.getValueAt(row, 6) == null ? "" : jTableReservations.getValueAt(row, 6).toString();
+        if(ret.trim().isEmpty()){
+            Locale locale = Locale.getDefault();
+            DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
+            ret = df.format(new TimeManagerImpl().getCurrentDate());
+        }
+        String[] strRealEndTime = getSplittedDateForComboBoxes(ret);
+        String strServSpends = getNonFormattedPrice(jTableReservations.getValueAt(row, 8).toString());
+
+        reservEditStartTimeDayCombo.setSelectedIndex(Integer.parseInt(strStartTime[0])-1);
+        reservEditStartTimeMonthCombo.setSelectedIndex(Integer.parseInt(strStartTime[1])-1);
+        reservEditStartTimeYearCombo.setSelectedItem(strStartTime[2]);
+
+        reservEditExpEndDayCombo.setSelectedIndex(Integer.parseInt(strExpEndTime[0])-1);
+        reservEditExpEndMonthCombo.setSelectedIndex(Integer.parseInt(strExpEndTime[1])-1);
+        reservEditExpEndYearCombo.setSelectedItem(strExpEndTime[2]);
+
+        reservEditRealEndDayCombo.setSelectedIndex(Integer.parseInt(strRealEndTime[0])-1);
+        reservEditRealEndMonthCombo.setSelectedIndex(Integer.parseInt(strRealEndTime[1])-1);
+        reservEditRealEndYearCombo.setSelectedItem(strRealEndTime[2]);
+
+        reservEditServsSpendsTextField.setText(strServSpends);
+        
+        reservEditRealEndUsageCheckBox.setSelected(false);
+
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEditPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
         tableCard.show(reservationTables, "addReservationTables");
+        
     }//GEN-LAST:event_reservEditButtonActionPerformed
 
     private void reservSearchSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservSearchSearchButtonActionPerformed
         // TODO search logic
+        
+        if(searchReservationSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservSearchSearchButtonActionPerformed' of class 'TestJFrame' - searching suitable reservations in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservSearchSearchButtonActionPerformed' of class 'TestJFrame' - searching suitable reservations in DB operation is already in progress, can't run multiply");
+        }
+        reservSearchSearchButton.setEnabled(false);
+        Room room = null;
+        Guest guest = null;
+        switch(reservSearchSearchByCombo.getSelectedIndex()){
+            case 0:{
+                if(jTableRooms1.getSelectedRow() == -1){
+                    reservSearchSearchButton.setEnabled(true);
+                    JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_hledat_nevybrany_zaznam_pokoj"),
+                                                  resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+                    return;
+                }else{
+                    room = getRoomFromTable(jTableRooms1);
+                    searchReservationSwingWorker = new SearchReservationSwingWorker(guest,room);
+                    searchReservationSwingWorker.execute();
+                }
+                break;
+            }
+            
+            case 1:{
+                if(jTableGuests1.getSelectedRow() == -1){
+                    reservSearchSearchButton.setEnabled(true);
+                    JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_hledat_nevybrany_zaznam_host"),
+                                                  resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+                    return;
+                }else{
+                    guest = getGuestFromTable(jTableGuests1);
+                    searchReservationSwingWorker = new SearchReservationSwingWorker(guest,room);
+                    searchReservationSwingWorker.execute();
+                }
+                break;
+            }
+                
+            case 2:{
+                if(jTableRooms1.getSelectedRow() == -1){
+                    reservSearchSearchButton.setEnabled(true);
+                    JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_hledat_nevybrany_zaznam_pokoj"),
+                                                  resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                if(jTableGuests1.getSelectedRow() == -1){
+                    reservSearchSearchButton.setEnabled(true);
+                    JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_hledat_nevybrany_zaznam_host"),
+                                                  resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                room = getRoomFromTable(jTableRooms1);
+                guest = getGuestFromTable(jTableGuests1);
+                searchReservationSwingWorker = new SearchReservationSwingWorker(guest,room);
+                searchReservationSwingWorker.execute();
+                break;
+            }
+                    
+            default: throw new IllegalStateException("Unexpected index retrieved from reservSearchSearchByCombo combo boxu while trying to search required rooms");
+        }
+        
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEmptyPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
@@ -2237,7 +2448,7 @@ public class TestJFrame extends javax.swing.JFrame {
         m_rowGuest = jTableGuests1.getSelectedRow();
         
         if(m_rowRoom == -1){
-            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_nevybrany_zaznam_pokoj"),
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_upravit_nevybrany_zaznam_pokoj"),
                                           resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
             m_rowGuest = -1;
             reservNewStepTwoSaveButton.setEnabled(true);
@@ -2245,7 +2456,7 @@ public class TestJFrame extends javax.swing.JFrame {
         }
         
         if(m_rowGuest == -1){
-            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_nevybrany_zaznam_host"),
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_upravit_nevybrany_zaznam_host"),
                                           resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
             m_rowRoom = -1;
             reservNewStepTwoSaveButton.setEnabled(true);
@@ -2265,6 +2476,17 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void reservPastButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservPastButtonActionPerformed
         // TODO shows past reservations
+        if(showPastReservationsSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservPastButtonActionPerformed' of class 'TestJFrame' - retrieving all past reservations from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservPastButtonActionPerformed' of class 'TestJFrame' - retrieving all past reservations from DB operation is already in progress, can't run multiply");
+        }
+        
+        reservPastButton.setEnabled(false);
+        reservPastButtonInActual.setEnabled(false);
+        
+        showPastReservationsSwingWorker = new ShowPastReservationsSwingWorker();
+        showPastReservationsSwingWorker.execute();
+        
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEmptyPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
@@ -2273,6 +2495,21 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void reservActualButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservActualButtonActionPerformed
         // TODO shows actual reservations
+        if(showActualReservationsSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservActualButtonActionPerformed' of class 'TestJFrame' - retrieving all actual reservations from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservActualButtonActionPerformed' of class 'TestJFrame' - retrieving all actual reservations from DB operation is already in progress, can't run multiply");
+        }
+        
+        if(showTopFiveSpendersSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservActualButtonActionPerformed' of class 'TestJFrame' - retrieving top 5 spenders from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservActualButtonActionPerformed' of class 'TestJFrame' - retrieving top 5 spenders from DB operation is already in progress, can't run multiply");
+        }
+        
+        reservActualButton.setEnabled(false);
+        
+        showActualReservationsSwingWorker = new ShowActualReservationsSwingWorker();   
+        showActualReservationsSwingWorker.execute();
+        
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationTopFiveSpendersPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
@@ -2281,6 +2518,17 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void reservFutureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservFutureButtonActionPerformed
         // TODO shows future reservations
+        if(showFutureReservationsSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservFutureButtonActionPerformed' of class 'TestJFrame' - retrieving all future reservations from DB operation for showing them in jTable is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservFutureButtonActionPerformed' of class 'TestJFrame' - retrieving all future reservations from DB operation for showing them in jTable is already in progress, can't run multiply");
+        }
+        
+        reservFutureButton.setEnabled(false);
+        reservFutureButtonInActual.setEnabled(false);
+        
+        showFutureReservationsSwingWorker = new ShowFutureReservationsSwingWorker();
+        showFutureReservationsSwingWorker.execute();
+        
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEmptyPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
@@ -2386,6 +2634,23 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void reservEditCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservEditCancelButtonActionPerformed
         // TODO add your handling code here:
+        reservNewButton.setEnabled(true);
+        reservDeleteButton.setEnabled(true);
+        reservSearchButton.setEnabled(true);
+        reservEditSaveButton.setEnabled(true);
+        jTableReservations.setRowSelectionAllowed(true);
+        jTableGuests1.setRowSelectionAllowed(true);
+        jTableRooms1.setRowSelectionAllowed(true);
+        
+        if(showAllReservationsSW != null){
+            logger.log(Level.SEVERE, "Error in method 'reservEditCancelButtonActionPerformed' of class 'TestJFrame' - retrieving all reservations from DB in roder to show them in jTable operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservEditCancelButtonActionPerformed' of class 'TestJFrame' - retrieving all reservations from DB in roder to show them in jTable operation is already in progress, can't run multiply");
+        }
+        ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+        reservationsTableModel.removeAllReservationsOnlyVisually();
+        showAllReservationsSW = new ReservationsToJTableSwingWorker(jTableReservations.getModel());
+        showAllReservationsSW.execute();
+        
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEmptyPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
@@ -2394,10 +2659,108 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void reservEditSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservEditSaveButtonActionPerformed
         // TODO add your handling code here:
-        CardLayout card = (CardLayout)reservationMainPanel.getLayout();
-        card.show(reservationMainPanel, "reservationEmptyPanel");
-        CardLayout tableCard = (CardLayout)reservationTables.getLayout();
-        tableCard.show(reservationTables, "reservationMainTable");
+        if(updateReservationSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'guestEditSaveButActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'guestEditSaveButActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
+        }
+        reservEditSaveButton.setEnabled(false);
+        jTableReservations.setRowSelectionAllowed(false);
+        jTableGuests1.setRowSelectionAllowed(false);
+        jTableRooms1.setRowSelectionAllowed(false);
+        if(jTableRooms1.getSelectedRow() == -1){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_upravit_nevybrany_zaznam_pokoj"),
+                                          resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+            
+            reservEditSaveButton.setEnabled(true);
+            jTableReservations.setRowSelectionAllowed(true);
+            jTableGuests1.setRowSelectionAllowed(true);
+            jTableRooms1.setRowSelectionAllowed(true);
+            return;
+        }
+        
+        if(jTableGuests1.getSelectedRow() == -1){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_upravit_nevybrany_zaznam_host"),
+                                          resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+            reservEditSaveButton.setEnabled(true);
+            jTableReservations.setRowSelectionAllowed(true);
+            jTableGuests1.setRowSelectionAllowed(true);
+            jTableRooms1.setRowSelectionAllowed(true);
+            return;
+        }
+        
+        Guest guest = getGuestFromTable(jTableGuests1);
+        Room room = getRoomFromTable(jTableRooms1);
+        
+        String startTime = getStringDateFromComboBoxes(reservEditStartTimeDayCombo.getSelectedItem().toString(),
+                                                       reservEditStartTimeMonthCombo.getSelectedItem().toString(),
+                                                       reservEditStartTimeYearCombo.getSelectedItem().toString());
+        String expEndTime = getStringDateFromComboBoxes(reservEditExpEndDayCombo.getSelectedItem().toString(),
+                                                        reservEditExpEndMonthCombo.getSelectedItem().toString(),
+                                                        reservEditExpEndYearCombo.getSelectedItem().toString());
+        String realEndTime = null;
+        if(reservEditRealEndUsageCheckBox.isSelected()){
+            realEndTime = getStringDateFromComboBoxes(reservEditRealEndDayCombo.getSelectedItem().toString(),
+                                                      reservEditRealEndMonthCombo.getSelectedItem().toString(),
+                                                      reservEditRealEndYearCombo.getSelectedItem().toString());
+        }
+        try{
+            checkDateExists(startTime);
+        }catch(IllegalArgumentException ex){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_upravit_spatny_argument_datum_pocatek"),
+                                          resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+            reservEditSaveButton.setEnabled(true);
+            jTableReservations.setRowSelectionAllowed(true);
+            jTableGuests1.setRowSelectionAllowed(true);
+            jTableRooms1.setRowSelectionAllowed(true);
+            return;
+        }
+        
+        try{
+            checkDateExists(startTime);
+        }catch(IllegalArgumentException ex){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_upravit_spatny_argument_datum_predp_konec"),
+                                          resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+            reservEditSaveButton.setEnabled(true);
+            jTableReservations.setRowSelectionAllowed(true);
+            jTableGuests1.setRowSelectionAllowed(true);
+            jTableRooms1.setRowSelectionAllowed(true);
+            return;
+        }
+        
+        try{
+            checkDateExists(startTime);
+        }catch(IllegalArgumentException ex){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_upravit_spatny_argument_datum_konec"),
+                                          resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+            reservEditSaveButton.setEnabled(true);
+            jTableReservations.setRowSelectionAllowed(true);
+            jTableGuests1.setRowSelectionAllowed(true);
+            jTableRooms1.setRowSelectionAllowed(true);
+            return;
+        }
+        
+        String servSpends = reservEditServsSpendsTextField.getText();
+        
+        if(servSpends.trim().isEmpty()){
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_upravit_spatny_argument_utrata_za_sluzby"),
+                                          resourceBundle.getString("Neplatny_argument"), JOptionPane.ERROR_MESSAGE);
+            reservEditSaveButton.setEnabled(true);
+            jTableReservations.setRowSelectionAllowed(true);
+            jTableGuests1.setRowSelectionAllowed(true);
+            jTableRooms1.setRowSelectionAllowed(true);
+            return;
+        }
+        
+        if(realEndTime == null){
+            String[] inVals = {startTime, expEndTime, servSpends};
+            updateReservationSwingWorker = new UpdateReservationSwingWorker(guest, room, inVals);
+            updateReservationSwingWorker.execute();
+        }else{
+            String[] inVals = {startTime, expEndTime, realEndTime, servSpends};
+            updateReservationSwingWorker = new UpdateReservationSwingWorker(guest, room, inVals);
+            updateReservationSwingWorker.execute();
+        }
+        
     }//GEN-LAST:event_reservEditSaveButtonActionPerformed
 
     private void reservNewDateFromDayComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewDateFromDayComboActionPerformed
@@ -2410,6 +2773,17 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void reservNewStepTwoBackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewStepTwoBackButtonActionPerformed
         // TODO add your handling code here:
+        if(showAllRoomsSW != null){
+            logger.log(Level.SEVERE, "Error in method 'reservNewStepTwoBackButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation for showing them in jTable is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservNewStepTwoBackButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation for showing them in jTable is already in progress, can't run multiply");
+        }
+        
+        showAllRoomsSW = new RoomsToJTableSwingWorker(jTableRooms1.getModel());
+        RoomsTableModel roomsTableModel = (RoomsTableModel)jTableRooms1.getModel();
+        
+        roomsTableModel.removeAllRoomsOnlyVisually();        
+        showAllRoomsSW.execute();
+        
         reservNewStepOneNextButton.setEnabled(true);
         jTableGuests1.setRowSelectionAllowed(false);
         jTableRooms1.setRowSelectionAllowed(false);
@@ -2432,19 +2806,41 @@ public class TestJFrame extends javax.swing.JFrame {
         tableCard.show(reservationTables, "reservationMainTable");
     }//GEN-LAST:event_reservNewStepOneCancelButtonActionPerformed
 
-    private void reservFutureButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservFutureButton1ActionPerformed
+    private void reservFutureButtonInActualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservFutureButtonInActualActionPerformed
+        if(showFutureReservationsSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservFutureButtonInActualActionPerformed' of class 'TestJFrame' - retrieving all future reservations from DB operation for showing them in jTable is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservFutureButtonInActualActionPerformed' of class 'TestJFrame' - retrieving all future reservations from DB operation for showing them in jTable is already in progress, can't run multiply");
+        }
+        
+        reservFutureButton.setEnabled(false);
+        reservFutureButtonInActual.setEnabled(false);
+        
+        showFutureReservationsSwingWorker = new ShowFutureReservationsSwingWorker();
+        showFutureReservationsSwingWorker.execute();
+        
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEmptyPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
         tableCard.show(reservationTables, "reservationMainTable");
-    }//GEN-LAST:event_reservFutureButton1ActionPerformed
+    }//GEN-LAST:event_reservFutureButtonInActualActionPerformed
 
-    private void reservPastButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservPastButton1ActionPerformed
+    private void reservPastButtonInActualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservPastButtonInActualActionPerformed
+        if(showPastReservationsSwingWorker != null){
+            logger.log(Level.SEVERE, "Error in method 'reservPastButtonInActualActionPerformed' of class 'TestJFrame' - retrieving all past reservations from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservPastButtonInActualActionPerformed' of class 'TestJFrame' - retrieving all past reservations from DB operation is already in progress, can't run multiply");
+        }
+        
+        reservPastButton.setEnabled(false);
+        reservPastButtonInActual.setEnabled(false);
+        
+        showPastReservationsSwingWorker = new ShowPastReservationsSwingWorker();
+        showPastReservationsSwingWorker.execute();
+        
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
         card.show(reservationMainPanel, "reservationEmptyPanel");
         CardLayout tableCard = (CardLayout)reservationTables.getLayout();
         tableCard.show(reservationTables, "reservationMainTable");
-    }//GEN-LAST:event_reservPastButton1ActionPerformed
+    }//GEN-LAST:event_reservPastButtonInActualActionPerformed
 
     /**
      * @param args the command line arguments
@@ -2471,6 +2867,10 @@ public class TestJFrame extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(TestJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
@@ -2570,7 +2970,7 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox reservEditStartTimeMonthCombo;
     private javax.swing.JComboBox reservEditStartTimeYearCombo;
     private javax.swing.JButton reservFutureButton;
-    private javax.swing.JButton reservFutureButton1;
+    private javax.swing.JButton reservFutureButtonInActual;
     private javax.swing.JButton reservNewButton;
     private javax.swing.JComboBox reservNewDateFromDayCombo;
     private java.awt.Label reservNewDateFromLabel;
@@ -2586,7 +2986,7 @@ public class TestJFrame extends javax.swing.JFrame {
     private javax.swing.JButton reservNewStepTwoCancelButton;
     private javax.swing.JButton reservNewStepTwoSaveButton;
     private javax.swing.JButton reservPastButton;
-    private javax.swing.JButton reservPastButton1;
+    private javax.swing.JButton reservPastButtonInActual;
     private javax.swing.JButton reservSearchButton;
     private javax.swing.JButton reservSearchSearchButton;
     private javax.swing.JComboBox reservSearchSearchByCombo;
@@ -2686,6 +3086,7 @@ public class TestJFrame extends javax.swing.JFrame {
         jTableGuests.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jTableGuests1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jTableReservations.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        jTableTopFiveSpenders.setRowSelectionAllowed(false);
     }
     
     private void setUpAllTablesHeaders(){
@@ -2694,6 +3095,7 @@ public class TestJFrame extends javax.swing.JFrame {
        jTableRooms.getTableHeader().setFont(new Font("Georgia", Font.BOLD, 12));
        jTableRooms1.getTableHeader().setFont(new Font("Georgia", Font.BOLD, 12));
        jTableReservations.getTableHeader().setFont(new Font("Georgia", Font.BOLD, 12));
+       jTableTopFiveSpenders.getTableHeader().setFont(new Font("Georgia", Font.BOLD, 12));
     }
     
     private Room createRoomFromStrings(String[] inVals){
@@ -2761,14 +3163,14 @@ public class TestJFrame extends javax.swing.JFrame {
         
         switch(inType){
             case "APARTMENT"    :
-            case "APARTMÁN"     : return "APARTMENT";
+            case "APARTM�N"     : return "APARTMENT";
                 
             case "FAMILY"       :
-            case "RODINNÝ"      : return "FAMILY";
+            case "RODINN�"      : return "FAMILY";
                 
             case "STANDARD"     :
-            case "STANDARDNÍ"   :
-            case "ŠTANDARD"     : return "STANDARD";
+            case "STANDARDN�"   :
+            case "�TANDARD"     : return "STANDARD";
                 
             case "SUITE"        : return "SUITE";
                 
@@ -2810,6 +3212,22 @@ public class TestJFrame extends javax.swing.JFrame {
         }
     }
     
+    private int makeAReservationDeletionChoice(JTable table){
+        if(table.getSelectedRow() != -1){
+            Object[] options = {resourceBundle.getString("Ano"),
+                                resourceBundle.getString("Ne")};
+            int n = JOptionPane.showOptionDialog(null, resourceBundle.getString("Rezervace_smazat_dotazani_na_potvrzeni"),
+                                                 resourceBundle.getString("Potvrzeni_operace"),
+                                                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                                                 null, options, options[1]);
+            return n;
+        }else{
+            JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_smazat_nevybrany_zaznam"),
+                                          resourceBundle.getString("Chybna_operace"), JOptionPane.ERROR_MESSAGE);
+            return -1;
+        }
+    }
+    
     private Room getRoomFromTable(JTable table){
         int row = table.getSelectedRow();
         List<String> tabVals = new ArrayList<>();
@@ -2826,7 +3244,7 @@ public class TestJFrame extends javax.swing.JFrame {
     
     private String getNonFormattedPrice(String formattedPrice){
         
-        if(formattedPrice.contains("Kč") || formattedPrice.contains("€")){
+        if(formattedPrice.contains("K\u010D") || formattedPrice.contains("\u20AC")){
             int lind = formattedPrice.lastIndexOf(" ");
             String price = formattedPrice.substring(0, lind);            
             price = price.replace("\u00A0", "");
@@ -2837,7 +3255,7 @@ public class TestJFrame extends javax.swing.JFrame {
         if(formattedPrice.contains("$")){
             String[] fpParts = formattedPrice.split("$", 2);
             String price = fpParts[1];
-            return price.replaceAll("[,]", "");
+            return price.replaceAll(",", "");
         }
         
         logger.log(Level.SEVERE, "Updating room failure: In rooms JTable object appeared unexpected currency.");
@@ -2937,6 +3355,14 @@ public class TestJFrame extends javax.swing.JFrame {
     private String getStringDateFromComboBoxes(String inDay, String inMonth, String inYear){
         return ((Integer.parseInt(inDay) > 9 ? inDay : ("0" + inDay)) + "/" +
                 (Integer.parseInt(inMonth) > 9 ? inMonth : ("0" + inMonth)) + "/" + inYear);
+    }
+    
+    private String[] getSplittedDateForComboBoxes(String tableStrDate){
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = getDateFromTableStringDate(tableStrDate);
+        String strDate = dateFormat.format(date);
+        
+        return strDate.split("/");
     }
     
     private String getInvalidGuestArgMsg(String errMsg, String oper){
@@ -3242,7 +3668,7 @@ public class TestJFrame extends javax.swing.JFrame {
             } catch (ExecutionException ex) {
                 logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'DeleteRoomSwingWorker': ", ex);
                 msgs = getMessagesForDialogWindow(ex);
-                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), (msgs.get(1).equals(resourceBundle.getString("Varovani")) ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE));
             } catch (InterruptedException ex) {
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             }
@@ -3270,6 +3696,12 @@ public class TestJFrame extends javax.swing.JFrame {
                 return msgs;
             }
             
+            if(ex.toString().contains("'RESROOM_FK'")){
+                msgs.add(resourceBundle.getString("Pokoj_smazat_chyba_sql_cizi_klic"));
+                msgs.add(resourceBundle.getString("Varovani"));
+                return msgs;
+            }
+            
             msgs.add(resourceBundle.getString("Pokoj_smazat_chyba_sql"));
             msgs.add(resourceBundle.getString("Interni_chyba"));
             return msgs;
@@ -3288,17 +3720,19 @@ public class TestJFrame extends javax.swing.JFrame {
         protected Void doInBackground() throws Exception {
             if(entity instanceof Reservation){
                 Reservation reservation = (Reservation) entity;
+                Guest guest = getGuestDB(reservation.getGuest());
+                Room room = getRoomDB(reservation.getRoom());
+                reservation.setGuest(guest);
                 ReservationManager resm = new ReservationManagerImpl(dataSource, new TimeManagerImpl());
-                List<Reservation> resDB = resm.findAllReservations();
+                List<Reservation> resDB = resm.findReservationsForRoom(room);
                 for(Reservation r : resDB){
-                    if(r.getRoom().equals(reservation.getRoom()) &&
-                        r.getGuest().equals(reservation.getGuest()) &&
-                        r.getStartTime().equals(reservation.getStartTime()) &&
-                        r.getExpectedEndTime().equals(reservation.getExpectedEndTime()) &&
-                        r.getRealEndTime().equals(reservation.getRealEndTime()) &&
-                        r.getServicesSpendings().equals(reservation.getServicesSpendings())){
+                    if(r.getGuest().equals(reservation.getGuest()) &&
+                       r.getStartTime().equals(reservation.getStartTime()) &&
+                       r.getExpectedEndTime().equals(reservation.getExpectedEndTime()) &&
+                       r.getServicesSpendings().equals(reservation.getServicesSpendings()) &&
+                       (r.getRealEndTime() == null ? (reservation.getRealEndTime() == null) : r.getRealEndTime().equals(reservation.getRealEndTime()))){
 
-                        resKey = r.getId();
+                       resKey = r.getId();
                     }
                 }
             }
@@ -3346,6 +3780,22 @@ public class TestJFrame extends javax.swing.JFrame {
             setUpKeySwingWorker = null;
         }
         
+        private Guest getGuestDB(Guest tableGuest){
+            GuestManager guestManager = new GuestManagerImpl(dataSource);
+            List<Guest> guests = guestManager.findGuestByName(tableGuest.getName());
+            for(Guest guest : guests){
+                if(guest.getIdCardNum().equals(tableGuest.getIdCardNum())){
+                    return guest;
+                }
+            }
+            return null;
+        }
+        
+        private Room getRoomDB(Room tableRoom){
+            RoomManager roomManager = new RoomManagerImpl(dataSource);
+            return roomManager.getRoomByNumber(tableRoom.getNumber());
+        }
+        
     }
     
     private class UpdateRoomSwingWorker extends SwingWorker<Room, Void>{
@@ -3368,6 +3818,8 @@ public class TestJFrame extends javax.swing.JFrame {
             Room newRoom = createRoomFromStrings(inVals);    
                 
             if(anyChange(origRoom, newRoom)){
+                ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+                m_rowsRes = reservationsTableModel.getIndexOf(origRoom);
                 newRoom.setId(roomKey);
                 roomManager.updateRoom(newRoom);
                 return newRoom;
@@ -3386,6 +3838,7 @@ public class TestJFrame extends javax.swing.JFrame {
             roomKey = null;
             RoomsTableModel roomsTableModel = (RoomsTableModel) jTableRooms.getModel();
             RoomsTableModel roomsTableModel1 = (RoomsTableModel) jTableRooms1.getModel();
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
             Room room = null;
             List<String> msgs = new ArrayList<>();
             try{
@@ -3401,9 +3854,13 @@ public class TestJFrame extends javax.swing.JFrame {
             if(room != null){
                 roomsTableModel.updateRoom(room, m_rowRoom);
                 roomsTableModel1.updateRoom(room, m_rowRoom);
+                for(Integer row : m_rowsRes){
+                    reservationsTableModel.updateReservationRoom(room, row);
+                }
             }
             
             m_rowRoom = -1;
+            m_rowReservation = -1;
             jTableRooms.setRowSelectionAllowed(true);
             if(msgs.isEmpty() || !msgs.get(1).equals(resourceBundle.getString("Neplatny_argument"))){
                 CardLayout card = (CardLayout)roomMainPanel.getLayout();
@@ -3513,6 +3970,9 @@ public class TestJFrame extends javax.swing.JFrame {
         
     }
     
+    
+    
+    
   
     //*************************** GUESTS **********************************
     
@@ -3611,7 +4071,7 @@ public class TestJFrame extends javax.swing.JFrame {
             } catch (ExecutionException ex) {
                 logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'DeleteGuestSwingWorker': ", ex);
                 msgs = getMessagesForDialogWindow(ex);
-                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), (msgs.get(1).equals(resourceBundle.getString("Varovani")) ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE));
             } catch (InterruptedException ex) {
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             }
@@ -3678,6 +4138,12 @@ public class TestJFrame extends javax.swing.JFrame {
                 return msgs;
             }
             
+            if(ex.toString().contains("'RESGUEST_FK'")){
+                msgs.add(resourceBundle.getString("Host_smazat_chyba_sql_cizi_klic"));
+                msgs.add(resourceBundle.getString("Varovani"));
+                return msgs;
+            }
+            
             msgs.add(resourceBundle.getString("Host_smazat_chyba_sql"));
             msgs.add(resourceBundle.getString("Interni_chyba"));
             return msgs;
@@ -3714,6 +4180,8 @@ public class TestJFrame extends javax.swing.JFrame {
             Guest newGuest = createGuestFromStrings(inVals);
                 
             if(anyChange(origGuest, newGuest)){
+                ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+                m_rowsRes = reservationsTableModel.getIndexOf(origGuest);
                 newGuest.setId(guestKey);
                 guestManager.updateGuest(newGuest);
                 return newGuest;
@@ -3732,6 +4200,7 @@ public class TestJFrame extends javax.swing.JFrame {
             guestKey = null;
             GuestsTableModel guestsTableModel = (GuestsTableModel) jTableGuests.getModel();
             GuestsTableModel guestsTableModel1 = (GuestsTableModel) jTableGuests1.getModel();
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
             Guest guest = null;
             List<String> msgs = new ArrayList<>();
             try{
@@ -3747,9 +4216,13 @@ public class TestJFrame extends javax.swing.JFrame {
             if(guest != null){
                 guestsTableModel.updateGuest(guest, m_rowGuest);
                 guestsTableModel1.updateGuest(guest, m_rowGuest);
+                for(Integer row : m_rowsRes){
+                    reservationsTableModel.updateReservationGuest(guest, row);
+                }
             }
             
             m_rowGuest = -1;
+            m_rowReservation = -1;
             jTableGuests.setRowSelectionAllowed(true);
             if(msgs.isEmpty() || !msgs.get(1).equals(resourceBundle.getString("Neplatny_argument"))){
                 CardLayout card = (CardLayout)guestMainPanel.getLayout();
@@ -3813,13 +4286,6 @@ public class TestJFrame extends javax.swing.JFrame {
         
     }
     
-    
-    
-    
-    
-    
-    
-    
     private class SearchGuestSwingWorker extends SwingWorker<List<Guest>, Void>{
 
         private final String name;
@@ -3864,6 +4330,10 @@ public class TestJFrame extends javax.swing.JFrame {
     }
     
     
+    
+    
+    
+    
     //*************************** RESERVATIONS ***************************************
     
     private class AddNewReservationSwingWorker extends SwingWorker<Reservation, Void>{
@@ -3906,7 +4376,7 @@ public class TestJFrame extends javax.swing.JFrame {
             reservEditButton.setEnabled(true);
             reservDeleteButton.setEnabled(true);
             reservSearchButton.setEnabled(true);
-            addNewRoomSwingWorker = null;
+            addNewReservationSwingWorker = null;
             jTableRooms1.setRowSelectionAllowed(true);
             jTableGuests1.setRowSelectionAllowed(true);
             ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
@@ -3966,6 +4436,620 @@ public class TestJFrame extends javax.swing.JFrame {
             msgs.add(resourceBundle.getString("Rezervace_pridat_interni_chyba"));
             msgs.add(resourceBundle.getString("Interni_chyba"));
             return msgs;
+        }
+    }
+    
+    private class DeleteReservationSwingWorker extends SwingWorker<Integer, Object>{
+
+        @Override
+        protected Integer doInBackground() throws Exception {
+            ReservationManager reservationManager = new ReservationManagerImpl(dataSource, new TimeManagerImpl());            
+            Reservation tableRes = getSelectedTableReservation();
+            List<Reservation> allReservations = reservationManager.findReservationsForRoom(tableRes.getRoom());
+            
+            for(Reservation reservation : allReservations){
+                if(reservation.getGuest().equals(tableRes.getGuest()) &&
+                        reservation.getStartTime().equals(tableRes.getStartTime()) &&
+                        reservation.getExpectedEndTime().equals(tableRes.getExpectedEndTime())){
+                    reservationManager.deleteReservation(reservation);
+                    return jTableReservations.getSelectedRow();
+                }
+            }
+            
+            return -1;
+        }
+        
+        @Override
+        protected void done(){
+            reservDeleteButton.setEnabled(true);
+            reservNewButton.setEnabled(true);
+            reservEditButton.setEnabled(true);
+            reservSearchButton.setEnabled(true);
+            reservShowAllButton.setEnabled(true);
+            jTableReservations.setRowSelectionAllowed(true);
+            deleteReservationSwingWorker = null;
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+            List<String> msgs = null;
+            int row = -1;
+            try {
+                row = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'DeleteGuestSwingWorker': ", ex);
+                msgs = getMessagesForDialogWindow(ex);
+                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            if(row != -1){
+                reservationsTableModel.removeReservation(row);
+            }
+            
+            /*showActualReservationsSwingWorker = new ShowActualReservationsSwingWorker();
+            showActualReservationsSwingWorker.execute();*/
+        }
+        
+        private Reservation getSelectedTableReservation(){
+            int tableRow = jTableReservations.getSelectedRow();
+            RoomManager roomManager = new RoomManagerImpl(dataSource);
+            GuestManager guestManager = new GuestManagerImpl(dataSource);
+            List<Guest> guests = guestManager.findGuestByName(jTableReservations.getValueAt(tableRow, 2).toString());
+            Room room = roomManager.getRoomByNumber(jTableReservations.getValueAt(tableRow, 1).toString());
+            Guest guest = null;
+            String cardID = jTableReservations.getValueAt(tableRow, 3).toString();
+            
+            for(Guest g : guests){
+                if(g.getIdCardNum().equals(cardID)){
+                    guest = g;
+                    break;
+                }
+            }
+            
+            if(room == null){
+                throw new RuntimeException("Room from jTableReservations is not present in DB, but should be");
+            }
+            
+            if(guest == null){
+                throw new RuntimeException("Guest from jTableReservations is not present in DB, but should be");
+            }
+            
+            Date startTime = getDateFromTableStringDate(jTableReservations.getValueAt(tableRow, 4).toString());
+            Date expEndTime = getDateFromTableStringDate(jTableReservations.getValueAt(tableRow, 5).toString());
+            
+            Reservation reservation = new Reservation();
+            reservation.setGuest(guest);
+            reservation.setRoom(room);
+            reservation.setStartTime(startTime);
+            reservation.setExpectedEndTime(expEndTime);
+            
+            return reservation;
+        }
+        
+        private List<String> getMessagesForDialogWindow(Throwable ex){
+            List<String> msgs = new ArrayList<>();
+            
+            if(ex.toString().contains("IllegalArgumentException")){
+                msgs.add(resourceBundle.getString("Rezervace_smazat_neplatne_hodnoty "));
+                msgs.add(resourceBundle.getString("Interni_chyba"));
+                return msgs;
+            }
+            
+            msgs.add(resourceBundle.getString("Rezervace_smazat_chyba_sql"));
+            msgs.add(resourceBundle.getString("Interni_chyba"));
+            return msgs;
+        }
+    }
+    
+    private class SearchReservationSwingWorker extends SwingWorker<List<Reservation>, Object>{
+
+        private final Guest guest;
+        private final Room room;
+        
+        public SearchReservationSwingWorker(Guest guest, Room room){
+            this.guest = getGuestFromDB(guest);
+            
+            if(room == null){
+                this.room = null;
+            }else{
+                RoomManager roomManager = new RoomManagerImpl(dataSource);
+                this.room = roomManager.getRoomByNumber(room.getNumber());
+            }            
+        }
+        
+        @Override
+        protected List<Reservation> doInBackground() throws Exception {
+            ReservationManager reservationManager = new ReservationManagerImpl(dataSource, new TimeManagerImpl());            
+            
+            if(guest == null){
+                if(room != null){
+                    return reservationManager.findReservationsForRoom(room);
+                }
+                return null;
+            }
+            
+            if(room == null){
+                return reservationManager.findReservationsForGuest(guest);
+            }
+            
+            List<Reservation> reservations = reservationManager.findAllReservations();
+            List<Reservation> retRes = new ArrayList<>();
+            for(Reservation reservation : reservations){
+                if(reservation.getGuest().equals(guest) && reservation.getRoom().equals(room)){
+                    retRes.add(reservation);
+                }
+            }
+            
+            return retRes;
+        }
+        
+        @Override
+        protected void done(){
+            reservSearchSearchButton.setEnabled(true);
+            searchReservationSwingWorker = null;
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+            List<Reservation> reservations = null;
+            
+            reservationsTableModel.removeAllReservationsOnlyVisually();
+            
+            try {
+                reservations = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'SearchReservationSwingWorker': ", ex);
+                JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_hledat_ziskani_dat_neuspech"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            if(reservations != null && !reservations.isEmpty()){
+                for(Reservation reservation : reservations){
+                    reservationsTableModel.addReservation(reservation);
+                }
+            }
+        }
+        
+        private Guest getGuestFromDB(Guest guest){
+            if(guest != null){
+                GuestManager guestManager = new GuestManagerImpl(dataSource);
+                List<Guest> guests = guestManager.findGuestByName(guest.getName());
+                for(Guest g : guests){
+                    if(g.getIdCardNum().equals(guest.getIdCardNum()) && g.getBorn().equals(guest.getBorn())){
+                        return g;
+                    }
+                }
+            }
+            return null;
+        }
+    }
+    
+    private class TableRoomRowSwingWorker extends SwingWorker<Room, Object>{
+
+        private final String number;
+        
+        public TableRoomRowSwingWorker(String number){
+            this.number = number;
+        }
+        
+        @Override
+        protected Room doInBackground() throws Exception {
+            RoomManager roomManager = new RoomManagerImpl(dataSource);
+            return roomManager.getRoomByNumber(number);
+        }
+        
+        @Override
+        protected void done(){
+            tableRoomRowSwingWorker = null;
+            RoomsTableModel roomsTableModel = (RoomsTableModel)jTableRooms1.getModel();
+            Room room = null;
+            try {
+                room = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'TableRoomRowSwingWorker': ", ex);
+                JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_upravit_ziskani_pokoje_neuspech"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            int row = (room != null ? roomsTableModel.getIndexOf(room) : -1);
+            if(row >= 0){
+                jTableRooms1.setRowSelectionInterval(row, row);
+            }
+        }
+        
+    }
+    
+    private class TableGuestRowSwingWorker extends SwingWorker<Guest, Object>{
+
+        private final String name;
+        private final String cardID;
+        
+        public TableGuestRowSwingWorker(String name, String cardID){
+            this.name = name;
+            this.cardID = cardID;
+        }
+        
+        @Override
+        protected Guest doInBackground() throws Exception {
+            GuestManager guestManager = new GuestManagerImpl(dataSource);
+            List<Guest> guests = guestManager.findGuestByName(name);
+            for(Guest guest : guests){
+                if(guest.getIdCardNum().equals(cardID)){
+                    return guest;
+                }
+            }
+            return null;
+        }
+        
+        @Override
+        protected void done(){
+            tableGuestRowSwingWorker = null;
+            GuestsTableModel guestsTableModel = (GuestsTableModel)jTableGuests1.getModel();
+            Guest guest = null;
+            try {
+                guest = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'TableRoomRowSwingWorker': ", ex);
+                JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_upravit_ziskani_hosta_neuspech"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            int row = (guest != null ? guestsTableModel.getIndexOf(guest) : -1);
+            if(row >= 0){
+                jTableGuests1.setRowSelectionInterval(row, row);
+            }
+        }
+        
+    }
+    
+    private class UpdateReservationSwingWorker extends SwingWorker<Reservation, Object>{
+
+        private final Guest guest;
+        private final Room room;
+        private final String[] inVals;
+        
+        public UpdateReservationSwingWorker(Guest guest, Room room, String[] inVals){
+            this.guest = getGuestDB(guest);
+            this.room = getRoomDB(room);
+            this.inVals = inVals;
+        }
+        
+        @Override
+        protected Reservation doInBackground() throws Exception {
+            ReservationManager reservationManager = new ReservationManagerImpl(dataSource, new TimeManagerImpl());
+            Reservation newRes = setUpReservation();
+            Reservation origRes = reservationManager.getReservationById(resKey);
+            
+            if(anyChange(origRes, newRes)){
+                ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+                m_rowReservation = reservationsTableModel.getIndexOf(origRes);
+                newRes.setId(resKey);
+                reservationManager.updateReservation(newRes);
+                return newRes;
+            }
+            return null;
+        }
+        
+        @Override
+        protected void done(){
+            reservEditSaveButton.setEnabled(true);
+            reservNewButton.setEnabled(true);
+            reservDeleteButton.setEnabled(true);
+            reservSearchButton.setEnabled(true);
+            updateReservationSwingWorker = null;
+            jTableRooms1.setRowSelectionAllowed(true);
+            jTableGuests1.setRowSelectionAllowed(true);
+            jTableReservations.setRowSelectionAllowed(true);
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+            Reservation reservation = null;
+            List<String> msgs = new ArrayList<>();
+            try {
+                reservation = get();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(TestJFrame.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'UpdateReservationSwingWorker': ", ex);
+                msgs = getMessagesForDialogWindow(ex);
+                JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            if(reservation != null){
+                reservationsTableModel.updateReservation(reservation, m_rowReservation);
+            }
+            m_rowReservation = -1;
+            
+            if(msgs.isEmpty() || !msgs.get(1).equals(resourceBundle.getString("Neplatny_argument"))){
+                CardLayout card = (CardLayout)reservationMainPanel.getLayout();
+                card.show(reservationMainPanel, "reservationEmptyPanel");
+                CardLayout tableCard = (CardLayout)reservationTables.getLayout();
+                tableCard.show(reservationTables, "reservationMainTable");
+            }
+        }
+        
+        private Guest getGuestDB(Guest tableGuest){
+            GuestManager guestManager = new GuestManagerImpl(dataSource);
+            List<Guest> guests = guestManager.findGuestByName(tableGuest.getName());
+            for(Guest lguest : guests){
+                if(lguest.getIdCardNum().equals(tableGuest.getIdCardNum())){
+                    return lguest;
+                }
+            }
+            return null;
+        }
+        
+        private Room getRoomDB(Room tableRoom){
+            RoomManager roomManager = new RoomManagerImpl(dataSource);
+            return roomManager.getRoomByNumber(tableRoom.getNumber());
+        }
+        
+        private Reservation setUpReservation(){
+            Reservation reservation = new Reservation();
+            
+            reservation.setGuest(guest);
+            reservation.setRoom(room);
+            reservation.setStartTime(dateFromString(inVals[0]));
+            reservation.setExpectedEndTime(dateFromString(inVals[1]));
+            reservation.setRealEndTime(inVals.length == 3 ? null : dateFromString(inVals[2]));
+            reservation.setServicesSpendings(inVals.length == 3 ? new BigDecimal(inVals[2]) : new BigDecimal(inVals[3]));
+            
+            return reservation;
+        }
+        
+        private boolean anyChange(Reservation origRes, Reservation newRes){
+            return !(origRes.getGuest().equals(newRes.getGuest()) &&
+                    origRes.getRoom().equals(newRes.getRoom()) &&
+                    origRes.getStartTime().equals(newRes.getStartTime()) &&
+                    origRes.getExpectedEndTime().equals(newRes.getExpectedEndTime()) &&
+                    origRes.getServicesSpendings().equals(newRes.getServicesSpendings()) &&
+                    (origRes.getRealEndTime() == null ? (newRes.getRealEndTime() == null) : (origRes.getRealEndTime().equals(newRes.getRealEndTime()))));
+        }
+        
+        private List<String> getMessagesForDialogWindow(Throwable ex){
+            List<String> msgs = new ArrayList<>();
+            
+            if(ex.toString().contains("IllegalArgumentException")){
+                msgs.add(getInvalidReservationArgMsg(ex.getMessage(),"upravit"));
+                msgs.add(resourceBundle.getString("Neplatny_argument"));
+                return msgs;
+            }
+            
+            msgs.add(resourceBundle.getString("Rezervace_upravit_interni_chyba"));
+            msgs.add(resourceBundle.getString("Interni_chyba"));
+            return msgs;
+        }
+    }
+    
+    private class UnoccupiedRoomsSwingWorker extends SwingWorker<List<Room>, Object>{
+
+        @Override
+        protected List<Room> doInBackground() throws Exception {
+            ReservationManager reservationManager = new ReservationManagerImpl(dataSource, new TimeManagerImpl());
+            return reservationManager.findAllUnoccupiedRooms(dateFrom, dateTo);
+        }
+        
+        @Override
+        protected void done(){
+            reservNewStepOneNextButton.setEnabled(true);
+            unoccupiedRoomsSwingWorker = null;
+            RoomsTableModel roomsTableModel = (RoomsTableModel)jTableRooms1.getModel();
+            List<Room> rooms = null;
+            
+            roomsTableModel.removeAllRoomsOnlyVisually();
+            
+            try {
+                rooms = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'UnoccupiedRoomsSwingWorker': ", ex);
+                JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_pridat_hledani_volne_pokoje_chyba"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);                
+            }
+            if(rooms.isEmpty()){
+                System.out.println("Empty rooms - probably bad query in DB / dateFrom = " + dateFrom + " / dateTo = " + dateTo);
+            }
+            for(Room room : rooms){
+                roomsTableModel.addRoom(room);
+            }
+            
+            jTableGuests1.setRowSelectionAllowed(true);
+            jTableRooms1.setRowSelectionAllowed(true);
+            
+            CardLayout card = (CardLayout)reservationMainPanel.getLayout();
+            card.show(reservationMainPanel, "reservationNewPanel");
+        }        
+    }
+    
+    private class ShowPastReservationsSwingWorker extends SwingWorker<List<Reservation>, Object>{
+
+        @Override
+        protected List<Reservation> doInBackground() throws Exception {
+            ReservationManager reservationManager = new ReservationManagerImpl(dataSource, new TimeManagerImpl());
+            List<Reservation> allReservations = reservationManager.findAllReservations();
+            List<Reservation> pastReservations = new ArrayList<>();
+            
+            for(Reservation reservation : allReservations){
+                if(reservation.getRealEndTime() != null){
+                    pastReservations.add(reservation);
+                }
+            }
+            
+            return pastReservations;
+        }
+        
+        @Override
+        protected void done(){
+            reservPastButton.setEnabled(true);
+            reservPastButtonInActual.setEnabled(true);
+            showPastReservationsSwingWorker = null;
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+            List<Reservation> reservations = null;
+            
+            reservationsTableModel.removeAllReservationsOnlyVisually();
+            
+            try {
+                reservations = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'ShowPastReservationsSwingWorker': ", ex);
+                JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_ukaz_ukoncene_chyba"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            if(reservations != null && !reservations.isEmpty()){
+                for(Reservation reservation : reservations){
+                    reservationsTableModel.addReservation(reservation);
+                }
+            }
+        }        
+    }
+    
+    private class ShowFutureReservationsSwingWorker extends SwingWorker<List<Reservation>, Object>{
+
+        @Override
+        protected List<Reservation> doInBackground() throws Exception {
+            ReservationManager reservationManager = new ReservationManagerImpl(dataSource, new TimeManagerImpl());
+            List<Reservation> allReservations = reservationManager.findAllReservations();
+            List<Reservation> futureReservations = new ArrayList<>();
+            TimeManager timeManager = new TimeManagerImpl();
+            Date currentDate = timeManager.getCurrentDate();
+            
+            for(Reservation reservation : allReservations){
+                if(reservation.getStartTime().getTime() > currentDate.getTime() &&
+                        reservation.getRealEndTime() == null){
+                    futureReservations.add(reservation);
+                }
+            }
+            
+            return futureReservations;
+        }
+        
+        @Override
+        protected void done(){
+            reservFutureButton.setEnabled(true);
+            reservFutureButtonInActual.setEnabled(true);
+            showFutureReservationsSwingWorker = null;
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+            List<Reservation> reservations = null;
+            
+            reservationsTableModel.removeAllReservationsOnlyVisually();
+            
+            try {
+                reservations = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'ShowFutureReservationsSwingWorker': ", ex);
+                JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_ukaz_budouci_chyba"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            if(reservations != null && !reservations.isEmpty()){
+                for(Reservation reservation : reservations){
+                    reservationsTableModel.addReservation(reservation);
+                }
+            }
+        }        
+    }
+    
+    private class ShowActualReservationsSwingWorker extends SwingWorker<List<Reservation>, Object>{
+
+        @Override
+        protected List<Reservation> doInBackground() throws Exception {
+            ReservationManager reservationManager = new ReservationManagerImpl(dataSource, new TimeManagerImpl());
+            List<Reservation> allReservations = reservationManager.findAllReservations();
+            List<Reservation> actualReservations = new ArrayList<>();
+            TimeManager timeManager = new TimeManagerImpl();
+            Date currentDate = timeManager.getCurrentDate();
+            
+            for(Reservation reservation : allReservations){
+                if(reservation.getStartTime().getTime() <= currentDate.getTime() &&
+                        reservation.getRealEndTime() == null){
+                    actualReservations.add(reservation);
+                }
+            }
+            
+            return actualReservations;
+        }
+        
+        @Override
+        protected void done(){
+            reservActualButton.setEnabled(true);
+            showActualReservationsSwingWorker = null;
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+            List<Reservation> reservations = null;
+            
+            reservationsTableModel.removeAllReservationsOnlyVisually();
+            
+            try {
+                reservations = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'ShowFutureReservationsSwingWorker': ", ex);
+                JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_ukaz_aktualni_chyba"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            if(reservations != null && !reservations.isEmpty()){
+                for(Reservation reservation : reservations){
+                    reservationsTableModel.addReservation(reservation);
+                }
+            }
+            
+            showTopFiveSpendersSwingWorker = new ShowTopFiveSpendersSwingWorker();
+            showTopFiveSpendersSwingWorker.execute();
+        }
+    }
+    
+    private class ShowTopFiveSpendersSwingWorker extends SwingWorker<List<String[]>, Object>{
+
+        @Override
+        protected List<String[]> doInBackground() throws Exception {
+            ReservationManager reservationManager = new ReservationManagerImpl(dataSource, new TimeManagerImpl());            
+            ReservationsTableModel reservationsTableModel = (ReservationsTableModel)jTableReservations.getModel();
+            Locale locale = Locale.getDefault();
+            NumberFormat numFormat = NumberFormat.getCurrencyInstance(locale);
+            List<Reservation> topSpenders = reservationManager.findTopFiveSpenders();
+            List<String[]> retTopSpenders = new ArrayList<>();
+            
+            for(Reservation topSpender : topSpenders){
+                String[] tableTops = {String.valueOf(reservationsTableModel.getIndexOf(topSpender)+1),
+                                      topSpender.getRoom().getNumber(),
+                                      topSpender.getGuest().getName(),
+                                      numFormat.format(topSpender.getServicesSpendings())};
+                retTopSpenders.add(tableTops);
+            }
+            
+            return retTopSpenders;
+        }
+        
+        @Override
+        protected void done(){
+            showTopFiveSpendersSwingWorker = null;
+            TopFiveSpendersTableModel topFiveSpendersTableModel = (TopFiveSpendersTableModel)jTableTopFiveSpenders.getModel();
+            List<String[]> topFiveSpenders = null;
+            
+            topFiveSpendersTableModel.removeAllTopFiveSpendersOnlyVisually();
+            
+            try {
+                topFiveSpenders = get();
+            } catch (InterruptedException ex) {
+                throw new RuntimeException("Operation interrupted (this should never happen)",ex);
+            } catch (ExecutionException ex) {
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'ShowFutureReservationsSwingWorker': ", ex);
+                JOptionPane.showMessageDialog(null, resourceBundle.getString("Top5Spenders_ukaz_data_chyba"),
+                                              resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
+            }
+            
+            if(topFiveSpenders != null && !topFiveSpenders.isEmpty()){
+                for(String[] topFiveSpender : topFiveSpenders){
+                    topFiveSpendersTableModel.addTopFiveSpender(topFiveSpender);
+                }
+            }
         }
     }
 }

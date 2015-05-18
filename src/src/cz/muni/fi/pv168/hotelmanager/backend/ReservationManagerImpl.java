@@ -290,17 +290,17 @@ public class ReservationManagerImpl implements ReservationManager{
         
         try(Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(
-                    "SELECT id,room_id,guest_id,start_time,real_end_time,expected_end_time,serv_spendings FROM Reservation WHERE "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time > ? AND start_time < ? AND expected_end_time > ?) AND "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time < ? AND expected_end_time > ?) AND "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE expected_end_time > ? AND expected_end_time < ?) AND "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time > ? AND expected_end_time < ?) AND "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time = ? AND expected_end_time = ?) AND "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time > ? AND start_time = ?) AND "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE expected_end_time > ? AND expected_end_time = ?) AND "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE start_time = ? AND start_time < ? AND expected_end_time > ?) AND "
-                            + "id NOT IN (SELECT id FROM Reservation WHERE expected_end_time = ? AND expected_end_time < ?) AND "
-                            + "real_end_time IS NOT NULL")){
+                    "SELECT id,capacity,price,floor,number,room_type FROM Room WHERE "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE start_time > ? AND start_time < ? AND expected_end_time > ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE start_time < ? AND expected_end_time > ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE expected_end_time > ? AND expected_end_time < ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE start_time > ? AND expected_end_time < ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE start_time = ? AND expected_end_time = ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE start_time > ? AND start_time = ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE expected_end_time > ? AND expected_end_time = ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE start_time = ? AND start_time < ? AND expected_end_time > ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE expected_end_time = ? AND expected_end_time < ?) AND "
+                            + "id NOT IN (SELECT room_id FROM Reservation WHERE real_end_time IS NULL)")){
             ps.setTimestamp(1, dateToTimestamp(from));
             ps.setTimestamp(2, dateToTimestamp(to));
             ps.setTimestamp(3, dateToTimestamp(to));
@@ -326,7 +326,7 @@ public class ReservationManagerImpl implements ReservationManager{
             
             List<Room> unocRooms = new ArrayList<>();            
             while(rs.next()){
-                unocRooms.add(resultSetToReservation(rs).getRoom());
+                unocRooms.add(resultSetToRoom(rs));
             }
             
             return unocRooms;
@@ -339,7 +339,7 @@ public class ReservationManagerImpl implements ReservationManager{
     }
 
     @Override
-    public Map<BigDecimal, Guest> findTopFiveSpenders() {
+    public List<Reservation> findTopFiveSpenders() {
         checkDataSource();
         
         try(Connection connection = dataSource.getConnection();
@@ -349,12 +349,18 @@ public class ReservationManagerImpl implements ReservationManager{
             ps.setTimestamp(1, dateToTimestamp(timeManager.getCurrentDate()));
             ResultSet rs = ps.executeQuery();
             
-            List<Reservation> retRes = new ArrayList<>();
+            List<Reservation> dbRes = new ArrayList<>();
             while(rs.next()){
-                retRes.add(resultSetToReservation(rs));
+                dbRes.add(resultSetToReservation(rs));
             }
             
-            return getMapOfTopSpenders(retRes);
+            //return getMapOfTopSpenders(retRes);
+            
+            Collections.sort(dbRes, serviceSpendingsComparator);            
+            int n = (dbRes.isEmpty() ? 0 : (dbRes.size() <= 5 ? dbRes.size() : 5));
+            List<Reservation> topRes = dbRes.subList(0, n);
+            
+            return topRes;
             
         } catch (SQLException ex) {
             String errMsg = "Error occured when retrieving more reservations from DB in order to find all unoccupied rooms.";
@@ -440,6 +446,17 @@ public class ReservationManagerImpl implements ReservationManager{
         res.setServicesSpendings(rs.getBigDecimal("serv_spendings"));
         
         return res;
+    }
+    
+    private Room resultSetToRoom(ResultSet rs) throws SQLException {
+        Room room = new Room();
+        room.setId(rs.getLong("id"));
+        room.setCapacity(rs.getInt("capacity"));
+        room.setPrice(rs.getBigDecimal("price"));
+        room.setFloor(rs.getInt("floor"));
+        room.setNumber(rs.getString("number"));
+        room.setType(RoomType.valueOf(rs.getString("room_type").toUpperCase()) ); // problem s case?
+        return room;
     }
     
     private void checkDataSource() {
@@ -579,10 +596,7 @@ public class ReservationManagerImpl implements ReservationManager{
             endTime = (timeManager.getCurrentDate().getTime() > reservation.getExpectedEndTime().getTime() ? 
                             timeManager.getCurrentDate().getTime() : reservation.getExpectedEndTime().getTime());
         }
-        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-        Date date = new Date(endTime);
-        System.out.println("endTime format = " + df.format(date) + " / long = " + endTime);
-        long numberOfDays = (endTime - startTime)/DAY_IN_MILLIS + 1;
+        long numberOfDays = (endTime - startTime)/DAY_IN_MILLIS;
         
         return new BigDecimal(numberOfDays * reservation.getRoom().getPrice().longValue());
     }

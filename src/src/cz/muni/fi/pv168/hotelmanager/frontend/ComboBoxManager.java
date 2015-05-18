@@ -50,4 +50,14 @@ public class ComboBoxManager {
         
         return new DefaultComboBoxModel(conds);
     }
+    
+    public static DefaultComboBoxModel setReservationSearchConditionComboBox(){
+        Locale locale = Locale.getDefault();
+        ResourceBundle rb = ResourceBundle.getBundle("texty", locale);
+        String[] conds = {rb.getString("Rezervace_hledat_combo_pokoj"),
+                          rb.getString("Rezervace_hledat_combo_host"),
+                          rb.getString("Rezervace_hledat_combo_oboji")};
+        
+        return new DefaultComboBoxModel(conds);
+    } 
 }

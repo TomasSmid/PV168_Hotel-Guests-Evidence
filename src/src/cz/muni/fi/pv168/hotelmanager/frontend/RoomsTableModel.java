@@ -83,4 +83,8 @@ public class RoomsTableModel extends AbstractTableModel{
         rooms.set(row, room);
         fireTableRowsUpdated(row, row);
     }
+    
+    public int getIndexOf(Room room){
+        return rooms.indexOf(room);
+    }
 }

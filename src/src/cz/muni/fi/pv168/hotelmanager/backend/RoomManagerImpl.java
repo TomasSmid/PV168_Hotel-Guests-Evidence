@@ -276,7 +276,7 @@ public class RoomManagerImpl implements RoomManager {
                 conn.commit();
                 
             }catch(SQLException ex){
-                String errMsg = "Error occured when deleting room " + room + " from DB.";
+                String errMsg = "Error occured when deleting room " + room + " from DB -> " + ex.getMessage();
                 logger.log(Level.SEVERE, errMsg, ex);
                 throw new ServiceFailureException(errMsg, ex);
             }finally{

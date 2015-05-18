@@ -169,7 +169,7 @@ public class GuestManagerImpl implements GuestManager{
                 connection.commit();
             
             }catch(SQLException ex){
-                String errMsg = "Error occured when deleting guest " + guest.toString() + " from DB.";
+                String errMsg = "Error occured when deleting guest " + guest.toString() + " from DB -> " + ex.getMessage();
                 logger.log(Level.SEVERE, errMsg, ex);
                 throw new ServiceFailureException(errMsg, ex);
             }finally{

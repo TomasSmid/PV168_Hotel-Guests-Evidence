@@ -1750,7 +1750,7 @@
                                   <Component id="reservNewStepTwoSaveButton" min="-2" pref="74" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="reservNewStepTwoCancelButton" min="-2" pref="74" max="-2" attributes="0"/>
-                                  <EmptySpace pref="163" max="32767" attributes="0"/>
+                                  <EmptySpace pref="207" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1821,7 +1821,7 @@
                                           <Component id="reservSearchSearchByCombo" min="-2" pref="177" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="380" max="32767" attributes="0"/>
+                                  <EmptySpace pref="366" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1843,7 +1843,9 @@
                       <SubComponents>
                         <Component class="java.awt.Label" name="reservSearchSearchByLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Search by: "/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ReservationsButtonsNamesManager.getSearchSearchByName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JButton" name="reservSearchSearchButton">
@@ -1858,12 +1860,8 @@
                         </Component>
                         <Component class="javax.swing.JComboBox" name="reservSearchSearchByCombo">
                           <Properties>
-                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                              <StringArray count="3">
-                                <StringItem index="0" value="room"/>
-                                <StringItem index="1" value="guest"/>
-                                <StringItem index="2" value="both"/>
-                              </StringArray>
+                            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ComboBoxManager.setReservationSearchConditionComboBox()" type="code"/>
                             </Property>
                           </Properties>
                           <Events>
@@ -1924,7 +1922,7 @@
                                           <Component id="reservEditServsSpendsTextField" min="-2" pref="185" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="205" max="32767" attributes="0"/>
+                                  <EmptySpace pref="260" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1990,14 +1988,18 @@
                         </Component>
                         <Component class="java.awt.Label" name="reservEditServsSpendsLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Services spendings: "/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ReservationsButtonsNamesManager.getServicesSpendingsName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="reservEditServsSpendsTextField">
                         </Component>
                         <Component class="java.awt.Label" name="reservEditExpEndTimeLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Expected end time: "/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ReservationsButtonsNamesManager.getExpectedEndName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JButton" name="reservEditSaveButton">
@@ -2012,18 +2014,22 @@
                         </Component>
                         <Component class="java.awt.Label" name="reservEditRealEndTimeLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="End time: "/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ReservationsButtonsNamesManager.getRealEndName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                         <Component class="java.awt.Label" name="reservEditStartTimeLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Start time: "/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ReservationsButtonsNamesManager.getStartTimeName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JComboBox" name="reservEditStartTimeYearCombo">
                           <Properties>
                             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                              <Connection code="ComboBoxManager.setYearComboBox(2010, 2100)" type="code"/>
+                              <Connection code="ComboBoxManager.setYearComboBox(2015, 2100)" type="code"/>
                             </Property>
                           </Properties>
                         </Component>
@@ -2090,7 +2096,7 @@
                         <Component class="javax.swing.JComboBox" name="reservEditExpEndYearCombo">
                           <Properties>
                             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                              <Connection code="ComboBoxManager.setYearComboBox(2010, 2100)" type="code"/>
+                              <Connection code="ComboBoxManager.setYearComboBox(2015, 2100)" type="code"/>
                             </Property>
                           </Properties>
                         </Component>
@@ -2157,7 +2163,7 @@
                         <Component class="javax.swing.JComboBox" name="reservEditRealEndYearCombo">
                           <Properties>
                             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                              <Connection code="ComboBoxManager.setYearComboBox(2010, 2100)" type="code"/>
+                              <Connection code="ComboBoxManager.setYearComboBox(2015, 2100)" type="code"/>
                             </Property>
                           </Properties>
                         </Component>
@@ -2223,7 +2229,9 @@
                         </Component>
                         <Component class="javax.swing.JCheckBox" name="reservEditRealEndUsageCheckBox">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Text placeholder"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="ReservationsButtonsNamesManager.getRealEndCheckBoxName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                       </SubComponents>
@@ -2270,7 +2278,7 @@
                                           </Group>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="313" max="32767" attributes="0"/>
+                                  <EmptySpace pref="357" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -2491,11 +2499,11 @@
                     </Container>
                     <Container class="javax.swing.JPanel" name="reservationTopFiveSpendersPanel">
                       <AccessibilityProperties>
-                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="topFiveSpendersPanel"/>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="reservationTopFiveSpendersPanel"/>
                       </AccessibilityProperties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
-                          <CardConstraints cardName="topFiveSpendersPanel"/>
+                          <CardConstraints cardName="reservationTopFiveSpendersPanel"/>
                         </Constraint>
                       </Constraints>
 
@@ -2504,9 +2512,9 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jScrollPane4" pref="641" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
-                                  <Component id="reservPastButton1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="reservPastButtonInActual" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="reservFutureButton1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="reservFutureButtonInActual" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
@@ -2524,8 +2532,8 @@
                                   <Component id="jScrollPane4" min="-2" pref="107" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="reservPastButton1" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="reservFutureButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="reservPastButtonInActual" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="reservFutureButtonInActual" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace pref="70" max="32767" attributes="0"/>
                               </Group>
@@ -2533,24 +2541,24 @@
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JButton" name="reservFutureButton1">
+                        <Component class="javax.swing.JButton" name="reservFutureButtonInActual">
                           <Properties>
                             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                               <Connection code="ReservationsButtonsNamesManager.getButtonFutureName()" type="code"/>
                             </Property>
                           </Properties>
                           <Events>
-                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reservFutureButton1ActionPerformed"/>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reservFutureButtonInActualActionPerformed"/>
                           </Events>
                         </Component>
-                        <Component class="javax.swing.JButton" name="reservPastButton1">
+                        <Component class="javax.swing.JButton" name="reservPastButtonInActual">
                           <Properties>
                             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                               <Connection code="ReservationsButtonsNamesManager.getButtonPastName()" type="code"/>
                             </Property>
                           </Properties>
                           <Events>
-                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reservPastButton1ActionPerformed"/>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reservPastButtonInActualActionPerformed"/>
                           </Events>
                         </Component>
                         <Container class="javax.swing.JScrollPane" name="jScrollPane4">
@@ -2559,13 +2567,8 @@
                           <SubComponents>
                             <Component class="javax.swing.JTable" name="jTableTopFiveSpenders">
                               <Properties>
-                                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                                  <Table columnCount="4" rowCount="5">
-                                    <Column editable="false" title="Reservation" type="java.lang.Object"/>
-                                    <Column editable="true" title="Room number" type="java.lang.Integer"/>
-                                    <Column editable="false" title="Guest name" type="java.lang.Object"/>
-                                    <Column editable="false" title="Services spendings" type="java.lang.Object"/>
-                                  </Table>
+                                <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection code="new TopFiveSpendersTableModel()" type="code"/>
                                 </Property>
                                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                                   <TableColumnModel selectionModel="0">
@@ -2603,7 +2606,9 @@
                             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                               <Font name="Georgia" size="14" style="0"/>
                             </Property>
-                            <Property name="text" type="java.lang.String" value="Top five spenders"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                              <Connection code="TopFiveSpendersButtonsNamesManager.getTitleTopFiveSpendersName()" type="code"/>
+                            </Property>
                           </Properties>
                         </Component>
                       </SubComponents>

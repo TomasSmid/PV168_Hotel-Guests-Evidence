@@ -81,4 +81,8 @@ public class GuestsTableModel extends AbstractTableModel {
         guests.set(row, guest);
         fireTableRowsUpdated(row, row);
     }
+    
+    public int getIndexOf(Guest guest){
+        return guests.indexOf(guest);
+    }
 }

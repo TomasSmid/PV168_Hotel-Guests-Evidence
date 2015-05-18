@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -691,7 +692,7 @@ public class ReservationManagerImplTest {
         when(tmMock.getCurrentDate()).thenReturn(dateFromString("09/01/2015"));
         
         Reservation res = new ResBuilder().build();
-        BigDecimal expPrice = new BigDecimal("15000.00");
+        BigDecimal expPrice = new BigDecimal("13500.00");
         
         storeGuest(res.getGuest());
         storeRoom(res.getRoom());        
@@ -699,7 +700,7 @@ public class ReservationManagerImplTest {
         
         BigDecimal actPrice = manager.getReservationPrice(res);
         
-        assertEquals("Reservation price should be 15000",expPrice,actPrice);
+        assertEquals("Reservation price should be 13500",expPrice,actPrice);
     }
     
     @Test
@@ -981,7 +982,7 @@ public class ReservationManagerImplTest {
         storeRoom(room8);
         manager.createReservation(res8);
         
-        Map<BigDecimal,Guest> expTopSpenders = new HashMap<>();
+        /*Map<BigDecimal,Guest> expTopSpenders = new HashMap<>();
         expTopSpenders.put(res3.getServicesSpendings(), res3.getGuest());
         expTopSpenders.put(res7.getServicesSpendings(), res7.getGuest());
         expTopSpenders.put(res6.getServicesSpendings(), res6.getGuest());
@@ -990,7 +991,18 @@ public class ReservationManagerImplTest {
         Map<BigDecimal,Guest> actTopSpenders = manager.findTopFiveSpenders();
         
         assertNotNull("There should be top 5 spenders",actTopSpenders);
-        assertSpendersEquals(expTopSpenders,actTopSpenders);        
+        assertSpendersEquals(expTopSpenders,actTopSpenders);  */
+        
+        List<Reservation> expTopSpenders = new ArrayList<>();
+        expTopSpenders.add(res3);
+        expTopSpenders.add(res7);
+        expTopSpenders.add(res6);
+        expTopSpenders.add(res8);
+        expTopSpenders.add(res4);
+        List<Reservation> actTopSpenders = manager.findTopFiveSpenders();
+        
+        assertFalse("There should be top 5 spenders", actTopSpenders.isEmpty());
+        assertSpendersEquals(expTopSpenders, actTopSpenders);
     }
     
     @Test
@@ -1007,12 +1019,14 @@ public class ReservationManagerImplTest {
         manager.createReservation(res1);
         manager.createReservation(res2);
         
-        assertNull("There should not be any top spender",manager.findTopFiveSpenders());
+        //assertNull("There should not be any top spender",manager.findTopFiveSpenders());
+        assertTrue("There should not be any top spender", manager.findTopFiveSpenders().isEmpty());
     }
     
     @Test
     public void findTopFiveSpendersWithEmptyDB(){
-        assertNull("There should not be any top spender",manager.findTopFiveSpenders());
+        //assertNull("There should not be any top spender",manager.findTopFiveSpenders());
+        assertTrue("There should not be any top spender",manager.findTopFiveSpenders().isEmpty());
     }
     
     private static Guest newGuest(String name, String phone, String idCardNum, Date born){
@@ -1077,13 +1091,20 @@ public class ReservationManagerImplTest {
         assertEquals(expRoom.getNumber(), actRoom.getNumber());
     }
     
-    private void assertSpendersEquals(Map<BigDecimal,Guest> expTopSpenders, Map<BigDecimal,Guest> actTopSpenders){
+    /*private void assertSpendersEquals(Map<BigDecimal,Guest> expTopSpenders, Map<BigDecimal,Guest> actTopSpenders){
         Set<BigDecimal> expKeys = expTopSpenders.keySet();
         Set<BigDecimal> actKeys = actTopSpenders.keySet();
         assertEquals("Sets of keys should be same",expKeys,actKeys);
         
         for(BigDecimal bd : expKeys){
             assertDeepGuestEquals(expTopSpenders.get(bd),actTopSpenders.get(bd));
+        }
+    }*/
+    private void assertSpendersEquals(List<Reservation> expTopSpenders, List<Reservation> actTopSpenders){
+        assertEquals("Sizes of lists of topSpeders should be same.",expTopSpenders.size(),actTopSpenders.size());
+        for(int i = 0; i < expTopSpenders.size(); i++){
+            assertEquals("Prices should be same", expTopSpenders.get(i).getServicesSpendings(), actTopSpenders.get(i).getServicesSpendings());
+            assertEquals("Guests should be same", expTopSpenders.get(i).getGuest(), actTopSpenders.get(i).getGuest());
         }
     }
     
