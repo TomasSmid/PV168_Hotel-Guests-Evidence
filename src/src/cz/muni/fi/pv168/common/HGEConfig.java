@@ -23,7 +23,7 @@ import org.apache.commons.dbcp.BasicDataSource;
  */
 public class HGEConfig {
     
-    private static final Logger logger = Logger.getLogger(HGEConfig.class.getName());
+    private static final Logger logger = Logger.getLogger("myLogger");
     
     public void setupDataSource(DataSource ds) throws SQLException{
         DBUtils.tryCreateTables(ds,GuestManager.class.getResourceAsStream("createTables.sql"));

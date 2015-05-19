@@ -21,8 +21,7 @@ import javax.sql.DataSource;
  */
 public class DBUtils {
 
-    private static final Logger logger = Logger.getLogger(
-            DBUtils.class.getName());
+    private static final Logger logger = Logger.getLogger("myLogger");
 
     /**
      * Rolls back transaction and logs possible error.

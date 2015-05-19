@@ -26,7 +26,7 @@ import javax.sql.DataSource;
  */
 public class RoomManagerImpl implements RoomManager {
 
-    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
+    private static final Logger logger = Logger.getLogger("myLogger");
     
     private DataSource dataSource;
     

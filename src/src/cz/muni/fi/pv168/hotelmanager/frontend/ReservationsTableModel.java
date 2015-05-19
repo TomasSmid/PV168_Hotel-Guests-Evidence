@@ -33,7 +33,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class ReservationsTableModel extends AbstractTableModel{
     
-    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
+    private static final Logger logger = Logger.getLogger("myLogger");
     
     private List<Reservation> reservations = new ArrayList<>();
     private List<BigDecimal> resPrices = new ArrayList<>();

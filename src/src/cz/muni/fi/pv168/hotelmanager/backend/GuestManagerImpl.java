@@ -28,7 +28,7 @@ import javax.sql.DataSource;
  */
 public class GuestManagerImpl implements GuestManager{
 
-    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
+    private static final Logger logger = Logger.getLogger("myLogger");
     
     private final DataSource dataSource;
     

@@ -37,6 +37,8 @@ import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.FileHandler;
+import java.util.logging.SimpleFormatter;
 import javax.sql.DataSource;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -44,6 +46,7 @@ import javax.swing.SwingWorker;
 import javax.swing.table.TableModel;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import javax.swing.ListSelectionModel;
 
 /**
@@ -52,7 +55,8 @@ import javax.swing.ListSelectionModel;
  */
 public class TestJFrame extends javax.swing.JFrame {
 
-    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
+    private static final Logger logger = Logger.getLogger("myLogger");
+    private static FileHandler fh;
     
     private DataSource dataSource;
     private ResourceBundle resourceBundle;
@@ -1671,10 +1675,9 @@ public class TestJFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void guestDeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guestDeleteButtonActionPerformed
-        // TODO deleting guest
         if(deleteGuestSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'guestMenuDeleteActionPerformed' of class 'TestJFrame' - deleting guest from DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'guestMenuDeleteActionPerformed' of class 'TestJFrame' - deleting guest from DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'guestDeleteButtonActionPerformed' of class 'TestJFrame' - deleting guest from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'guestDeleteButtonActionPerformed' of class 'TestJFrame' - deleting guest from DB operation is already in progress, can't run multiply");
         }
         guestDeleteButton.setEnabled(false);
         guestNewButton.setEnabled(false);
@@ -1709,7 +1712,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_guestSearchButtonActionPerformed
 
     private void reservDeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservDeleteButtonActionPerformed
-        // TODO deleting reservation
+
         if(deleteReservationSwingWorker != null){
             logger.log(Level.SEVERE, "Error in method 'reservDeleteButtonActionPerformed' of class 'TestJFrame' - deleting reservation from DB operation is already in progress, can't run multiply");
             throw new IllegalStateException("Error in method 'reservDeleteButtonActionPerformed' of class 'TestJFrame' - deleting reservation from DB operation is already in progress, can't run multiply");
@@ -1753,8 +1756,8 @@ public class TestJFrame extends javax.swing.JFrame {
     private void guestShowAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guestShowAllButtonActionPerformed
         
         if(showAllRoomsSW != null){
-            logger.log(Level.SEVERE, "Error in method 'guestMenuShowAllActionPerformed' of class 'TestJFrame' - retrieving all guests from DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'guestMenuShowAllActionPerformed' of class 'TestJFrame' - retrieving all guests from DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'guestShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all guests from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'guestShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all guests from DB operation is already in progress, can't run multiply");
         }
         guestShowAllButton.setEnabled(false);
         showAllGuestsSW = new GuestsToJTableSwingWorker(jTableGuests.getModel());
@@ -1768,7 +1771,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_guestShowAllButtonActionPerformed
 
     private void reservShowAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservShowAllButtonActionPerformed
-        // TODO show all
+
         if(showAllReservationsSW != null){
             logger.log(Level.SEVERE, "Error in method 'reservShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all reservationss from DB operation is already in progress, can't run multiply");
             throw new IllegalStateException("Error in method 'reservShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all reservations from DB operation is already in progress, can't run multiply");
@@ -1795,7 +1798,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservShowAllButtonActionPerformed
 
     private void roomNewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomNewButtonActionPerformed
-        //clear the last used values for add function
+
         if(!roomNewNumberTextField.getText().isEmpty()){ roomNewNumberTextField.setText(""); }
         if(!roomNewCapacityTextField.getText().isEmpty()){ roomNewCapacityTextField.setText(""); }
         if(!roomNewFloorTextField.getText().isEmpty()){ roomNewFloorTextField.setText(""); }
@@ -1821,8 +1824,8 @@ public class TestJFrame extends javax.swing.JFrame {
     private void roomEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomEditButtonActionPerformed
         
         if(setUpKeySwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'RoomEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating room in DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'RoomEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating room in DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'roomEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating room in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating room in DB operation is already in progress, can't run multiply");
         }
         
         roomEditButton.setEnabled(false);
@@ -1886,8 +1889,8 @@ public class TestJFrame extends javax.swing.JFrame {
     private void roomShowAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomShowAllButtonActionPerformed
         
         if(showAllRoomsSW != null){
-            logger.log(Level.SEVERE, "Error in method 'RoomShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'RoomShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'roomShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomShowAllButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation is already in progress, can't run multiply");
         }
         roomShowAllButton.setEnabled(false);        
         showAllRoomsSW = new RoomsToJTableSwingWorker(jTableRooms.getModel());
@@ -1902,8 +1905,8 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void roomDeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomDeleteButtonActionPerformed
         if(deleteRoomSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'RoomDeleteButtonActionPerformed' of class 'TestJFrame' - deleting room from DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'RoomDeleteButtonActionPerformed' of class 'TestJFrame' - deleting room from DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'roomDeleteButtonActionPerformed' of class 'TestJFrame' - deleting room from DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomDeleteButtonActionPerformed' of class 'TestJFrame' - deleting room from DB operation is already in progress, can't run multiply");
         }
         roomDeleteButton.setEnabled(false);
         roomNewButton.setEnabled(false);
@@ -1930,10 +1933,9 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_roomDeleteButtonActionPerformed
 
     private void roomNewSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomNewSaveButtonActionPerformed
-        //TODO co se stane po zmakcnuti tohoto tlacitka jestli jeste nejaka zprava nebo neco
         if(addNewRoomSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'roomNewSaveButActionPerformed' of class 'TestJFrame' - saving room to DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'roomNewSaveButActionPerformed' of class 'TestJFrame' - saving room to DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'roomNewSaveButtonActionPerformed' of class 'TestJFrame' - saving room to DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomNewSaveButtonActionPerformed' of class 'TestJFrame' - saving room to DB operation is already in progress, can't run multiply");
         }
         roomNewSaveButton.setEnabled(false);
         String[] inVals = {roomNewNumberTextField.getText(), roomNewCapacityTextField.getText(),
@@ -1965,7 +1967,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_roomNewSaveButtonActionPerformed
 
     private void roomNewCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomNewCancelButtonActionPerformed
-        // TODO add your handling code here:
+
         roomDeleteButton.setEnabled(true);
         roomEditButton.setEnabled(true);
         roomSearchButton.setEnabled(true);
@@ -1977,8 +1979,8 @@ public class TestJFrame extends javax.swing.JFrame {
     private void roomSearchSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomSearchSearchButtonActionPerformed
         
         if(searchRoomSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'roomSearchButActionPerformed' of class 'TestJFrame' - searching suitable rooms in DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'roomSearchButActionPerformed' of class 'TestJFrame' - searching suitable rooms in DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'roomSearchButtonActionPerformed' of class 'TestJFrame' - searching suitable rooms in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomSearchButtonActionPerformed' of class 'TestJFrame' - searching suitable rooms in DB operation is already in progress, can't run multiply");
         }
         roomSearchSearchButton.setEnabled(false);
         int capacity = -1;
@@ -2024,7 +2026,6 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_roomSearchSearchButtonActionPerformed
 
     private void reservNewStepOneNextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewStepOneNextButtonActionPerformed
-        // TODO udelat logiku vyhledavani volnych mistnosti
         
         if(unoccupiedRoomsSwingWorker != null){
             logger.log(Level.SEVERE, "Error in method 'reservNewStepOneNextButtonActionPerformed' of class 'TestJFrame' - searching all unoccupied rooms in required term in DB operation is already in progress, can't run multiply");
@@ -2110,8 +2111,8 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void guestEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guestEditButtonActionPerformed
         if(setUpKeySwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'guestMenuEditActionPerformed' of class 'TestJFrame' - preparation for updating guest in DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'guestMenuEditActionPerformed' of class 'TestJFrame' - preparation for updating guest in DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'guestEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating guest in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'guestEditButtonActionPerformed' of class 'TestJFrame' - preparation for updating guest in DB operation is already in progress, can't run multiply");
         }
         
         guestDeleteButton.setEnabled(false);
@@ -2174,8 +2175,8 @@ public class TestJFrame extends javax.swing.JFrame {
         // TODO saving changes
         
         if(addNewGuestSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'guestNewSaveButActionPerformed' of class 'TestJFrame' - saving guest to DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'guestNewSaveButActionPerformed' of class 'TestJFrame' - saving guest to DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'guestNewSaveButtonActionPerformed' of class 'TestJFrame' - saving guest to DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'guestNewSaveButtonActionPerformed' of class 'TestJFrame' - saving guest to DB operation is already in progress, can't run multiply");
         }
         guestNewSaveButton.setEnabled(false);
         String[] inVals = {guestNewNameTextField.getText(), guestNewCardIDTextField.getText(),
@@ -2194,8 +2195,8 @@ public class TestJFrame extends javax.swing.JFrame {
 
     private void guestSearchSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guestSearchSearchButtonActionPerformed
         if(searchGuestSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'guestSearchButActionPerformed' of class 'TestJFrame' - searching suitable guests in DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'guestSearchButActionPerformed' of class 'TestJFrame' - searching suitable guests in DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'guestSearchSearchButtonActionPerformed' of class 'TestJFrame' - searching suitable guests in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'guestSearchSearchButtonActionPerformed' of class 'TestJFrame' - searching suitable guests in DB operation is already in progress, can't run multiply");
         }
         guestSearchSearchButton.setEnabled(false);
         String guestName = guestSearchNameTextField.getText();
@@ -2353,8 +2354,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservEditButtonActionPerformed
 
     private void reservSearchSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservSearchSearchButtonActionPerformed
-        // TODO search logic
-        
+
         if(searchReservationSwingWorker != null){
             logger.log(Level.SEVERE, "Error in method 'reservSearchSearchButtonActionPerformed' of class 'TestJFrame' - searching suitable reservations in DB operation is already in progress, can't run multiply");
             throw new IllegalStateException("Error in method 'reservSearchSearchButtonActionPerformed' of class 'TestJFrame' - searching suitable reservations in DB operation is already in progress, can't run multiply");
@@ -2413,7 +2413,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 break;
             }
                     
-            default: throw new IllegalStateException("Unexpected index retrieved from reservSearchSearchByCombo combo boxu while trying to search required rooms");
+            default: throw new IllegalStateException("Unexpected index retrieved from 'reservSearchSearchByCombo' combo box while trying to search required rooms");
         }
         
         CardLayout card = (CardLayout)reservationMainPanel.getLayout();
@@ -2423,7 +2423,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservSearchSearchButtonActionPerformed
 
     private void reservNewStepTwoCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewStepTwoCancelButtonActionPerformed
-        // TODO discarding edits - not saving
+
         reservEditButton.setEnabled(true);
         reservDeleteButton.setEnabled(true);
         reservSearchButton.setEnabled(true);
@@ -2438,7 +2438,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservNewStepTwoCancelButtonActionPerformed
 
     private void reservNewStepTwoSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewStepTwoSaveButtonActionPerformed
-        // TODO saving
+
         if(addNewReservationSwingWorker != null){
             logger.log(Level.SEVERE, "Error in method 'reservNewStepTwoSaveButtonActionPerformed' of class 'TestJFrame' - storing new reservation into DB operation is already in progress, can't run multiply");
             throw new IllegalStateException("Error in method 'reservNewStepTwoSaveButtonActionPerformed' of class 'TestJFrame' - storing new reservation into DB operation is already in progress, can't run multiply");
@@ -2475,7 +2475,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservNewStepTwoSaveButtonActionPerformed
 
     private void reservPastButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservPastButtonActionPerformed
-        // TODO shows past reservations
+
         if(showPastReservationsSwingWorker != null){
             logger.log(Level.SEVERE, "Error in method 'reservPastButtonActionPerformed' of class 'TestJFrame' - retrieving all past reservations from DB operation is already in progress, can't run multiply");
             throw new IllegalStateException("Error in method 'reservPastButtonActionPerformed' of class 'TestJFrame' - retrieving all past reservations from DB operation is already in progress, can't run multiply");
@@ -2494,7 +2494,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservPastButtonActionPerformed
 
     private void reservActualButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservActualButtonActionPerformed
-        // TODO shows actual reservations
+
         if(showActualReservationsSwingWorker != null){
             logger.log(Level.SEVERE, "Error in method 'reservActualButtonActionPerformed' of class 'TestJFrame' - retrieving all actual reservations from DB operation is already in progress, can't run multiply");
             throw new IllegalStateException("Error in method 'reservActualButtonActionPerformed' of class 'TestJFrame' - retrieving all actual reservations from DB operation is already in progress, can't run multiply");
@@ -2517,7 +2517,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservActualButtonActionPerformed
 
     private void reservFutureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservFutureButtonActionPerformed
-        // TODO shows future reservations
+
         if(showFutureReservationsSwingWorker != null){
             logger.log(Level.SEVERE, "Error in method 'reservFutureButtonActionPerformed' of class 'TestJFrame' - retrieving all future reservations from DB operation for showing them in jTable is already in progress, can't run multiply");
             throw new IllegalStateException("Error in method 'reservFutureButtonActionPerformed' of class 'TestJFrame' - retrieving all future reservations from DB operation for showing them in jTable is already in progress, can't run multiply");
@@ -2555,8 +2555,8 @@ public class TestJFrame extends javax.swing.JFrame {
     private void roomEditSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomEditSaveButtonActionPerformed
         
         if(updateRoomSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'roomEditSaveButActionPerformed' of class 'TestJFrame' - updating room in DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'roomEditSaveButActionPerformed' of class 'TestJFrame' - updating room in DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'roomEditSaveButtonActionPerformed' of class 'TestJFrame' - updating room in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'roomEditSaveButtonActionPerformed' of class 'TestJFrame' - updating room in DB operation is already in progress, can't run multiply");
         }
         roomEditSaveButton.setEnabled(false);
         jTableRooms.setRowSelectionAllowed(false);
@@ -2593,8 +2593,8 @@ public class TestJFrame extends javax.swing.JFrame {
     private void guestEditSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guestEditSaveButtonActionPerformed
         
         if(updateGuestSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'guestEditSaveButActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'guestEditSaveButActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'guestEditSaveButtonActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'guestEditSaveButtonActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
         }
         guestEditSaveButton.setEnabled(false);
         jTableGuests.setRowSelectionAllowed(false);
@@ -2633,7 +2633,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_guestEditCancelButtonActionPerformed
 
     private void reservEditCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservEditCancelButtonActionPerformed
-        // TODO add your handling code here:
+
         reservNewButton.setEnabled(true);
         reservDeleteButton.setEnabled(true);
         reservSearchButton.setEnabled(true);
@@ -2658,10 +2658,10 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservEditCancelButtonActionPerformed
 
     private void reservEditSaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservEditSaveButtonActionPerformed
-        // TODO add your handling code here:
+
         if(updateReservationSwingWorker != null){
-            logger.log(Level.SEVERE, "Error in method 'guestEditSaveButActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
-            throw new IllegalStateException("Error in method 'guestEditSaveButActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
+            logger.log(Level.SEVERE, "Error in method 'reservEditSaveButtonActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
+            throw new IllegalStateException("Error in method 'reservEditSaveButtonActionPerformed' of class 'TestJFrame' - updating guest in DB operation is already in progress, can't run multiply");
         }
         reservEditSaveButton.setEnabled(false);
         jTableReservations.setRowSelectionAllowed(false);
@@ -2772,7 +2772,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservNewDateFromYearComboActionPerformed
 
     private void reservNewStepTwoBackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewStepTwoBackButtonActionPerformed
-        // TODO add your handling code here:
+
         if(showAllRoomsSW != null){
             logger.log(Level.SEVERE, "Error in method 'reservNewStepTwoBackButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation for showing them in jTable is already in progress, can't run multiply");
             throw new IllegalStateException("Error in method 'reservNewStepTwoBackButtonActionPerformed' of class 'TestJFrame' - retrieving all rooms from DB operation for showing them in jTable is already in progress, can't run multiply");
@@ -2793,7 +2793,7 @@ public class TestJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reservNewStepTwoBackButtonActionPerformed
 
     private void reservNewStepOneCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reservNewStepOneCancelButtonActionPerformed
-        // TODO add your handling code here:
+
         reservEditButton.setEnabled(true);
         reservDeleteButton.setEnabled(true);
         reservSearchButton.setEnabled(true);
@@ -2875,7 +2875,24 @@ public class TestJFrame extends javax.swing.JFrame {
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
-
+         SimpleDateFormat format = new SimpleDateFormat("YYYY-MM-dd");
+        try {
+            TestJFrame.fh = new FileHandler("log-" + /*format.format(Calendar.getInstance().getTime())*/
+                                                    format.format(new TimeManagerImpl().getCurrentDate())
+                                                  + ".txt",true);
+            
+            
+            SimpleFormatter formatter = new SimpleFormatter();  
+            fh.setFormatter(formatter);
+            logger.addHandler(fh);
+            
+        } catch (IOException ex) {
+            Logger.getLogger(TestJFrame.class.getName()).log(Level.SEVERE, "IOException was caught when setting file handler.", ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(TestJFrame.class.getName()).log(Level.SEVERE, "SecurityException was caught when setting file handler.", ex);
+        }
+        logger.info("Logging service initiated and working.");
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
@@ -3452,7 +3469,7 @@ public class TestJFrame extends javax.swing.JFrame {
             try {
                 guests = get();
             } catch (InterruptedException ex) {
-                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackgorund' in class 'GuestsToJTableSwingWorker'", ex);
+                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackground' in class 'GuestsToJTableSwingWorker'", ex);
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             } catch (ExecutionException ex) {
                 logger.log(Level.SEVERE, "Retrieving all guests from DB failure while trying to fulfill guests jTable - in method 'doInBackground' in class 'GuestsToJTableSwingWorker'", ex);
@@ -3465,6 +3482,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     guestsTableModel.addGuest(guest);
                 }
             }
+            logger.info("Guests successfully filled into table.");
         }
         
     }
@@ -3500,7 +3518,7 @@ public class TestJFrame extends javax.swing.JFrame {
             try {
                 rooms = get();
             } catch (InterruptedException ex) {
-                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackgorund' in class 'RoomsToJTableSwingWorker'", ex);
+                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackground' in class 'RoomsToJTableSwingWorker'", ex);
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             } catch (ExecutionException ex) {
                 logger.log(Level.SEVERE, "Retrieving all rooms from DB failure while trying to fulfill rooms jTable - in method 'doInBackground' in class 'RoomsToJTableSwingWorker'", ex);
@@ -3513,10 +3531,10 @@ public class TestJFrame extends javax.swing.JFrame {
                     roomsTableModel.addRoom(room);
                 }
             }
+            logger.info("Rooms successfully filled into table.");
         }
         
     }
-    
     
     private class ReservationsToJTableSwingWorker extends SwingWorker<List<Reservation>, Void>{
         
@@ -3545,7 +3563,7 @@ public class TestJFrame extends javax.swing.JFrame {
             try {
                 reservations = get();
             } catch (InterruptedException ex) {
-                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackgorund' in class 'ReservstionsToJTableSwingWorker'", ex);
+                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackground' in class 'ReservationsToJTableSwingWorker'", ex);
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             } catch (ExecutionException ex) {
                 logger.log(Level.SEVERE, "Retrieving all reservations from DB failure while trying to fulfill reservations jTable - in method 'doInBackground' in class 'ReservationsToJTableSwingWorker'", ex);
@@ -3558,6 +3576,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     reservationsTableModel.addReservation(reservation);
                 }
             }
+            logger.info("Reservations successfully filled into table.");
         }
         
     }
@@ -3610,6 +3629,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 CardLayout card = (CardLayout)roomMainPanel.getLayout();
                 card.show(roomMainPanel, "emptyPanel");
             }
+            logger.info("Room successfully added to the database.");
         }
         
         private List<String> getMessagesForDialogWindow(Throwable ex){
@@ -3677,7 +3697,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 roomsTableModel.removeRoom(row);
                 roomsTableModel1.removeRoom(row);
             }
-            
+            logger.info("Room successfully deleted from the database.");
             jTableRooms.setRowSelectionAllowed(true);            
         }
         
@@ -3865,7 +3885,9 @@ public class TestJFrame extends javax.swing.JFrame {
             if(msgs.isEmpty() || !msgs.get(1).equals(resourceBundle.getString("Neplatny_argument"))){
                 CardLayout card = (CardLayout)roomMainPanel.getLayout();
                 card.show(roomMainPanel, "emptyPanel");
+                logger.info("Room successfully updated in the database.");
             }
+            
         }
         
         private boolean isRoomNumberUnique(String number, RoomManager roomManager){
@@ -3952,7 +3974,7 @@ public class TestJFrame extends javax.swing.JFrame {
             try {
                 rooms = get();
             } catch (InterruptedException ex) {
-                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackgorund' in class 'SearchRoomSwingWorker'", ex);
+                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackground' in class 'SearchRoomSwingWorker'", ex);
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             } catch (ExecutionException ex) {
                 logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'SearchRoomSwingWorker': ", ex);
@@ -3966,6 +3988,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     roomsTableModel.addRoom(room);
                 }                
             }
+            logger.info("Room successfully found.");
         }
         
     }
@@ -4022,6 +4045,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 CardLayout card = (CardLayout)guestMainPanel.getLayout();
                 card.show(guestMainPanel, "guestEmptyPanel");
             }
+            logger.info("Guest successfully added to the database.");
         }
         
         private List<String> getMessagesForDialogWindow(Throwable ex){
@@ -4080,7 +4104,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 guestsTableModel.removeGuest(row);
                 guestsTableModel1.removeGuest(row);
             }
-            
+            logger.info("Guest successfully deleted from the database.");
             jTableGuests.setRowSelectionAllowed(true);
         }
         
@@ -4149,13 +4173,6 @@ public class TestJFrame extends javax.swing.JFrame {
             return msgs;
         }        
     }
-    
-    
-    
-    
-    
-    
-    
     
     private class UpdateGuestSwingWorker extends SwingWorker<Guest, Void>{
 
@@ -4227,7 +4244,9 @@ public class TestJFrame extends javax.swing.JFrame {
             if(msgs.isEmpty() || !msgs.get(1).equals(resourceBundle.getString("Neplatny_argument"))){
                 CardLayout card = (CardLayout)guestMainPanel.getLayout();
                 card.show(guestMainPanel, "guestEmptyPanel");
+                logger.info("Guest successfully updated in the database.");
             }
+            
         }
         
         private boolean isGuestUnique(){
@@ -4312,10 +4331,10 @@ public class TestJFrame extends javax.swing.JFrame {
             try {
                 guests = get();
             } catch (InterruptedException ex) {
-                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackgorund' in class 'SearchGuestSwingWorker'", ex);
+                logger.log(Level.SEVERE, "Operation interrupted (this should never happen) in method 'doInBackground' in class 'SearchGuestSwingWorker'", ex);
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             } catch (ExecutionException ex) {
-                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'SearchRoomSwingWorker': ", ex);
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'SearchGuestSwingWorker': ", ex);
                 JOptionPane.showMessageDialog(null, resourceBundle.getString("Host_hledat_ziskani_dat_neuspech"),
                                               resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
             }
@@ -4326,6 +4345,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     guestsTableModel.addGuest(guest);
                 }
             }
+            logger.info("Guest successfully found in the database.");
         }        
     }
     
@@ -4400,6 +4420,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 CardLayout card = (CardLayout)reservationMainPanel.getLayout();
                 card.show(reservationMainPanel, "reservationEmptyPanel");
             }
+            logger.info("Reservation successfully added to the database.");
         }
         
         private Guest getGuestFromDB(Guest tableGuest){
@@ -4476,7 +4497,7 @@ public class TestJFrame extends javax.swing.JFrame {
             } catch (InterruptedException ex) {
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             } catch (ExecutionException ex) {
-                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'DeleteGuestSwingWorker': ", ex);
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'DeleteReservationSwingWorker': ", ex);
                 msgs = getMessagesForDialogWindow(ex);
                 JOptionPane.showMessageDialog(null, msgs.get(0), msgs.get(1), JOptionPane.ERROR_MESSAGE);
             }
@@ -4485,6 +4506,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 reservationsTableModel.removeReservation(row);
             }
             
+            logger.info("Reservation successfully deleted from the database.");
             /*showActualReservationsSwingWorker = new ShowActualReservationsSwingWorker();
             showActualReservationsSwingWorker.execute();*/
         }
@@ -4606,6 +4628,7 @@ public class TestJFrame extends javax.swing.JFrame {
                     reservationsTableModel.addReservation(reservation);
                 }
             }
+            logger.info("Reservation successfully found in the database.");
         }
         
         private Guest getGuestFromDB(Guest guest){
@@ -4654,6 +4677,10 @@ public class TestJFrame extends javax.swing.JFrame {
             int row = (room != null ? roomsTableModel.getIndexOf(room) : -1);
             if(row >= 0){
                 jTableRooms1.setRowSelectionInterval(row, row);
+                logger.info("Room for reservation successfully selected from table and database.");
+            }
+            else{
+                logger.log(Level.WARNING, "In class 'TableRoomRowSwingWorker' room is null and therefore row is -1!" );
             }
         }
         
@@ -4699,6 +4726,10 @@ public class TestJFrame extends javax.swing.JFrame {
             int row = (guest != null ? guestsTableModel.getIndexOf(guest) : -1);
             if(row >= 0){
                 jTableGuests1.setRowSelectionInterval(row, row);
+                logger.info("Guest for reservation successfully selected from table and database.");
+            }
+            else{
+                logger.log(Level.WARNING, "In class 'TableGuestRowSwingWorker' guest is null and therefore row is -1!" );
             }
         }
         
@@ -4748,7 +4779,7 @@ public class TestJFrame extends javax.swing.JFrame {
             try {
                 reservation = get();
             } catch (InterruptedException ex) {
-                Logger.getLogger(TestJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
             } catch (ExecutionException ex) {
                 logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'UpdateReservationSwingWorker': ", ex);
                 msgs = getMessagesForDialogWindow(ex);
@@ -4765,6 +4796,7 @@ public class TestJFrame extends javax.swing.JFrame {
                 card.show(reservationMainPanel, "reservationEmptyPanel");
                 CardLayout tableCard = (CardLayout)reservationTables.getLayout();
                 tableCard.show(reservationTables, "reservationMainTable");
+                logger.info("Reservation successfully updated in the database.");
             }
         }
         
@@ -4857,6 +4889,7 @@ public class TestJFrame extends javax.swing.JFrame {
             jTableGuests1.setRowSelectionAllowed(true);
             jTableRooms1.setRowSelectionAllowed(true);
             
+            logger.info("Successfully found all unoccupied rooms in the database.");
             CardLayout card = (CardLayout)reservationMainPanel.getLayout();
             card.show(reservationMainPanel, "reservationNewPanel");
         }        
@@ -4903,6 +4936,10 @@ public class TestJFrame extends javax.swing.JFrame {
                 for(Reservation reservation : reservations){
                     reservationsTableModel.addReservation(reservation);
                 }
+                logger.info("Past reservations successfully found in the database.");
+            }
+            else{
+                logger.info("No past reservations were found in the database.");
             }
         }        
     }
@@ -4951,6 +4988,10 @@ public class TestJFrame extends javax.swing.JFrame {
                 for(Reservation reservation : reservations){
                     reservationsTableModel.addReservation(reservation);
                 }
+                logger.info("Future reservations successfully found in the database.");
+            }
+            else{
+                logger.info("No future reservations were found in the database.");
             }
         }        
     }
@@ -4989,7 +5030,7 @@ public class TestJFrame extends javax.swing.JFrame {
             } catch (InterruptedException ex) {
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             } catch (ExecutionException ex) {
-                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'ShowFutureReservationsSwingWorker': ", ex);
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'ShowActualReservationsSwingWorker': ", ex);
                 JOptionPane.showMessageDialog(null, resourceBundle.getString("Rezervace_ukaz_aktualni_chyba"),
                                               resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
             }
@@ -4998,6 +5039,10 @@ public class TestJFrame extends javax.swing.JFrame {
                 for(Reservation reservation : reservations){
                     reservationsTableModel.addReservation(reservation);
                 }
+                logger.info("Actual reservations Successfully found in the database.");
+            }
+            else{
+                logger.info("No actual reservations were found in the database.");
             }
             
             showTopFiveSpendersSwingWorker = new ShowTopFiveSpendersSwingWorker();
@@ -5040,7 +5085,7 @@ public class TestJFrame extends javax.swing.JFrame {
             } catch (InterruptedException ex) {
                 throw new RuntimeException("Operation interrupted (this should never happen)",ex);
             } catch (ExecutionException ex) {
-                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'ShowFutureReservationsSwingWorker': ", ex);
+                logger.log(Level.SEVERE, "ExecutionException thrown in method 'doInBackground' in class 'ShowTopFiveSpendersSwingWorker': ", ex);
                 JOptionPane.showMessageDialog(null, resourceBundle.getString("Top5Spenders_ukaz_data_chyba"),
                                               resourceBundle.getString("Interni_chyba"), JOptionPane.ERROR_MESSAGE);
             }
@@ -5049,7 +5094,12 @@ public class TestJFrame extends javax.swing.JFrame {
                 for(String[] topFiveSpender : topFiveSpenders){
                     topFiveSpendersTableModel.addTopFiveSpender(topFiveSpender);
                 }
+                logger.info("Top five spenders successfully found.");
             }
+            else{
+                logger.info("No top five spenders were found.");
+            }
+            
         }
     }
 }

@@ -35,7 +35,7 @@ import javax.sql.DataSource;
  */
 public class ReservationManagerImpl implements ReservationManager{
     
-    private static final Logger logger = Logger.getLogger(GuestManagerImpl.class.getName());
+    private static final Logger logger = Logger.getLogger("myLogger");
     private final DataSource dataSource;
     private final TimeManager timeManager;
     
